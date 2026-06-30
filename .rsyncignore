@@ -1,0 +1,19 @@
+# These paths are relative to wp-content/.
+uploads/
+cache/
+upgrade/
+backup*/
+backups/
+ai1wm-backups/
+updraft/
+wp-rocket-config/
+
+debug.log
+*.log
+*.sql
+*.sql.gz
+*.wpress
+*.zip
+*.tar
+*.tar.gz
+*.tgz

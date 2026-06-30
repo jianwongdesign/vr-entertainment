@@ -1,0 +1,31 @@
+.DS_Store
+.env
+
+# Local dependency folders
+node_modules/
+vendor/
+
+# WordPress secrets and runtime files
+wordpress/wp-config.php
+wordpress/.maintenance
+wordpress/wp-content/debug.log
+wordpress/wp-content/*.log
+
+# WordPress generated or bulky content
+wordpress/wp-content/uploads/
+wordpress/wp-content/cache/
+wordpress/wp-content/upgrade/
+wordpress/wp-content/backup*/
+wordpress/wp-content/backups/
+wordpress/wp-content/ai1wm-backups/
+wordpress/wp-content/updraft/
+wordpress/wp-content/wp-rocket-config/
+
+# Exported backups should stay out of Git
+*.sql
+*.sql.gz
+*.wpress
+*.zip
+*.tar
+*.tar.gz
+*.tgz
