@@ -1,6 +1,7 @@
 # These paths are relative to wp-content/.
 uploads/
 cache/
+litespeed/
 upgrade/
 backup*/
 backups/
@@ -9,6 +10,10 @@ updraft/
 wp-rocket-config/
 
 debug.log
+.litespeed_conf.dat
+advanced-cache.php
+db.php
+object-cache.php
 *.log
 *.sql
 *.sql.gz

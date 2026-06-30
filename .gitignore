@@ -10,10 +10,15 @@ wordpress/wp-config.php
 wordpress/.maintenance
 wordpress/wp-content/debug.log
 wordpress/wp-content/*.log
+wordpress/wp-content/.litespeed_conf.dat
+wordpress/wp-content/advanced-cache.php
+wordpress/wp-content/db.php
+wordpress/wp-content/object-cache.php
 
 # WordPress generated or bulky content
 wordpress/wp-content/uploads/
 wordpress/wp-content/cache/
+wordpress/wp-content/litespeed/
 wordpress/wp-content/upgrade/
 wordpress/wp-content/backup*/
 wordpress/wp-content/backups/
