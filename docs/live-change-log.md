@@ -85,3 +85,38 @@ Main groups:
 - VR Free Roam /games/... detail links
 - /vr-games link
 ```
+
+## 2026-06-30 16:40 +08 - Footer Information Page Redesign
+
+Published a presentation-ready redesign for the editable footer information pages.
+
+What changed:
+
+- Rebuilt `/about/`, `/contact/`, `/privacy-policy/`, `/terms-of-service/`, and `/refund-policy/` as WordPress block-editor sections instead of one raw Custom HTML block.
+- Added stronger child-theme styling for full-width dark hero sections, outlet/contact cards, policy cards, CTA buttons, mobile wrapping, and viewport-safe responsive layout.
+- Kept the pages editable by the client in WordPress while preserving reusable design classes in the child theme.
+- Kept the Elementor Header/Footer page template on the five pages so the site header and footer remain present without the default WordPress page title.
+
+Verification:
+
+```text
+/about/              200
+/contact/            200
+/privacy-policy/     200
+/terms-of-service/   200
+/refund-policy/      200
+
+Rendered pages include:
+- wp-block-group alignfull ow-info
+- ow-info__hero-panel
+- ow-info__policy-list / ow-info__contact-grid where relevant
+
+Rendered page placeholder check:
+No wp:html, REPLACE_ME, PLACEHOLDER, tel:+65REPLACE, or wa.me/+ values found.
+
+Mobile emulation check:
+Viewport width: 390
+Document scroll width: 390
+About page screenshot: /private/tmp/overworld-about-cdp-mobile.png
+Desktop screenshot: /private/tmp/overworld-about-desktop.png
+```
