@@ -1,5 +1,113 @@
 # Live Change Log
 
+## 2026-06-30 18:10 +08 - Info Pages Restyled To Match Site Vibe
+
+Reworked the CSS for the editable footer information pages (About, Contact,
+Privacy, Terms, Refund) so their design language matches the Experience /
+Pricing pages instead of looking off-brand.
+
+What was wrong:
+
+- Pages used `Anton` + `Montserrat` fonts and a multi-colour rainbow palette
+  (cyan / violet / yellow accents), unlike the rest of the site.
+- The `.ow-info` content was trapped in WordPress's narrow constrained-layout
+  content-size column while the background bled full width.
+
+What changed (single file: child theme `style.css`):
+
+- Adopted the real site tokens: `Lulo Clean One Bold` (display) +
+  `Helvetica W01` (body), orange-monochrome lava palette (`#ff5a1f`, hover
+  `#ff7a4a`), warm radial hero background, orange grid overlay, fluid
+  `clamp()` type, pill CTAs with glow ring (matches the footer "Book Your
+  Session" button).
+- Display font reserved for short headings/labels/buttons; sentence text
+  (panel title, stat labels) kept in Helvetica to avoid the wide display font
+  overflowing.
+- Overrode WP's `is-layout-constrained` cap on `.ow-info__inner` so the pages
+  span the full site width like the Experience pages.
+- Removed the hero `min-height: 60vh` (which created a large blank gap before
+  the next section on text-only pages) and vertically centred the hero
+  columns; hero now sizes to its content.
+- Fixed the second sections rendering in a narrow centred column: WordPress's
+  constrained-layout cap was still squeezing the section children (titles,
+  tile grids, policy lists). Overrode it so section content fills the full
+  inner width and left-aligns with the hero. Policy lists are now a balanced
+  2-column grid (1-column on mobile); body intro text left-aligned.
+- Left-aligned section sub-text (intro paragraphs, CTA copy): WordPress's
+  constrained layout was centring them with `margin-inline: auto !important`,
+  so a higher-specificity `!important` override forces left alignment in line
+  with the titles and cards.
+- Removed the "Plan Your Visit" CTA section from the About page (deleted its
+  `ctaSections` in `scripts/upsert-footer-pages.mjs` and re-ran the upsert; the
+  page now ends on "Our Outlets" and flows cleanly into the site footer).
+- Class names unchanged, so the page block markup needed no edits.
+- Bumped child theme `Version` 1.0.0 -> 1.0.7 to bust the `style.css?ver=`
+  cache.
+
+Backup of the previous stylesheet:
+
+```text
+/home/u146877548/overworld-backups/child-style-before-info-redesign-*.css
+```
+
+Deploy: single-file rsync of `style.css`; WP object cache, Elementor CSS, and
+LiteSpeed caches flushed.
+
+Verification (browser, live):
+
+```text
+/about/            full-width hero, orange eyebrow/stat values, no overflow
+/terms-of-service/ policy cards with orange accent bars, Lulo titles
+/refund-policy/    CTA pill button matches site footer "Book Your Session"
+desktop 1440 + mobile 414 both clean, no horizontal scroll
+```
+
+## 2026-06-30 17:25 +08 - Experience (Game) Content Fill
+
+Filled the missing `experience` CPT ACF content from
+`Sample/2026-06-30-vr-arcade-escape-first-cut.csv` and published live.
+
+Scope: 39 games (all non-`needs_review` rows). For each existing post, set via
+ACF `update_field`:
+
+- `exp_intro` (description, WYSIWYG paragraphs) — all 39
+- `exp_video` (trailer; YouTube watch URL, auto-resolved to oembed iframe) — all 39
+- `exp_image_1` / `exp_image_2` — only where the CSV image URL mapped to a real
+  media-library attachment (most 2026/04 CSV URLs are dead / not in the library)
+
+Data quality notes:
+
+- Most CSV gallery image URLs (`/2026/04/...`) do not exist in the media library;
+  only ~25 of 82 resolved. Images were set only for the games where a confident
+  match existed.
+- Dropped 3 unsafe basename matches (generic filenames `1-1.jpg`, `002.jpg`,
+  `maxresdefault.jpg`) that resolved to the wrong game's image.
+- `battle-blocks` images cleared after publish: its CSV `6.jpg` collided with
+  `propagation-top-squad`'s real upload (attachment 677); generic numeric names
+  were not trustworthy.
+
+Left untouched (reported for manual review): 13 VR Escape rows marked
+`needs_review` with no real description/trailer/images in the source —
+alice, cyberpunk, dream-hacker, dream-hacker-2, dream-hacker-3,
+escape-the-worlds, house-of-fear, house-of-fear-call-of-blood,
+house-of-fear-cursed-souls, sanctum, signal-lost, survival, the-prison.
+
+Backup (pre-change ACF meta for all 39 posts):
+
+```text
+/home/u146877548/overworld-backups/experience-acf-before-games-fill-20260630-092235.json
+```
+
+Caches flushed: WP object cache, Elementor CSS, LiteSpeed.
+
+Verification:
+
+```text
+/experience/half-life-alyx/            200  intro+yt embed present
+/experience/angry-birds-vr-isle-of-pigs/ 200  intro+yt embed present
+get_field('exp_video') renders full YouTube iframe (oembed resolved)
+```
+
 ## 2026-06-30 13:13 +08 - Header Book Now Links
 
 Published a live WordPress database update for the header and related Bookeo links.

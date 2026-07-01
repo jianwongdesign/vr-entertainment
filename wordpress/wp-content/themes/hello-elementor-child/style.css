@@ -5,14 +5,34 @@ Description:  Child theme for Hello Elementor - used for the Overworld VR experi
 Author:       Overworld VR
 Author URI:   https://overworldvr.com/
 Template:     hello-elementor
-Version:      1.0.0
+Version:      1.0.7
 Text Domain:  hello-elementor-child
 */
 
 /* Add your custom CSS below this line if needed.
    Most styling is handled inline in the experience templates. */
 
-/* ========== Overworld editable information pages ========== */
+/* ========== Overworld editable information pages ==========
+   Design language matched to the Experience / Pricing pages:
+   Lulo Clean One Bold + Helvetica W01, orange-monochrome lava
+   palette, warm radial backgrounds, orange grid, pill CTAs. */
+
+@font-face {
+    font-family: 'Lulo Clean One Bold';
+    font-style: normal;
+    font-weight: 400;
+    src: url('//static.parastorage.com/fonts/v2/e3cf8f7e-35c4-446f-9b93-de93e989f66f/v1/lulo-clean-w01-one-bold.woff2') format('woff2');
+    font-display: swap;
+}
+
+@font-face {
+    font-family: 'Helvetica W01';
+    font-style: normal;
+    font-weight: 400;
+    src: url('//static.parastorage.com/fonts/v2/2af1bf48-e783-4da8-9fa0-599dde29f2d5/v1/helvetica-w01-roman.woff2') format('woff2');
+    font-display: swap;
+}
+
 .ow-info.alignfull,
 .entry-content > .ow-info,
 .page-content > .ow-info,
@@ -32,23 +52,23 @@ body.page-id-938 .page-header {
 }
 
 .ow-info {
-    --ow-info-bg: #050608;
-    --ow-info-panel: #11141d;
-    --ow-info-panel-2: #171b26;
-    --ow-info-fg: #ffffff;
-    --ow-info-dim: rgba(239, 244, 255, 0.74);
-    --ow-info-muted: rgba(239, 244, 255, 0.55);
-    --ow-info-line: rgba(255, 255, 255, 0.15);
-    --ow-info-line-soft: rgba(255, 255, 255, 0.08);
-    --ow-info-lava: #ff5a1f;
-    --ow-info-cyan: #20d9ff;
-    --ow-info-yellow: #ffd166;
-    --ow-info-violet: #8a5cff;
-    --ow-info-shadow: 0 22px 70px rgba(0, 0, 0, 0.42);
-    background:
-        linear-gradient(180deg, #08090d 0%, #050608 46%, #090a0f 100%);
-    color: var(--ow-info-fg);
-    font-family: "Montserrat", "Space Grotesk", "Inter", Arial, sans-serif;
+    --ow-bg: #0b0b0c;
+    --ow-bg-2: #141417;
+    --ow-panel: rgba(255, 255, 255, 0.04);
+    --ow-border: rgba(255, 255, 255, 0.08);
+    --ow-border-strong: rgba(255, 255, 255, 0.16);
+    --ow-text: #f4f4f5;
+    --ow-text-dim: #a1a1aa;
+    --ow-text-faint: #71717a;
+    --ow-accent: #ff5a1f;
+    --ow-accent-hi: #ff7a4a;
+    --ow-accent-glow: rgba(255, 90, 31, 0.35);
+    --font-display: 'Lulo Clean One Bold', 'Impact', 'Arial Black', sans-serif;
+    --font-body: 'Helvetica W01', 'Helvetica Neue', Helvetica, Arial, sans-serif;
+    background: var(--ow-bg);
+    color: var(--ow-text);
+    font-family: var(--font-body);
+    padding-bottom: 96px;
     overflow-x: hidden;
 }
 
@@ -59,15 +79,15 @@ body.page-id-938 .page-header {
 }
 
 .ow-info a {
-    color: var(--ow-info-fg);
-    text-decoration-color: rgba(255, 90, 31, 0.72);
-    text-decoration-thickness: 2px;
-    text-underline-offset: 4px;
+    color: var(--ow-accent);
+    text-decoration: none;
+    border-bottom: 1px solid currentColor;
+    transition: color 0.2s ease;
 }
 
 .ow-info a:hover,
 .ow-info a:focus-visible {
-    color: var(--ow-info-cyan);
+    color: var(--ow-accent-hi);
 }
 
 .ow-info .wp-block-group {
@@ -77,20 +97,17 @@ body.page-id-938 .page-header {
 
 .ow-info__hero,
 .ow-info__section {
-    padding-left: 28px;
-    padding-right: 28px;
+    padding-left: 24px;
+    padding-right: 24px;
 }
 
+/* ===== HERO ===== */
 .ow-info__hero {
     position: relative;
-    min-height: 560px;
-    padding-top: 112px;
-    padding-bottom: 82px;
-    border-bottom: 1px solid var(--ow-info-line-soft);
-    background:
-        linear-gradient(135deg, rgba(255, 90, 31, 0.18) 0%, rgba(255, 90, 31, 0) 36%),
-        linear-gradient(225deg, rgba(32, 217, 255, 0.16) 0%, rgba(32, 217, 255, 0) 34%),
-        linear-gradient(180deg, #11131b 0%, #06070a 100%);
+    padding-top: 100px;
+    padding-bottom: 60px;
+    overflow: hidden;
+    background: radial-gradient(ellipse at top, #1a0e08 0%, var(--ow-bg) 65%) var(--ow-bg);
 }
 
 .ow-info__hero::before {
@@ -98,11 +115,11 @@ body.page-id-938 .page-header {
     position: absolute;
     inset: 0;
     background-image:
-        linear-gradient(rgba(255, 255, 255, 0.055) 1px, transparent 1px),
-        linear-gradient(90deg, rgba(255, 255, 255, 0.055) 1px, transparent 1px);
-    background-size: 44px 44px;
-    mask-image: linear-gradient(180deg, rgba(0, 0, 0, 0.62), rgba(0, 0, 0, 0.12) 78%, transparent 100%);
-    -webkit-mask-image: linear-gradient(180deg, rgba(0, 0, 0, 0.62), rgba(0, 0, 0, 0.12) 78%, transparent 100%);
+        linear-gradient(rgba(255, 90, 31, 0.06) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255, 90, 31, 0.06) 1px, transparent 1px);
+    background-size: 48px 48px;
+    mask-image: radial-gradient(ellipse at center, black 30%, transparent 80%);
+    -webkit-mask-image: radial-gradient(ellipse at center, black 30%, transparent 80%);
     pointer-events: none;
 }
 
@@ -112,14 +129,18 @@ body.page-id-938 .page-header {
     left: 0;
     right: 0;
     bottom: 0;
-    height: 7px;
-    background: linear-gradient(90deg, var(--ow-info-lava), var(--ow-info-yellow), var(--ow-info-cyan), var(--ow-info-violet));
+    height: 1px;
+    background: linear-gradient(90deg, transparent, var(--ow-accent) 50%, transparent);
+    opacity: 0.5;
 }
 
+/* Neutralise WordPress's constrained-layout cap (theme content-size)
+   so the page spans the full site width like the Experience pages. */
 .ow-info__inner {
     position: relative;
-    z-index: 1;
-    width: min(1160px, 100%);
+    z-index: 2;
+    width: 100%;
+    max-width: min(1400px, 100%);
     margin-right: auto;
     margin-left: auto;
 }
@@ -127,135 +148,139 @@ body.page-id-938 .page-header {
 .ow-info__hero-inner {
     display: grid;
     grid-template-columns: minmax(0, 1.12fr) minmax(320px, 0.88fr);
-    gap: 44px;
-    align-items: end;
+    gap: 48px;
+    align-items: center;
 }
 
 .ow-info__hero-copy {
     min-width: 0;
 }
 
-.ow-info__eyebrow,
-.ow-info__panel-kicker,
-.ow-info__pill,
-.ow-info__stat-label,
-.ow-info__card-title {
-    letter-spacing: 0;
-    text-transform: uppercase;
-}
-
+/* eyebrow / labels */
 .ow-info__eyebrow {
     display: inline-flex;
     align-items: center;
-    gap: 10px;
-    margin: 0 0 18px;
-    color: var(--ow-info-cyan);
-    font-size: 13px;
-    font-weight: 800;
+    gap: 12px;
+    margin: 0 0 22px;
+    color: var(--ow-accent);
+    font-family: var(--font-body);
+    font-size: 11px;
+    font-weight: 500;
     line-height: 1.3;
+    letter-spacing: 0.32em;
+    text-transform: uppercase;
 }
 
 .ow-info__eyebrow::before {
     content: "";
-    width: 34px;
-    height: 2px;
-    background: var(--ow-info-lava);
+    width: 28px;
+    height: 1px;
+    background: var(--ow-accent);
 }
 
 .ow-info__title {
-    max-width: 760px;
+    max-width: 920px;
     margin: 0;
-    color: var(--ow-info-fg);
-    font-family: "Anton", Impact, "Arial Black", sans-serif;
-    font-size: 76px;
+    color: var(--ow-text);
+    font-family: var(--font-display);
+    font-size: clamp(34px, 4.6vw, 58px);
     font-weight: 400;
-    line-height: 0.96;
+    line-height: 1.04;
+    letter-spacing: 0.01em;
     text-transform: uppercase;
     text-wrap: balance;
+    overflow-wrap: break-word;
 }
 
 .ow-info__lede {
     max-width: 720px;
     margin: 26px 0 0;
-    color: var(--ow-info-dim);
-    font-size: 18px;
-    font-weight: 500;
-    line-height: 1.72;
+    color: var(--ow-text-dim);
+    font-size: clamp(16px, 1.6vw, 19px);
+    font-weight: 400;
+    line-height: 1.7;
 }
 
 .ow-info__meta {
     display: flex;
     flex-wrap: wrap;
-    gap: 10px;
-    margin-top: 30px;
+    gap: 8px;
+    margin-top: 32px;
 }
 
 .ow-info__pill {
     display: inline-flex;
     align-items: center;
     gap: 9px;
-    min-height: 38px;
     margin: 0;
-    padding: 9px 13px;
-    border: 1px solid rgba(255, 255, 255, 0.17);
-    border-radius: 999px;
-    background: rgba(255, 255, 255, 0.06);
-    color: var(--ow-info-dim);
-    font-size: 12px;
-    font-weight: 800;
+    padding: 7px 13px;
+    border: 1px solid var(--ow-border-strong);
+    border-radius: 6px;
+    background: rgba(255, 255, 255, 0.05);
+    color: var(--ow-text-dim);
+    font-size: 10px;
+    font-weight: 400;
     line-height: 1.25;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
 }
 
 .ow-info__pill::before {
     content: "";
-    width: 8px;
-    height: 8px;
+    width: 7px;
+    height: 7px;
     border-radius: 50%;
-    background: var(--ow-info-lava);
-    box-shadow: 0 0 14px rgba(255, 90, 31, 0.85);
+    background: var(--ow-accent);
+    box-shadow: 0 0 12px var(--ow-accent-glow);
 }
 
+/* hero side panel */
 .ow-info__hero-panel {
     position: relative;
     min-width: 0;
-    padding: 28px;
-    border: 1px solid rgba(255, 255, 255, 0.17);
-    border-radius: 8px;
+    padding: 30px;
+    border: 1px solid var(--ow-border);
+    border-radius: 20px;
     background:
-        linear-gradient(180deg, rgba(255, 255, 255, 0.09), rgba(255, 255, 255, 0.035)),
-        #10131b;
-    box-shadow: var(--ow-info-shadow);
+        linear-gradient(180deg, rgba(255, 255, 255, 0.05), rgba(255, 255, 255, 0.02)),
+        var(--ow-bg-2);
+    box-shadow: 0 24px 60px rgba(0, 0, 0, 0.45);
 }
 
 .ow-info__hero-panel::before {
     content: "";
     position: absolute;
     top: -1px;
-    left: 22px;
-    right: 22px;
-    height: 3px;
-    background: linear-gradient(90deg, var(--ow-info-lava), var(--ow-info-cyan));
+    left: 24px;
+    right: 24px;
+    height: 2px;
+    background: linear-gradient(90deg, var(--ow-accent), transparent);
 }
 
 .ow-info__panel-kicker {
-    margin: 0 0 12px;
-    color: var(--ow-info-yellow);
-    font-size: 12px;
-    font-weight: 800;
+    margin: 0 0 14px;
+    color: var(--ow-accent);
+    font-family: var(--font-body);
+    font-size: 11px;
+    font-weight: 500;
+    letter-spacing: 0.28em;
+    text-transform: uppercase;
 }
 
 .ow-info__panel-title {
     margin: 0;
-    color: var(--ow-info-fg);
-    font-size: 30px;
-    font-weight: 800;
-    line-height: 1.15;
+    color: var(--ow-text);
+    font-family: var(--font-body);
+    font-size: clamp(19px, 1.7vw, 23px);
+    font-weight: 700;
+    line-height: 1.3;
+    letter-spacing: 0;
     text-wrap: balance;
 }
 
 .ow-info__panel-copy {
     margin: 16px 0 0;
-    color: var(--ow-info-dim);
+    color: var(--ow-text-dim);
     font-size: 15px;
     line-height: 1.68;
 }
@@ -264,90 +289,111 @@ body.page-id-938 .page-header {
     display: grid;
     grid-template-columns: repeat(3, minmax(0, 1fr));
     gap: 10px;
-    margin-top: 24px;
+    margin-top: 26px;
 }
 
 .ow-info__stat {
-    min-height: 96px;
-    padding: 14px;
-    border: 1px solid var(--ow-info-line-soft);
-    border-radius: 8px;
-    background: rgba(0, 0, 0, 0.24);
+    min-height: 92px;
+    padding: 16px 14px;
+    border: 1px solid var(--ow-border);
+    border-radius: 12px;
+    background: rgba(0, 0, 0, 0.28);
 }
 
 .ow-info__stat-value {
-    margin: 0 0 8px;
-    color: var(--ow-info-cyan);
-    font-size: 24px;
-    font-weight: 900;
+    margin: 0 0 7px;
+    color: var(--ow-accent);
+    font-family: var(--font-body);
+    font-size: 19px;
+    font-weight: 800;
     line-height: 1;
+    letter-spacing: 0.01em;
 }
 
 .ow-info__stat-label {
     margin: 0;
-    color: var(--ow-info-muted);
-    font-size: 11px;
-    font-weight: 800;
-    line-height: 1.35;
+    color: var(--ow-text-faint);
+    font-family: var(--font-body);
+    font-size: 10px;
+    font-weight: 600;
+    line-height: 1.4;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
 }
 
+/* ===== SECTIONS ===== */
 .ow-info__section {
     position: relative;
-    padding-top: 74px;
-    padding-bottom: 74px;
-    border-bottom: 1px solid var(--ow-info-line-soft);
-    background:
-        linear-gradient(180deg, rgba(255, 255, 255, 0.018), rgba(255, 255, 255, 0)),
-        var(--ow-info-bg);
-}
-
-.ow-info__section:nth-of-type(odd) {
-    background:
-        linear-gradient(180deg, rgba(32, 217, 255, 0.045), rgba(255, 255, 255, 0)),
-        #080a10;
+    padding-top: 72px;
+    padding-bottom: 72px;
+    border-top: 1px solid var(--ow-border);
+    background: var(--ow-bg);
 }
 
 .ow-info__section--cta {
     background:
-        linear-gradient(120deg, rgba(255, 90, 31, 0.14), rgba(32, 217, 255, 0.08)),
-        #0d1018;
+        radial-gradient(ellipse at center, rgba(255, 90, 31, 0.10), transparent 70%),
+        var(--ow-bg);
+}
+
+/* Section children fill the full inner width instead of WordPress's
+   narrow constrained content-size (which left them cramped and centred). */
+.ow-info__section-title,
+.ow-info__grid,
+.ow-info__contact-grid,
+.ow-info__policy-list,
+.ow-info__cta-row {
+    max-width: none;
+}
+
+/* WordPress's constrained layout centres every child with
+   `margin-inline: auto !important`; force left alignment so section
+   text (intros, CTA copy) lines up with the titles and cards. */
+.ow-info .ow-info__inner > * {
+    margin-left: 0 !important;
+    margin-right: auto !important;
 }
 
 .ow-info__section-title {
     display: flex;
     align-items: center;
     gap: 14px;
-    margin: 0 0 18px;
-    color: var(--ow-info-fg);
-    font-family: "Anton", Impact, "Arial Black", sans-serif;
-    font-size: 44px;
+    margin: 0 0 22px;
+    color: var(--ow-text);
+    font-family: var(--font-display);
+    font-size: clamp(28px, 4vw, 48px);
     font-weight: 400;
-    line-height: 1;
+    line-height: 1.04;
+    letter-spacing: 0.02em;
     text-transform: uppercase;
     text-wrap: balance;
 }
 
 .ow-info__section-title::before {
     content: "";
-    flex: 0 0 10px;
-    width: 10px;
-    height: 42px;
+    flex: 0 0 6px;
+    width: 6px;
+    align-self: stretch;
+    min-height: 32px;
     border-radius: 999px;
-    background: linear-gradient(180deg, var(--ow-info-lava), var(--ow-info-cyan));
+    background: var(--ow-accent);
+    box-shadow: 0 0 16px var(--ow-accent-glow);
 }
 
 .ow-info__body {
-    max-width: 780px;
-    color: var(--ow-info-dim);
-    font-size: 16px;
-    line-height: 1.76;
+    max-width: 760px;
+    margin-left: 0;
+    margin-right: auto;
+    color: var(--ow-text-dim);
+    font-size: 17px;
+    line-height: 1.7;
 }
 
 .ow-info__body p,
 .ow-info__tile p,
 .ow-info__contact-card p,
 .ow-info__policy p {
-    margin: 0 0 15px;
+    margin: 0 0 1.4em;
 }
 
 .ow-info__body p:last-child,
@@ -361,8 +407,8 @@ body.page-id-938 .page-header {
 .ow-info__contact-grid {
     display: grid;
     grid-template-columns: repeat(3, minmax(0, 1fr));
-    gap: 18px;
-    margin-top: 30px;
+    gap: 16px;
+    margin-top: 32px;
 }
 
 .ow-info__tile,
@@ -371,33 +417,31 @@ body.page-id-938 .page-header {
     position: relative;
     min-width: 0;
     min-height: 100%;
-    padding: 26px;
-    border: 1px solid var(--ow-info-line);
-    border-radius: 8px;
+    padding: 28px;
+    border: 1px solid var(--ow-border);
+    border-radius: 16px;
     background:
-        linear-gradient(180deg, rgba(255, 255, 255, 0.08), rgba(255, 255, 255, 0.026)),
-        var(--ow-info-panel);
-    box-shadow: 0 18px 45px rgba(0, 0, 0, 0.23);
+        linear-gradient(180deg, rgba(255, 255, 255, 0.05), rgba(255, 255, 255, 0.02)),
+        var(--ow-bg-2);
+    transition: transform 0.3s ease, border-color 0.3s ease;
 }
 
-.ow-info__tile::before,
-.ow-info__contact-card::before,
-.ow-info__policy::before {
-    content: "";
-    position: absolute;
-    top: -1px;
-    left: 18px;
-    right: 18px;
-    height: 3px;
-    background: linear-gradient(90deg, var(--ow-info-lava), var(--ow-info-cyan));
+.ow-info__tile:hover,
+.ow-info__contact-card:hover,
+.ow-info__policy:hover {
+    transform: translateY(-3px);
+    border-color: rgba(255, 90, 31, 0.4);
 }
 
 .ow-info__card-title {
-    margin: 0 0 14px;
-    color: var(--ow-info-fg);
-    font-size: 14px;
-    font-weight: 900;
-    line-height: 1.35;
+    margin: 0 0 16px;
+    color: var(--ow-text);
+    font-family: var(--font-display);
+    font-size: 13px;
+    font-weight: 400;
+    line-height: 1.4;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
 }
 
 .ow-info__tile p,
@@ -405,7 +449,7 @@ body.page-id-938 .page-header {
 .ow-info__policy p,
 .ow-info__tile li,
 .ow-info__policy li {
-    color: var(--ow-info-dim);
+    color: var(--ow-text-dim);
     font-size: 15px;
     line-height: 1.7;
 }
@@ -418,27 +462,36 @@ body.page-id-938 .page-header {
 
 .ow-info__policy-list {
     display: grid;
-    grid-template-columns: 1fr;
-    gap: 16px;
-    margin-top: 28px;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 14px;
+    margin-top: 30px;
 }
 
 .ow-info__policy {
-    padding-left: 30px;
-    background:
-        linear-gradient(90deg, rgba(255, 90, 31, 0.12), rgba(255, 255, 255, 0.035) 28%, rgba(255, 255, 255, 0.02)),
-        var(--ow-info-panel-2);
+    padding-left: 32px;
+}
+
+.ow-info__policy::before {
+    content: "";
+    position: absolute;
+    top: 28px;
+    bottom: 28px;
+    left: 0;
+    width: 3px;
+    border-radius: 0 3px 3px 0;
+    background: var(--ow-accent);
 }
 
 .ow-info__contact-card a {
-    font-weight: 800;
+    font-weight: 700;
 }
 
+/* ===== CTA BUTTONS ===== */
 .ow-info__cta-row {
     display: flex;
     flex-wrap: wrap;
-    gap: 12px;
-    margin-top: 28px;
+    gap: 14px;
+    margin-top: 30px;
 }
 
 .ow-info .wp-block-button.ow-info__button .wp-block-button__link,
@@ -446,42 +499,59 @@ body.page-id-938 .page-header {
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    min-height: 48px;
-    padding: 13px 20px;
-    border: 1px solid rgba(255, 90, 31, 0.74);
+    gap: 12px;
+    min-height: 52px;
+    padding: 16px 30px;
+    border: none;
     border-radius: 999px;
-    background: var(--ow-info-lava);
-    color: #06070a;
-    font-size: 13px;
-    font-weight: 900;
+    background: var(--ow-accent);
+    color: var(--ow-bg);
+    font-family: var(--font-display);
+    font-size: 12px;
+    font-weight: 400;
     line-height: 1.1;
+    letter-spacing: 0.18em;
     text-decoration: none;
     text-transform: uppercase;
-    letter-spacing: 0;
+    box-shadow: 0 0 0 3px rgba(255, 90, 31, 0.18), 0 12px 32px var(--ow-accent-glow);
+    transition: all 0.25s ease;
 }
 
 .ow-info .wp-block-button.ow-info__button .wp-block-button__link:hover,
 .ow-info .wp-block-button.ow-info__button .wp-block-button__link:focus-visible,
 .ow-info a.ow-info__button:hover,
 .ow-info a.ow-info__button:focus-visible {
-    background: var(--ow-info-cyan);
-    border-color: rgba(32, 217, 255, 0.76);
-    color: #06070a;
+    background: var(--ow-accent-hi);
+    color: var(--ow-bg);
+    transform: translateY(-2px);
+    box-shadow: 0 0 0 3px rgba(255, 90, 31, 0.25), 0 16px 40px var(--ow-accent-glow);
 }
 
 .ow-info .wp-block-button.ow-info__button--ghost .wp-block-button__link,
 .ow-info a.ow-info__button--ghost {
-    border-color: var(--ow-info-line);
-    background: rgba(255, 255, 255, 0.045);
-    color: var(--ow-info-fg);
+    background: transparent;
+    border: 1px solid var(--ow-border-strong);
+    color: var(--ow-text);
+    box-shadow: none;
+}
+
+.ow-info .wp-block-button.ow-info__button--ghost .wp-block-button__link:hover,
+.ow-info .wp-block-button.ow-info__button--ghost .wp-block-button__link:focus-visible,
+.ow-info a.ow-info__button--ghost:hover,
+.ow-info a.ow-info__button--ghost:focus-visible {
+    background: rgba(255, 255, 255, 0.05);
+    border-color: rgba(255, 90, 31, 0.5);
+    color: var(--ow-text);
+    box-shadow: none;
 }
 
 .ow-info__notice {
     margin-top: 28px;
-    padding: 18px 20px;
-    border-left: 4px solid var(--ow-info-lava);
+    padding: 18px 22px;
+    border-left: 3px solid var(--ow-accent);
+    border-radius: 0 12px 12px 0;
     background: rgba(255, 90, 31, 0.08);
-    color: var(--ow-info-dim);
+    color: var(--ow-text-dim);
     font-size: 14px;
     line-height: 1.65;
 }
@@ -489,17 +559,14 @@ body.page-id-938 .page-header {
 @media (max-width: 1024px) {
     .ow-info__hero {
         min-height: 0;
-        padding-top: 92px;
-        padding-bottom: 66px;
+        padding-top: 96px;
+        padding-bottom: 64px;
     }
 
     .ow-info__hero-inner {
         grid-template-columns: 1fr;
         align-items: start;
-    }
-
-    .ow-info__title {
-        font-size: 62px;
+        gap: 36px;
     }
 
     .ow-info__hero-panel {
@@ -530,24 +597,14 @@ body.page-id-938 .page-header {
     }
 
     .ow-info__hero {
-        padding-top: 72px;
-        padding-bottom: 54px;
+        padding-top: 76px;
+        padding-bottom: 52px;
     }
 
-    .ow-info__title {
-        font-size: 44px;
-        max-width: 100%;
-        overflow-wrap: break-word;
-    }
-
-    .ow-info__lede {
-        font-size: 16px;
-        max-width: 100%;
-        overflow-wrap: break-word;
-    }
-
-    .ow-info__panel-title {
-        font-size: 24px;
+    .ow-info__title,
+    .ow-info__lede,
+    .ow-info__panel-title,
+    .ow-info__panel-copy {
         max-width: 100%;
         overflow-wrap: break-word;
     }
@@ -565,36 +622,24 @@ body.page-id-938 .page-header {
         max-width: calc(100vw - 40px);
     }
 
-    .ow-info__panel-copy {
-        max-width: 100%;
-        overflow-wrap: break-word;
-    }
-
-    .ow-info__section-title {
-        font-size: 34px;
-    }
-
     .ow-info__grid,
     .ow-info__contact-grid,
-    .ow-info__stat-grid {
+    .ow-info__stat-grid,
+    .ow-info__policy-list {
         grid-template-columns: 1fr;
     }
 }
 
 @media (max-width: 460px) {
-    .ow-info__title {
-        font-size: 38px;
-    }
-
-    .ow-info__section-title {
-        font-size: 30px;
-    }
-
     .ow-info__hero-panel,
     .ow-info__tile,
     .ow-info__contact-card,
     .ow-info__policy {
         padding: 22px;
+    }
+
+    .ow-info__policy {
+        padding-left: 28px;
     }
 
     .ow-info__cta-row {

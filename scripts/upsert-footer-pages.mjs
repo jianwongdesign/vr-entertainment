@@ -318,16 +318,6 @@ const pages = [
           ],
         },
       ],
-      ctaSections: [
-        {
-          title: 'Plan Your Visit',
-          body: ['Choose an outlet, compare the activities, and book the session that fits your group size and occasion.'],
-          buttons: [
-            { label: 'View Pricing', href: '/pricing' },
-            { label: 'Contact Us', href: '/contact', variant: 'ghost' },
-          ],
-        },
-      ],
     }),
   },
   {
