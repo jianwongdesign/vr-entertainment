@@ -87,6 +87,14 @@ if ( have_posts() ) :
         $aliases = get_field( 'exp_aliases', $pid );
         $thumb   = get_the_post_thumbnail_url( $pid, 'large' );
 
+        // Manual display order (ACF number field `exp_display_order`). Games with
+        // no value sort last, then alphabetically — so an unordered / partially
+        // ordered library still renders sensibly and nothing ever drops out.
+        $order_raw = get_field( 'exp_display_order', $pid );
+        $order     = ( $order_raw === '' || $order_raw === null || $order_raw === false )
+            ? PHP_INT_MAX
+            : (int) $order_raw;
+
         if ( ! is_array( $vibes ) ) $vibes = array();
 
         // Parse aliases (comma-separated string into array).
@@ -97,6 +105,7 @@ if ( have_posts() ) :
         endif;
 
         $games[] = array(
+            '_order'     => $order,
             'name'       => get_the_title( $pid ),
             'url'        => get_permalink( $pid ),
             'img'        => $thumb ? $thumb : '',
@@ -109,6 +118,15 @@ if ( have_posts() ) :
         );
     endforeach;
 endif;
+
+// Apply the manual display order set via `exp_display_order`, tie-broken by name
+// so games sharing an order value (or all unordered) stay alphabetical.
+usort( $games, function( $a, $b ) {
+    if ( $a['_order'] !== $b['_order'] ) {
+        return $a['_order'] <=> $b['_order'];
+    }
+    return strcasecmp( $a['name'], $b['name'] );
+} );
 
 // Pre-compute filter pools (only show pills for values actually present in this division).
 $difficulty_pool = array();
