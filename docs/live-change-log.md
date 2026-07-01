@@ -1,5 +1,36 @@
 # Live Change Log
 
+## 2026-07-01 - Experience Library Display Order
+
+Added manual sort control for the Experience CPT so VR Arcade, VR Escape and
+VR Free Roam games can be ordered by hand in the library archives.
+
+What changed:
+
+- `taxonomy-experience_type.php`: the archive grid now sorts by the ACF number
+  field `exp_display_order` (lower first), tie-broken by title. Games with no
+  value sort last alphabetically, so a partially-ordered library still renders
+  cleanly and nothing ever drops out of the grid.
+- New mu-plugin `wp-content/mu-plugins/overworld-experience-ordering.php`
+  registers `exp_display_order` as a compact "Display Order" sidebar box on the
+  Experience edit screen. Own lightweight ACF field group so it can't clash with
+  the UI-created `exp_*` fields. Mirrors the existing `event_display_order` /
+  `pricing_display_order` / `faq_display_order` convention.
+
+Deploy: single-file rsync of the template + the mu-plugin; WP object cache,
+Elementor CSS, and LiteSpeed caches flushed.
+
+Verification (browser, live):
+
+```text
+/experience-type/vr-arcade/  200  29 games  no fatal errors
+/experience-type/vr-escape/  200  23 games  no fatal errors
+/experience-type/vr-roam/    200   1 game   no fatal errors  (only 1 tagged to vr-roam term)
+field_exp_display_order registered live (FIELD OK)
+set Tower Tag (218) order=1 -> jumped to top of arcade grid
+reset value -> archive back to A->Z, Tower Tag returns to alphabetical tail
+```
+
 ## 2026-06-30 18:10 +08 - Info Pages Restyled To Match Site Vibe
 
 Reworked the CSS for the editable footer information pages (About, Contact,
