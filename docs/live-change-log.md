@@ -48,11 +48,27 @@ Verification (live):
 ```text
 /blog/                                     200  styled index, 1 post card
 /overworld-website-revamp-with-adcendes/   200  styled article
-Header nav shows BLOG on homepage (desktop).
 meta description present; JSON-LD Article + BreadcrumbList present.
 5 adcendes.com.sg links, 0 rel=nofollow (dofollow backlinks).
 Browser check desktop: hero, TL;DR callout, body links, lists all clean.
 ```
+
+Follow-up (same day, per client request):
+
+- Post title shortened to "Overworld's New Website: Our Revamp with
+  AdCendes" (49 chars, SEO-safe under 65). Slug unchanged so the published
+  URL and backlinks stay stable.
+- Featured image set (attachment 1352): Unsplash web-design workspace photo
+  (Hal Gatewood, photo-1547658719-da2b51169166), 1600x900 crop, alt text and
+  Unsplash credit caption set. Feeds the blog card and og:image.
+- Blog nav link MOVED from header to footer: reverted the template 29
+  header patch (snippet removed, JSON validated) and added
+  `<li><a href="/blog">Blog</a></li>` to the footer template 566
+  "Stay Connected" column after Promotions (backup:
+  ~/overworld-backups/footer-566-elementor-data-before-blog-link-*.json).
+- Verified live: header has no Blog item, footer Stay Connected shows
+  FAQ / Promotions / Blog / About / Contact, blog card renders the new
+  featured image, og:image points at the uploaded jpg.
 
 ## 2026-07-06 - Event Package Detail Pages (single-event_package.php)
 
