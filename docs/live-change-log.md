@@ -1,5 +1,46 @@
 # Live Change Log
 
+## 2026-07-06 - Event Package Detail Pages (single-event_package.php)
+
+Fixed blank package detail pages: clicking a package card on the Team
+Building / Birthday Party listing pages led to `/events/[slug]/` (the
+`event_package` CPT permalink), which rendered an empty main area — the CPT
+has no post content (all data is ACF) and no single template existed, so it
+fell back to the parent theme's generic single view.
+
+What changed:
+
+- New child-theme template `single-event_package.php` covering all 19 live
+  packages. Layout: hero (event type + outlet eyebrow, package title, tagline,
+  back-link to the listing page), then the full package poster image
+  (uncropped — posters carry the package details as text) beside a booking
+  card (price-from, duration, group size, location, WhatsApp/Email/Call CTAs,
+  PDF button when set), then up to 3 related packages of the same event type
+  and outlet.
+- Accent colors follow the event listing pages: Kallang orange, Orchard cyan,
+  Funan purple.
+- Price unit suffix suppresses "per pax" when the ACF value already contains
+  "/pax" (e.g. Orchard "$43 - $49/pax").
+- Renders `the_content` if a package ever gets body copy; PDF button appears
+  when `event_pdf` is filled (none currently are).
+
+Deploy: single-file rsync of the new template; WP object cache, Elementor CSS,
+and LiteSpeed caches flushed.
+
+Verification (live):
+
+```text
+All 19 /events/[slug]/ permalinks return 200 with ow-pkg markup.
+/events/funan-package-b/           purple, poster fully visible, 1 related card
+/events/orchard-central-package-c1/ cyan, "SGD" unit (no duplicated per-pax)
+Browser check desktop 1568px: hero, booking card, related grid all clean.
+```
+
+Data note (not changed): Kallang team-building has two identical
+"Kallang Wave Mall - Package B" posts (IDs 1343 and 1345, slugs
+`kallang-wave-mall-package-b` / `-b-2`) — both active, so the listing page
+shows Package B twice. Likely one should be unpublished in WP Admin.
+
 ## 2026-07-06 - Outlet Pages Restructured Into 4 Sections
 
 Reworked the outlet page template (`page-pricing.php`, used by
