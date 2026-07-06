@@ -1,5 +1,59 @@
 # Live Change Log
 
+## 2026-07-06 - Blog Launch + AdCendes Backlink Article
+
+Launched a blog on the site and published an SEO/GEO-optimised article
+crediting AdCendes (adcendes.com.sg) for the website revamp, with dofollow
+backlinks.
+
+Infrastructure (child theme, new files):
+
+- `home.php` — dark card-grid blog index at `/blog/`, matching the site
+  design language (orange lava accent), pagination-ready, blog-index meta
+  description.
+- `single.php` — long-form reading layout for standard posts, plus the SEO
+  layer the site lacks (no SEO plugin): meta description + Open Graph /
+  Twitter tags from the excerpt, and schema.org `Article` +
+  `BreadcrumbList` JSON-LD. Styled callout box (`.ow-callout`), blockquote,
+  reading-time meta, end-of-post booking CTA.
+  (Gotcha fixed during launch: an unbalanced paren in a CSS custom property
+  in home.php invalidated the whole stylesheet — removed.)
+
+Live DB changes:
+
+- New post 1349 `overworld-website-revamp-with-adcendes`
+  ("Behind Overworld's New Website: Our Revamp with AdCendes"), category
+  "News" (id 30), excerpt set (feeds the meta description). Content includes
+  a quotable TL;DR callout, an FAQ section (GEO-friendly Q&A), internal links
+  to outlet/activity/event pages, and 5 dofollow links to
+  https://adcendes.com.sg/ (brand anchors "AdCendes" + service anchor
+  "digital marketing agency in Singapore").
+- New page 1350 "Blog" set as `page_for_posts` → `/blog/`.
+- Default "Hello world!" post (ID 1) moved to trash.
+- Header Elementor template 29: added `<li><a href="/blog">Blog</a></li>`
+  after Promos in the nav (targeted str_replace with JSON validation +
+  wp_slash, same procedure as the 2026-06-30 Book Now patch).
+
+Backup:
+
+```text
+/home/u146877548/overworld-backups/header-29-elementor-data-before-blog-link-*.json
+```
+
+Deploy: rsync of home.php + single.php; WP object cache, Elementor CSS, and
+LiteSpeed caches flushed; rewrite rules flushed.
+
+Verification (live):
+
+```text
+/blog/                                     200  styled index, 1 post card
+/overworld-website-revamp-with-adcendes/   200  styled article
+Header nav shows BLOG on homepage (desktop).
+meta description present; JSON-LD Article + BreadcrumbList present.
+5 adcendes.com.sg links, 0 rel=nofollow (dofollow backlinks).
+Browser check desktop: hero, TL;DR callout, body links, lists all clean.
+```
+
 ## 2026-07-06 - Event Package Detail Pages (single-event_package.php)
 
 Fixed blank package detail pages: clicking a package card on the Team
