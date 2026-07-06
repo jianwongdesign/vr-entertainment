@@ -36,10 +36,13 @@ All 19 /events/[slug]/ permalinks return 200 with ow-pkg markup.
 Browser check desktop 1568px: hero, booking card, related grid all clean.
 ```
 
-Data note (not changed): Kallang team-building has two identical
-"Kallang Wave Mall - Package B" posts (IDs 1343 and 1345, slugs
-`kallang-wave-mall-package-b` / `-b-2`) — both active, so the listing page
-shows Package B twice. Likely one should be unpublished in WP Admin.
+Data note — RESOLVED 2026-07-06: the two "Kallang Wave Mall - Package B"
+posts were not duplicates. Post 1345 was Package C mis-titled as Package B
+(its poster is `KWM-TB-Package-C.png`, with its own pricing/tagline).
+Live DB fix: retitled 1345 to "Kallang Wave Mall - Package C", slug
+`kallang-wave-mall-package-c` (old `-b-2` URL 301s to it automatically),
+and set display orders A=10 / B=20 / C=30. The Kallang team-building
+listing now shows Packages A, B, C in order.
 
 ## 2026-07-06 - Outlet Pages Restructured Into 4 Sections
 
