@@ -1,5 +1,53 @@
 # Live Change Log
 
+## 2026-07-06 - Outlet Pages Restructured Into 4 Sections
+
+Reworked the outlet page template (`page-pricing.php`, used by
+`/outlet/kallang-wave-mall`, `/outlet/orchard-central`, `/outlet/funan`) from
+"hero + pricing-with-image" into a 4-section layout:
+
+1. Hero — unchanged (outlet name, tagline, address/phone).
+2. NEW "Activities & Games" — one card per activity at that outlet (icon, name,
+   short blurb) with a Learn More button to the activity page
+   (`/vr-arcade/`, `/vr-escape/`, `/floor-is-lava/`, `/vr-machine-ride/`,
+   `/laser-maze/`, `/tap-tap/`, `/vr-free-roam/`, `/xr-party-game/`).
+   Activity lists per outlet mirror the live Pricing CPT groupings:
+   Kallang 4, Orchard 3, Funan 3 (combo deals are pricing-only, not cards).
+3. Pricing — same Pricing CPT logic untouched, but the sticky featured-image
+   column is REMOVED; tables now render full-width in a centred 1000px column
+   with a "Rates / Pricing" section header. The "Before You Book" terms +
+   booking CTA stay attached at the end of this section.
+4. NEW "Group Events" — two large clickable cards (Team Building, Birthday
+   Party) reusing the event-listing copy, each linking to
+   `/team-building/[outlet]/` and `/birthday-party/[outlet]/`, with a live
+   package count chip (hidden when 0 packages).
+
+Notes:
+
+- Featured image is no longer used by this template (media column deleted).
+- Emoji icons chosen for contrast on the dark cards (dark glyphs 🎮 🗝️ 🕶️
+  swapped for 👾 🔑 🥽 after a live visual check).
+
+Backup of the previous template:
+
+```text
+/home/u146877548/overworld-backups/page-pricing-before-outlet-sections-20260706-060343.php
+```
+
+Deploy: single-file rsync of `page-pricing.php`; WP object cache, Elementor
+CSS, and LiteSpeed caches flushed.
+
+Verification (live):
+
+```text
+/outlet/kallang-wave-mall/  200  4 activity cards  4 pricing tables  2 event cards
+/outlet/orchard-central/    200  3 activity cards  5 pricing tables  2 event cards
+/outlet/funan/              200  3 activity cards  4 pricing tables  2 event cards
+All Learn More + event card links resolve 200; no ow-pri__media remnants;
+no fatal errors. Browser check on all 3 outlets: accent colors correct,
+sections render neatly on desktop 1568px.
+```
+
 ## 2026-07-01 - Experience Library Display Order
 
 Added manual sort control for the Experience CPT so VR Arcade, VR Escape and
