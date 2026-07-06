@@ -69,6 +69,12 @@ Follow-up (same day, per client request):
 - Verified live: header has no Blog item, footer Stay Connected shows
   FAQ / Promotions / Blog / About / Contact, blog card renders the new
   featured image, og:image points at the uploaded jpg.
+- Footer bottom bar (template 566): appended a sitewide design credit to the
+  copyright line — "· Site designed by [AdCendes]" linking dofollow to
+  https://adcendes.com.sg/ (target=_blank rel=noopener). Backup:
+  ~/overworld-backups/footer-566-elementor-data-before-design-credit-*.json.
+  Verified rendering on desktop; the link picks up the footer's orange
+  accent styling.
 
 ## 2026-07-06 - Event Package Detail Pages (single-event_package.php)
 
