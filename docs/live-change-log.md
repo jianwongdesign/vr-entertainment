@@ -1,5 +1,57 @@
 # Live Change Log
 
+## 2026-07-08 - Hover Color Fixes (pink/navy leak) + Sticky Header
+
+Two client-reported hover bugs and one UX request, all rooted in theme-level
+CSS rather than the page templates.
+
+Root cause of the hover bugs — `hello-elementor/assets/css/reset.css`:
+
+```css
+a { color:#c36 }                        /* pink links */
+a:active, a:hover { color:#336 }        /* navy hover  */
+button:hover { background-color:#c36; color:#fff }  /* pink buttons */
+```
+
+These leak into any custom section that doesn't re-declare the exact
+property: the VR Free Roam page's "View More Games" + genre filter pills
+(`<button>`s) hovered pink, and the VR Arcade hero "Browse the Games" link
+hovered navy-on-dark (invisible). Pill buttons also showed a stray underline.
+
+Fixes (child theme):
+
+- `style.css` — "Hello Elementor reset neutralizer" block:
+  - `a{color:inherit}`, `a:hover/:active{color:#fff}` (dark site default;
+    any component's own hover color still wins by cascade order).
+  - `a[class*="--primary"]:where(:hover,:active){color:#0a0a14}` so solid
+    orange/green primaries keep dark labels (`:where` keeps specificity at
+    the same (0,1,1) so page-inline rules stay in control).
+  - Pill/CTA links: `text-decoration:none !important`.
+  - `button[class*="ow-"]:where(:hover,:focus){background:transparent;
+    color:#fff}` + explicit green fill for `.ow-vfr-games__btn--more`.
+- `functions.php` — the child stylesheet previously loaded BEFORE the
+  parent's reset.css, so equal-specificity overrides lost the cascade.
+  Added `hello-elementor` (reset.css) and `hello-elementor-theme-style`
+  (theme.css) as dependencies; child CSS now loads last.
+
+Sticky header (client request "header always fixed when scroll"):
+
+- `style.css`: `#masthead, .ehf-header #masthead { position:sticky; top:0;
+  z-index:9999 }` — the `.ehf-header` variant is needed because the
+  Header Footer Elementor plugin ships
+  `.ehf-header #masthead{position:relative;z-index:99}` at (1,1,0)
+  specificity. Admin-bar offsets included.
+- Child theme version bumped 1.0.8 -> 1.0.9 for cache busting.
+
+Verification (browser, live, hard-reloaded):
+
+```text
+/vr-arcade/    hero "Browse the Games" hover -> white text, no underline
+/vr-free-roam/ "View More Games" hover -> green fill + dark label, no pink
+/vr-free-roam/ scrolled mid-page -> header stays pinned at top (sticky)
+Book Now (header), card Learn More, price CTAs unchanged (own hover rules)
+```
+
 ## 2026-07-08 - Outlet Gallery (ACF image slots + template section)
 
 Added a client-editable photo gallery to the three outlet pages, following

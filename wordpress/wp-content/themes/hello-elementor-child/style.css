@@ -5,7 +5,7 @@ Description:  Child theme for Hello Elementor - used for the Overworld VR experi
 Author:       Overworld VR
 Author URI:   https://overworldvr.com/
 Template:     hello-elementor
-Version:      1.0.7
+Version:      1.0.9
 Text Domain:  hello-elementor-child
 */
 
@@ -650,5 +650,88 @@ body.page-id-938 .page-header {
     .ow-info .wp-block-button.ow-info__button,
     .ow-info .wp-block-button.ow-info__button .wp-block-button__link {
         width: 100%;
+    }
+}
+
+/* =====================================================================
+   Hello Elementor reset neutralizer (2026-07-08)
+   The parent theme's reset.css paints links pink (#c36), hovered/active
+   links navy (#336), and hovered <button>s pink with white text. Those
+   defaults leak into the custom ow-* sections whenever a component does
+   not re-declare the exact property (e.g. VR Arcade hero "Browse the
+   Games" text turned navy-on-dark; VR Free Roam "View More Games" and
+   genre filter pills turned pink). Components keep control: anything
+   that declares its own colors still wins.
+   ===================================================================== */
+
+a {
+    color: inherit;
+}
+
+/* Dark site: un-themed links brighten to white on hover/active. Any
+   component that declares its own :hover color still wins — equal
+   specificity, later in the cascade (inline page styles). */
+a:hover,
+a:active {
+    color: #fff;
+}
+
+/* Primary pill buttons keep their dark label on bright backgrounds
+   (:where keeps specificity at the same (0,1,1) level; this rule is
+   after the generic one, so it wins for primaries). */
+a[class*="--primary"]:where(:hover, :active),
+a[class*="browse-cta"]:where(:hover, :active) {
+    color: #0a0a14;
+}
+
+/* Pill/button-styled links never underline */
+a[class*="btn"],
+a[class*="btn"]:hover,
+a[class*="cta"],
+a[class*="cta"]:hover,
+a[class*="__link"],
+a[class*="__link"]:hover {
+    text-decoration: none !important;
+}
+
+/* Custom-section <button>s: no pink background / dark text from the reset.
+   :where keeps this at (0,1,1) — beats the reset (loads later), loses to
+   any component's own inline-page hover rule. */
+button[class*="ow-"]:where(:hover, :focus) {
+    background-color: transparent;
+    color: #fff;
+}
+
+/* ...except solid buttons that must keep their fill (declared after the
+   generic rule so it wins at equal specificity) */
+.ow-vfr-games__btn--more:hover,
+.ow-vfr-games__btn--more:focus {
+    background: var(--green, #00ff88);
+    color: #020609;
+}
+
+/* =====================================================================
+   Sticky site header (2026-07-08)
+   Keep the header visible while scrolling on all pages.
+   ===================================================================== */
+
+/* .ehf-header prefix matches the HFE plugin's own
+   ".ehf-header #masthead { position: relative; z-index: 99 }" so this
+   later-loaded rule wins at equal specificity. */
+#masthead,
+.ehf-header #masthead {
+    position: sticky;
+    top: 0;
+    z-index: 9999;
+}
+
+body.admin-bar #masthead,
+.ehf-header.admin-bar #masthead {
+    top: 32px;
+}
+
+@media (max-width: 782px) {
+    body.admin-bar #masthead {
+        top: 46px;
     }
 }
