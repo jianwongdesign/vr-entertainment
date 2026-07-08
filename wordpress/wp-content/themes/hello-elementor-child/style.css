@@ -5,7 +5,7 @@ Description:  Child theme for Hello Elementor - used for the Overworld VR experi
 Author:       Overworld VR
 Author URI:   https://overworldvr.com/
 Template:     hello-elementor
-Version:      1.0.9
+Version:      1.1.0
 Text Domain:  hello-elementor-child
 */
 
@@ -694,20 +694,32 @@ a[class*="__link"]:hover {
     text-decoration: none !important;
 }
 
-/* Custom-section <button>s: no pink background / dark text from the reset.
-   :where keeps this at (0,1,1) — beats the reset (loads later), loses to
-   any component's own inline-page hover rule. */
-button[class*="ow-"]:where(:hover, :focus) {
-    background-color: transparent;
-    color: #fff;
+/* Custom-section <button>s: the reset paints them pink on hover/focus via
+   BOTH `button:hover` and the higher-specificity `[type=button]:hover`.
+   !important guarantees the pink can never surface. */
+button[class*="ow-"]:hover,
+button[class*="ow-"]:focus {
+    background-color: transparent !important;
+    color: #fff !important;
 }
 
-/* ...except solid buttons that must keep their fill (declared after the
-   generic rule so it wins at equal specificity) */
+/* ...exceptions (higher specificity + !important): solid/active buttons
+   keep their fill and label colors */
 .ow-vfr-games__btn--more:hover,
 .ow-vfr-games__btn--more:focus {
-    background: var(--green, #00ff88);
-    color: #020609;
+    background: var(--green, #00ff88) !important;
+    color: #020609 !important;
+}
+
+.ow-vfr-games__filter:hover,
+.ow-vfr-games__filter:focus {
+    color: var(--green-glow, #39ffaa) !important;
+}
+
+.ow-faq__tab.is-active:hover,
+.ow-faq__tab.is-active:focus {
+    background-color: var(--tab-color) !important;
+    color: #000 !important;
 }
 
 /* =====================================================================

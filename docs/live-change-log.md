@@ -1,5 +1,26 @@
 # Live Change Log
 
+## 2026-07-08 - FAQ Outlet Tabs: pink hover killed with !important
+
+Follow-up to the reset-neutralizer work: the FAQ outlet tabs still hovered
+pink. Cause: they are `<button type="button">`, and the parent reset also
+ships `[type=button]:hover{background:#c36}` at (0,2,0) specificity — higher
+than the child theme's `:where()`-based neutralizer (0,1,1).
+
+Fix (child `style.css`, v1.1.0, per client request "set important"):
+
+- `button[class*="ow-"]:hover/:focus { background-color:transparent
+  !important; color:#fff !important; }` — !important guarantees the reset's
+  pink can never surface on any custom-section button.
+- Exceptions (higher specificity + !important) keep intended fills:
+  `.ow-faq__tab.is-active` keeps its outlet-color fill on hover,
+  `.ow-vfr-games__btn--more` keeps its green fill, and
+  `.ow-vfr-games__filter` keeps its green-glow hover text.
+
+Verified live (browser + CSSOM): FAQ tab hover = white text/transparent bg,
+active tab keeps orange fill; child rule confirmed loaded with !important
+priority on background-color.
+
 ## 2026-07-08 - FAQ Outlet Filter Fixed (field mismatch)
 
 Client report: FAQs assigned to Funan / Orchard "in the category" did not
