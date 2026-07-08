@@ -1,5 +1,19 @@
 # Live Change Log
 
+## 2026-07-08 - VR Free Roam Hero Title On Two Lines
+
+Per client: the hero title on `/vr-free-roam/` stacked "VR / FREE / ROAM" on
+three lines; "Free Roam" should sit on one line. Live DB patch to page 646
+hero widget CSS: `.ow-vfr-hero__title--free` and `--roam` changed from
+`display:block` to `inline-block`, and ROAM's smaller font-size override
+removed so both words render at the full title size. Title now reads
+"VR" / "FREE ROAM". Gradients per word unchanged (white VR, green FREE,
+faded-white ROAM).
+
+Backup: `~/overworld-backups/vfr-646-before-inline-title-*.json`.
+Caches flushed; browser-verified on desktop (fits comfortably; mobile clamp
+14vw keeps the line within a 390px viewport).
+
 ## 2026-07-08 - Hover Color Fixes (pink/navy leak) + Sticky Header
 
 Two client-reported hover bugs and one UX request, all rooted in theme-level
