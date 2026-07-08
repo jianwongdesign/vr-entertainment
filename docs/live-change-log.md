@@ -1,5 +1,44 @@
 # Live Change Log
 
+## 2026-07-08 - FAQ Outlet Filter Fixed (field mismatch)
+
+Client report: FAQs assigned to Funan / Orchard "in the category" did not
+appear under those outlet tabs on /faq/ — everything showed under Kallang.
+
+Root cause: the ACF group "FAQ Details" never had a `faq_outlet` field (which
+the template reads); instead its `faq_category` select's CHOICES were the
+three outlet slugs. So the admin "Category" dropdown was actually an outlet
+picker writing into the wrong meta key, `faq_outlet` was always empty, and
+the template's empty-outlet fallback dumped all 31 FAQs under Kallang.
+
+Fixes:
+
+- ACF (live DB, via acf_update_field): repurposed the outlet-choices select
+  as `faq_outlet` (label "Outlet", allow_null, instructions: leave empty =
+  ALL outlets) and added a proper `faq_category` select
+  (key `field_ow_faq_category`) with the real category choices
+  (General/Booking/VR Arcade/.../Tap Tap).
+- Data migration (31 posts): honored the client's assignments — 387 ->
+  Funan/General, 400 -> Orchard/Booking, 410 -> Orchard/Laser Maze — and
+  mapped activity categories to outlets (VR Arcade -> Kallang; Laser Maze +
+  Tap Tap -> Orchard). General/Booking/Floor Is Lava left outlet-empty =
+  shown at all outlets. ACF key references (`_faq_outlet`/`_faq_category`)
+  set so the admin UI binds correctly.
+- `page-faq.php`: empty/unknown `faq_outlet` now means "show under EVERY
+  outlet tab" instead of silently defaulting to Kallang.
+
+Verification (live, browser):
+
+```text
+/faq/ 200
+Kallang tab: 21 questions (General/Booking/VR Arcade/Floor Is Lava)
+Orchard tab: 25 questions (+ Laser Maze, Tap Tap, and Orchard-specific
+             "How many games can I play in one session?")
+Funan tab:   17 questions (leads with Funan-assigned "Where are your
+             outlets located?")
+Tab switching, accent colors, and contact cards all correct.
+```
+
 ## 2026-07-08 - VR Free Roam Hero Title On Two Lines
 
 Per client: the hero title on `/vr-free-roam/` stacked "VR / FREE / ROAM" on

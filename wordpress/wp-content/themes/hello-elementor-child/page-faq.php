@@ -88,17 +88,20 @@ foreach ( $outlets as $oslug => $oconf ) {
 
 foreach ( $faqs as $faq ) {
     $outlet_slug = get_post_meta( $faq->ID, 'faq_outlet', true );
-    // If no outlet set, default to kallang so it isn't lost
-    if ( ! $outlet_slug || ! isset( $outlets[ $outlet_slug ] ) ) {
-        $outlet_slug = 'kallang-wave-mall';
-    }
     $cat = get_post_meta( $faq->ID, 'faq_category', true );
     if ( ! $cat ) $cat = 'General';
 
-    if ( ! isset( $by_outlet[ $outlet_slug ][ $cat ] ) ) {
-        $by_outlet[ $outlet_slug ][ $cat ] = array();
+    // No outlet set (or unknown value) -> the FAQ applies to EVERY outlet.
+    $targets = ( $outlet_slug && isset( $outlets[ $outlet_slug ] ) )
+        ? array( $outlet_slug )
+        : array_keys( $outlets );
+
+    foreach ( $targets as $target_slug ) {
+        if ( ! isset( $by_outlet[ $target_slug ][ $cat ] ) ) {
+            $by_outlet[ $target_slug ][ $cat ] = array();
+        }
+        $by_outlet[ $target_slug ][ $cat ][] = $faq;
     }
-    $by_outlet[ $outlet_slug ][ $cat ][] = $faq;
 }
 
 // Category display order
