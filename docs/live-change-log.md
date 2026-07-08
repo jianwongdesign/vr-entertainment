@@ -1,5 +1,42 @@
 # Live Change Log
 
+## 2026-07-08 - Outlet Gallery (ACF image slots + template section)
+
+Added a client-editable photo gallery to the three outlet pages, following
+the code-first / ACF-reflects pattern used across the site.
+
+New mu-plugin `wp-content/mu-plugins/overworld-outlet-gallery.php`:
+
+- Registers ACF field group "Outlet Gallery" with 6 image slots
+  (`outlet_gallery_1` .. `outlet_gallery_6`, return format = attachment ID)
+  on any page using the Pricing Page template — so all 3 outlet pages get it
+  automatically, and free ACF's lack of a gallery field is worked around the
+  same way as `exp_image_1`/`exp_image_2`.
+
+Template `page-pricing.php`:
+
+- New "Gallery" section between Activities & Games and Pricing. Collage grid:
+  image 1 renders as a large 2x2 lead tile, the rest as 1x1 tiles
+  (grid-auto-flow dense, hover zoom, responsive 4/2-col).
+- Empty slots are skipped; when ALL slots are empty the section is hidden
+  from visitors entirely. Logged-in editors instead see dashed placeholder
+  tiles plus a hint ("add photos via Edit Page → Outlet Gallery"), so the
+  client can see where photos will land.
+
+Client workflow: WP Admin → Pages → outlet page → Outlet Gallery box →
+pick images → Update. No code involved.
+
+Deploy: rsync of the mu-plugin + template; caches flushed.
+
+Verification (live):
+
+```text
+Field group "Outlet Gallery" registered on outlet pages (checked page 506).
+End-to-end test: set 2 images on Funan -> section rendered publicly with
+lead + small tile (browser-verified), then cleared -> section absent again
+(0 gallery markup divs for public). Kallang/Orchard untouched, no section.
+```
+
 ## 2026-07-08 - VR Free Roam Page: Real Game Cards + Featured 8
 
 The `/vr-free-roam/` page's "Games Library" grid (Elementor page 646, custom

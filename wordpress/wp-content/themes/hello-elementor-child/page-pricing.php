@@ -192,6 +192,21 @@ foreach ( $event_sections as $i => $event_section ) {
     ) ) );
 }
 
+// ===== Outlet gallery (ACF image slots outlet_gallery_1..6, see mu-plugin overworld-outlet-gallery.php) =====
+$gallery_images = array();
+for ( $gi = 1; $gi <= 6; $gi++ ) {
+    $att_id = get_post_meta( get_the_ID(), 'outlet_gallery_' . $gi, true );
+    if ( ! $att_id || ! is_numeric( $att_id ) ) continue;
+    $src = wp_get_attachment_image_url( (int) $att_id, 'large' );
+    if ( ! $src ) continue;
+    $alt = get_post_meta( (int) $att_id, '_wp_attachment_image_alt', true );
+    $gallery_images[] = array(
+        'src' => $src,
+        'alt' => $alt ? $alt : $outlet['name'] . ' — Overworld outlet photo',
+    );
+}
+$gallery_editor_hint = empty( $gallery_images ) && is_user_logged_in() && current_user_can( 'edit_post', get_the_ID() );
+
 // ===== Query pricing items for this outlet =====
 $pricing_items = array();
 $pricing_query = get_posts( array(
@@ -421,6 +436,64 @@ uasort( $pricing_items, function( $a, $b ) {
     border-color:var(--accent);
     transform:translateY(-2px);gap:12px;
   }
+
+  /* ===== GALLERY ===== */
+  .ow-pri__gallery{
+    padding:60px 40px 20px;
+    background:var(--bg);
+  }
+  .ow-pri__gallery-inner{
+    max-width:1200px;margin:0 auto;
+  }
+  .ow-pri__gallery-grid{
+    display:grid;
+    grid-template-columns:repeat(4,1fr);
+    grid-auto-rows:190px;
+    grid-auto-flow:dense;
+    gap:14px;
+  }
+  .ow-pri__gallery-item{
+    position:relative;overflow:hidden;
+    border-radius:18px;
+    border:1px solid var(--line);
+    background:var(--bg-2);
+  }
+  .ow-pri__gallery-item--lead{
+    grid-column:span 2;grid-row:span 2;
+  }
+  .ow-pri__gallery-item img{
+    width:100% !important;height:100% !important;
+    object-fit:cover !important;object-position:center !important;
+    display:block !important;
+    position:absolute !important;top:0 !important;left:0 !important;
+    max-width:none !important;max-height:none !important;
+    transition:transform .5s ease;
+  }
+  .ow-pri__gallery-item:hover img{transform:scale(1.05);}
+  .ow-pri__gallery-item::after{
+    content:"";position:absolute;inset:0;pointer-events:none;
+    box-shadow:inset 0 -40px 60px -30px rgba(0,0,0,.55);
+  }
+  .ow-pri__gallery-empty{
+    display:flex;align-items:center;justify-content:center;
+    flex-direction:column;gap:8px;
+    color:var(--dim);
+    background:radial-gradient(ellipse at center,<?php echo $outlet['accent_dim']; ?>.08) 0%,var(--bg-2) 70%);
+    border:1px dashed <?php echo $outlet['accent_dim']; ?>.35);
+  }
+  .ow-pri__gallery-empty-icon{font-size:26px;opacity:.5;}
+  .ow-pri__gallery-empty-text{
+    font-family:'JetBrains Mono',monospace;
+    font-size:10px;letter-spacing:.14em;text-transform:uppercase;
+    text-align:center;padding:0 14px;
+  }
+  .ow-pri__gallery-hint{
+    margin:18px 0 0;
+    font-family:'JetBrains Mono',monospace;
+    font-size:11px;letter-spacing:.1em;
+    color:var(--dim);text-align:center;
+  }
+  .ow-pri__gallery-hint strong{color:var(--accent-glow);font-weight:700;}
 
   /* ===== MAIN: Pricing tables ===== */
   .ow-pri__main{
@@ -693,6 +766,8 @@ uasort( $pricing_items, function( $a, $b ) {
   @media (max-width:1000px){
     .ow-pri__hero{padding:90px 28px 60px;}
     .ow-pri__acts{padding:60px 28px 10px;}
+    .ow-pri__gallery{padding:45px 28px 10px;}
+    .ow-pri__gallery-grid{grid-template-columns:repeat(2,1fr);grid-auto-rows:160px;}
     .ow-pri__main{padding:60px 28px 80px;}
     .ow-pri__terms-inner{grid-template-columns:1fr;gap:32px;}
     .ow-pri__cta-buttons{flex-direction:row;flex-wrap:wrap;}
@@ -703,6 +778,8 @@ uasort( $pricing_items, function( $a, $b ) {
   @media (max-width:600px){
     .ow-pri__hero{padding:70px 18px 50px;}
     .ow-pri__acts{padding:50px 18px 6px;}
+    .ow-pri__gallery{padding:40px 18px 6px;}
+    .ow-pri__gallery-grid{grid-auto-rows:130px;gap:10px;}
     .ow-pri__main{padding:50px 18px 70px;}
     .ow-pri__hero-title{font-size:54px;}
     .ow-pri__table th,
@@ -770,6 +847,46 @@ uasort( $pricing_items, function( $a, $b ) {
           </article>
         <?php endforeach; ?>
       </div>
+
+    </div>
+  </div>
+  <?php endif; ?>
+
+  <!-- ===== GALLERY (ACF outlet_gallery_1..6 — hidden from visitors when empty) ===== -->
+  <?php if ( ! empty( $gallery_images ) || $gallery_editor_hint ) : ?>
+  <div class="ow-pri__gallery">
+    <div class="ow-pri__gallery-inner">
+
+      <div class="ow-pri__section-head">
+        <div>
+          <div class="ow-pri__section-eyebrow">Inside <?php echo esc_html( $outlet['short_name'] ); ?></div>
+          <h2 class="ow-pri__section-title">Gallery</h2>
+        </div>
+        <?php if ( ! empty( $gallery_images ) ) : ?>
+          <div class="ow-pri__section-count"><strong><?php echo count( $gallery_images ); ?></strong> Photo<?php echo count( $gallery_images ) === 1 ? '' : 's'; ?></div>
+        <?php endif; ?>
+      </div>
+
+      <div class="ow-pri__gallery-grid">
+        <?php if ( ! empty( $gallery_images ) ) : ?>
+          <?php foreach ( $gallery_images as $g_index => $g_img ) : ?>
+            <div class="ow-pri__gallery-item<?php echo 0 === $g_index ? ' ow-pri__gallery-item--lead' : ''; ?>">
+              <img src="<?php echo esc_url( $g_img['src'] ); ?>" alt="<?php echo esc_attr( $g_img['alt'] ); ?>" loading="lazy" />
+            </div>
+          <?php endforeach; ?>
+        <?php else : ?>
+          <?php for ( $g_index = 0; $g_index < 4; $g_index++ ) : ?>
+            <div class="ow-pri__gallery-item ow-pri__gallery-empty<?php echo 0 === $g_index ? ' ow-pri__gallery-item--lead' : ''; ?>">
+              <div class="ow-pri__gallery-empty-icon">🖼</div>
+              <div class="ow-pri__gallery-empty-text">Gallery slot</div>
+            </div>
+          <?php endfor; ?>
+        <?php endif; ?>
+      </div>
+
+      <?php if ( $gallery_editor_hint ) : ?>
+        <p class="ow-pri__gallery-hint">Only editors see this placeholder — add photos via <strong>Edit Page → Outlet Gallery</strong> and they will appear here for visitors.</p>
+      <?php endif; ?>
 
     </div>
   </div>
