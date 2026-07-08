@@ -1,5 +1,22 @@
 # Live Change Log
 
+## 2026-07-08 - Footer: Social Icons Centered + AdCendes Credit Hover
+
+Two footer polish items (live DB patch to Elementor footer template 566):
+
+- Social icons (Instagram/Facebook) sat off-center inside their circular
+  buttons: the "Stay Connected" column's generic link rule adds an arrow
+  `::before` pseudo-element (opacity 0 but still occupying flex space) and a
+  `padding-left:6px` hover shift. Both now disabled for `.ow-foot-a__social`
+  anchors in all states — icons are dead-center, hover included.
+- "Site designed by AdCendes" credit link: explicit orange styling
+  (`--ow-lava` base, `--ow-lava-glow` on hover, !important) — the earlier
+  global link neutralizer had reverted it to the muted inherit color and
+  white hover.
+
+Backup: `~/overworld-backups/footer-566-before-social-center-*.json`.
+Caches flushed; browser-verified (zoomed icon centering + hover state).
+
 ## 2026-07-08 - FAQ Outlet Tabs: pink hover killed with !important
 
 Follow-up to the reset-neutralizer work: the FAQ outlet tabs still hovered
