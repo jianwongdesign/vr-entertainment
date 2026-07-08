@@ -1,5 +1,56 @@
 # Live Change Log
 
+## 2026-07-08 - VR Free Roam Page: Real Game Cards + Featured 8
+
+The `/vr-free-roam/` page's "Games Library" grid (Elementor page 646, custom
+HTML widget) had 23 game cards with emoji placeholders and broken
+`/games/[slug]` links (flagged in the 2026-06-30 link audit). The vr-roam
+Experience CPT posts now all have featured images, so the grid was wired to
+real data.
+
+What changed (live DB, page 646 `_elementor_data`):
+
+- All 23 cards now show the real game artwork (the experience post's
+  featured image, `large` size) with alt text; the one card that already had
+  an image (Cops Vs Robbers) was normalised to the same markup.
+- All 23 "Learn More" links now point to the real game pages
+  (`/experience/[slug]/`) instead of the broken `/games/[slug]` URLs.
+- Added `.ow-vfr-games__card-img img` cover styles to the widget CSS;
+  initial count corrected 22 -> 23. Filters and "View More" JS untouched —
+  the page still shows the first 8 cards by default as the featured set.
+- Name matching card->CPT was fuzzy (e.g. "Mission Z 2" -> "Mission Z II",
+  "Arctic Olympics" -> "Arctic Olympics Slingshot Challenge"); all 23
+  matched, verified before patch (patch aborts on any mismatch).
+
+ACF featured ordering (per client: "feature 8 of it for now"):
+
+- Set `exp_display_order` on the 8 default-visible games so the
+  `/experience-type/vr-roam/` library archive features the same 8 first:
+  Death Squad=10, Zombie Urban Factory=20, Dragonfall=30, The Smurfs=40,
+  Cyberclash=50, Pixel Hack=60, Cops Vs Robbers=70, Hunter VR=80.
+  Client can re-order anytime via the Display Order box on each Experience.
+
+Backup:
+
+```text
+/home/u146877548/overworld-backups/vfr-646-elementor-data-before-real-game-cards-*.json
+```
+
+Deploy: JSON patched locally (Python, full parse + validation), uploaded and
+applied with wp_slash; WP object cache, Elementor CSS, and LiteSpeed caches
+flushed.
+
+Verification (live):
+
+```text
+/vr-free-roam/  200  23 real game images, 0 placeholders, 0 /games/ links
+23 card links -> /experience/[slug]/ (spot-checked 3, all 200)
+/experience-type/vr-roam/ orders the featured 8 first, rest A->Z
+Browser check: top 2 rows show Death Squad, Zombie Urban Factory,
+Dragonfall, The Smurfs, Cyberclash, Pixel Hack, Cops Vs Robbers, Hunter VR
+with real artwork; filters and count (23) intact.
+```
+
 ## 2026-07-06 - Blog Launch + AdCendes Backlink Article
 
 Launched a blog on the site and published an SEO/GEO-optimised article
