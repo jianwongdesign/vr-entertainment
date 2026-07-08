@@ -461,6 +461,8 @@ uasort( $pricing_items, function( $a, $b ) {
   .ow-pri__gallery-item--lead{
     grid-column:span 2;grid-row:span 2;
   }
+  /* with exactly 4 photos, widen the last tile so the grid has no hole */
+  .ow-pri__gallery-item:nth-child(4):last-child{grid-column:span 2;}
   .ow-pri__gallery-item img{
     width:100% !important;height:100% !important;
     object-fit:cover !important;object-position:center !important;

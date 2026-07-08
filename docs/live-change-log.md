@@ -37,6 +37,24 @@ lead + small tile (browser-verified), then cleared -> section absent again
 (0 gallery markup divs for public). Kallang/Orchard untouched, no section.
 ```
 
+Follow-up (same day, per client): populated all 3 galleries with 5 existing
+media-library photos each so the 4-col grid aligns exactly (2x2 lead + four
+1x1 tiles):
+
+```text
+Kallang (504): 418 VR room photo (lead), 419 escape room, 448 arcade titles
+               collage, 707 arena art, 803 VR Machine Fantasy Starship
+Orchard (505): 445 shop front (lead), 450 Floor Is Lava, 451 Laser Maze,
+               449 Tap Tap, 310 Laser Maze photo
+Funan   (506): 1263 shop front (lead), 447 3D interior render, 1252 VR Free
+               Roam, 1236 XR Party Game, 1217 Party Playland
+```
+
+Also added a template CSS rule: with exactly 4 photos the last tile spans 2
+columns so the grid never shows a hole. Client can swap any photo via
+Edit Page -> Outlet Gallery. Browser-verified Funan (5 aligned tiles);
+Kallang/Orchard render 5 photos each.
+
 ## 2026-07-08 - VR Free Roam Page: Real Game Cards + Featured 8
 
 The `/vr-free-roam/` page's "Games Library" grid (Elementor page 646, custom
