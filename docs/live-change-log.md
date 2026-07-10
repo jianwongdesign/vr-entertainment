@@ -1,5 +1,43 @@
 # Live Change Log
 
+## 2026-07-10 - Games Grids Added To VR Arcade + VR Escape Pages
+
+Client request: like VR Free Roam, the VR Arcade and VR Escape pages should
+list their games on-page with "view more" in the same page, plus a link to
+the full library page.
+
+What changed (live DB, new section inserted at position 3 of each page —
+hero, what-is-it, GAMES GRID, pricing, gallery):
+
+- VR Arcade (326): "30+ Worlds On Tap" — all 29 vr-arcade games as cards
+  (real thumbnails from the Experience CPT, ordered by exp_display_order
+  then A-Z), first 8 visible, "View More Games ↓" reveals the rest in-page,
+  "Browse All Games →" links to /experience-type/vr-arcade/. Orange palette.
+- VR Escape (420): "Pick Your Escape" — all 23 rooms, same behaviour,
+  "Browse All Rooms →" links to /experience-type/vr-escape/. Purple palette.
+- Cards link to each game's /experience/[slug]/ page.
+- Hero "Browse The Games/Rooms" ghost buttons retargeted from the archive
+  URL to the in-page #games anchor (matches VR Free Roam's hero behaviour);
+  the grid's Browse All button carries the archive link instead.
+- Child style.css v1.1.1: hover-fill exceptions for the two new
+  `__btn--more` <button>s (the !important button neutralizer would have
+  stripped their accent fill on hover).
+
+Backups:
+
+```text
+~/overworld-backups/page-326-before-games-grid-*.json
+~/overworld-backups/page-420-before-games-grid-*.json
+```
+
+Note: grids are generated snapshots of the CPT (like the VR Free Roam page).
+New games added to the library appear on /experience-type/ archives
+automatically but need a regen of this section to appear on the page grid.
+
+Verification (live, browser): both pages 200; arcade 29 cards (21 hidden),
+escape 23 cards (15 hidden); View More reveals rows in-page (clicked, rows
+appeared); real artwork renders; hero anchor + archive links correct.
+
 ## 2026-07-10 - "What Is It" Info Section Rolled Out To VR Arcade + VR Escape
 
 Client request: the VR Free Roam page's second section (intro copy + spec

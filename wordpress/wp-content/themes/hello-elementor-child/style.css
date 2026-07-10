@@ -5,7 +5,7 @@ Description:  Child theme for Hello Elementor - used for the Overworld VR experi
 Author:       Overworld VR
 Author URI:   https://overworldvr.com/
 Template:     hello-elementor
-Version:      1.1.0
+Version:      1.1.1
 Text Domain:  hello-elementor-child
 */
 
@@ -709,6 +709,18 @@ button[class*="ow-"]:focus {
 .ow-vfr-games__btn--more:focus {
     background: var(--green, #00ff88) !important;
     color: #020609 !important;
+}
+
+.ow-vra-games__btn--more:hover,
+.ow-vra-games__btn--more:focus {
+    background: #ff5722 !important;
+    color: #0a0a14 !important;
+}
+
+.ow-vre-games__btn--more:hover,
+.ow-vre-games__btn--more:focus {
+    background: #a855f7 !important;
+    color: #0a081a !important;
 }
 
 .ow-vfr-games__filter:hover,
