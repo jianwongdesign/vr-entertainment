@@ -1,5 +1,48 @@
 # Live Change Log
 
+## 2026-07-10 - "What Is It" Info Section Rolled Out To VR Arcade + VR Escape
+
+Client request: the VR Free Roam page's second section (intro copy + spec
+cards: session, games, players, age, what-to-wear) should exist on all game
+pages — some had it, some didn't.
+
+Audit of all 8 activity pages:
+
+```text
+HAS one:  vr-free-roam (What Is It), xr-party-game (What's The Game),
+          floor-is-lava / laser-maze / tap-tap (How To Play),
+          vr-machine-ride (specs inside Pricing + How It Works)
+MISSING:  vr-arcade (326), vr-escape (420) — both jumped hero -> pricing
+```
+
+What changed (live DB, Elementor `_elementor_data`, new container inserted
+between hero and pricing on each page):
+
+- VR Arcade: "Pay For Time. / Play Everything." — orange palette, 3 intro
+  paragraphs, first-timer callout, 5 spec cards (Session 30/60/120 min,
+  30+ titles, 1-17 stations, Age 8+, Glasses OK). Facts sourced from the
+  page hero, live pricing CPT and FAQ content.
+- VR Escape: "Escape Rooms. / Without Limits." — purple palette, 3 intro
+  paragraphs, new-to-VR callout, 5 spec cards (60-min mission, 23 rooms,
+  2-8 players, Age 8+ / horror 13+, All Levels).
+- Markup/CSS is a parameterized port of the VR Free Roam section
+  (`.ow-vra-what` / `.ow-vre-what` class prefixes, unique Elementor IDs,
+  section anchor `#what-is-it`).
+
+Backups:
+
+```text
+~/overworld-backups/page-326-before-what-section-*.json
+~/overworld-backups/page-420-before-what-section-*.json
+```
+
+Deploy: JSON built locally (python, anchor asserts + validation), applied
+via guarded wp eval with wp_slash; WP object, Elementor CSS and LiteSpeed
+caches flushed.
+
+Verification (live, browser): both pages 200, section renders between hero
+and pricing in the correct palette, 5 spec cards each, no fatals.
+
 ## 2026-07-08 - Footer: Social Icons Centered + AdCendes Credit Hover
 
 Two footer polish items (live DB patch to Elementor footer template 566):
