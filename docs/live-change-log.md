@@ -43,6 +43,13 @@ caches flushed.
 Verification (live, browser): both pages 200, section renders between hero
 and pricing in the correct palette, 5 spec cards each, no fatals.
 
+Follow-up (same day, per client): VR Machine Ride (338) added too —
+"Strap In. / Take Off." in the page's electric-blue palette, inserted
+between hero and pricing. Spec cards: 8-minute ride, 360° motion seat,
+1-2 riders, $15 flat, walk-in only. Backup:
+`~/overworld-backups/page-338-before-what-section-*.json`. Browser-verified.
+All 8 activity pages now carry an intro/specs section.
+
 ## 2026-07-08 - Footer: Social Icons Centered + AdCendes Credit Hover
 
 Two footer polish items (live DB patch to Elementor footer template 566):
