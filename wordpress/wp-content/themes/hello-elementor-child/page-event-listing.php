@@ -352,7 +352,7 @@ $packages = get_posts( array(
 
   /* ===== REVIEWS ===== */
   .ow-evt__reviews{
-    padding:80px 40px 0;
+    padding:80px 40px 80px;
     background:var(--bg);
   }
   .ow-evt__reviews-inner{max-width:1300px;margin:0 auto;}
@@ -636,7 +636,7 @@ $packages = get_posts( array(
     .ow-evt__intro{padding:50px 28px 0;}
     .ow-evt__gallery{padding:50px 28px 0;}
     .ow-evt__gallery-grid{grid-template-columns:repeat(2,1fr);grid-auto-rows:160px;}
-    .ow-evt__reviews{padding:60px 28px 0;}
+    .ow-evt__reviews{padding:60px 28px 60px;}
     .ow-evt__main{padding:60px 28px 80px;}
     .ow-evt__grid{grid-template-columns:repeat(2,1fr);gap:18px;}
   }
@@ -645,7 +645,7 @@ $packages = get_posts( array(
     .ow-evt__intro{padding:40px 18px 0;}
     .ow-evt__gallery{padding:40px 18px 0;}
     .ow-evt__gallery-grid{grid-auto-rows:130px;gap:10px;}
-    .ow-evt__reviews{padding:50px 18px 0;}
+    .ow-evt__reviews{padding:50px 18px 50px;}
     .ow-evt__main{padding:50px 18px 70px;}
     .ow-evt__title{font-size:54px;}
     .ow-evt__grid{grid-template-columns:1fr;}
