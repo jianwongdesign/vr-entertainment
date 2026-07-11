@@ -129,7 +129,45 @@ $outlet_config = array(
 
 $outlet = isset( $outlet_config[ $outlet_slug ] ) ? $outlet_config[ $outlet_slug ] : $outlet_config['kallang-wave-mall'];
 
-// ===== QUERY EVENT PACKAGES (matching this event type + outlet, active only) =====
+// ===== Editable page content (ACF, see mu-plugin overworld-event-page-content.php) =====
+$default_intros = array(
+    'team-building'  => 'Every session is run end-to-end by our Game Masters — briefing, rotations, scoreboards and prizes — so you can play alongside your team instead of managing the day. Packages below can be tailored to your group size, timing and budget.',
+    'birthday-party' => 'We handle the games, the gear and the energy — you bring the cake. Every party is hosted by our Game Masters from first briefing to final scoreboard, with a private room and time for food between rounds.',
+);
+$page_intro = trim( (string) get_post_meta( get_the_ID(), 'event_page_intro', true ) );
+if ( '' === $page_intro ) {
+    $page_intro = $default_intros[ $parent_slug ] ?? '';
+}
+
+$gallery_images = array();
+for ( $gi = 1; $gi <= 6; $gi++ ) {
+    $att_id = get_post_meta( get_the_ID(), 'event_gallery_' . $gi, true );
+    if ( ! $att_id || ! is_numeric( $att_id ) ) continue;
+    $src = wp_get_attachment_image_url( (int) $att_id, 'large' );
+    if ( ! $src ) continue;
+    $alt = get_post_meta( (int) $att_id, '_wp_attachment_image_alt', true );
+    $gallery_images[] = array(
+        'src' => $src,
+        'alt' => $alt ? $alt : $event_type['label'] . ' at Overworld ' . $outlet['name'],
+    );
+}
+
+$reviews = array();
+for ( $ri = 1; $ri <= 4; $ri++ ) {
+    $rev_text = trim( (string) get_post_meta( get_the_ID(), 'event_review_' . $ri . '_text', true ) );
+    if ( '' === $rev_text ) continue;
+    $rev_stars = (int) get_post_meta( get_the_ID(), 'event_review_' . $ri . '_stars', true );
+    $reviews[] = array(
+        'text'  => $rev_text,
+        'name'  => (string) get_post_meta( get_the_ID(), 'event_review_' . $ri . '_name', true ),
+        'meta'  => (string) get_post_meta( get_the_ID(), 'event_review_' . $ri . '_meta', true ),
+        'stars' => ( $rev_stars >= 1 && $rev_stars <= 5 ) ? $rev_stars : 5,
+    );
+}
+
+$can_edit_page = is_user_logged_in() && current_user_can( 'edit_post', get_the_ID() );
+
+// ===== QUERY EVENT PACKAGES (unchanged — managed under Events in WP Admin) =====
 $packages = get_posts( array(
     'post_type'      => 'event_package',
     'posts_per_page' => -1,
@@ -245,6 +283,126 @@ $packages = get_posts( array(
     color:var(--dim);
   }
   .ow-evt__loc strong{color:var(--accent-glow);font-weight:600;}
+
+  /* ===== INTRO ===== */
+  .ow-evt__intro{
+    padding:64px 40px 0;
+    background:var(--bg);
+  }
+  .ow-evt__intro-inner{
+    max-width:820px;margin:0 auto;text-align:center;
+  }
+  .ow-evt__intro-head{
+    font-family:'JetBrains Mono',monospace;
+    font-size:11px;letter-spacing:.2em;text-transform:uppercase;
+    color:var(--accent-glow);margin-bottom:14px;
+    display:inline-flex;align-items:center;gap:10px;
+  }
+  .ow-evt__intro-head::before,
+  .ow-evt__intro-head::after{content:"";width:24px;height:1px;background:var(--accent);}
+  .ow-evt__intro-text{
+    font-size:16px;line-height:1.75;color:var(--dim);margin:0;
+  }
+
+  /* ===== GALLERY (same collage as outlet pages) ===== */
+  .ow-evt__gallery{
+    padding:64px 40px 0;
+    background:var(--bg);
+  }
+  .ow-evt__gallery-inner{max-width:1300px;margin:0 auto;}
+  .ow-evt__gallery-grid{
+    display:grid;
+    grid-template-columns:repeat(4,1fr);
+    grid-auto-rows:190px;
+    grid-auto-flow:dense;
+    gap:14px;
+  }
+  .ow-evt__gallery-item{
+    position:relative;overflow:hidden;
+    border-radius:18px;
+    border:1px solid var(--line);
+    background:var(--bg-2);
+  }
+  .ow-evt__gallery-item--lead{grid-column:span 2;grid-row:span 2;}
+  .ow-evt__gallery-item:nth-child(4):last-child{grid-column:span 2;}
+  .ow-evt__gallery-item img{
+    width:100% !important;height:100% !important;
+    object-fit:cover !important;object-position:center !important;
+    display:block !important;
+    position:absolute !important;top:0 !important;left:0 !important;
+    max-width:none !important;max-height:none !important;
+    transition:transform .5s ease;
+  }
+  .ow-evt__gallery-item:hover img{transform:scale(1.05);}
+  .ow-evt__gallery-empty{
+    display:flex;align-items:center;justify-content:center;
+    flex-direction:column;gap:8px;color:var(--dim);
+    background:radial-gradient(ellipse at center,<?php echo $outlet['accent_dim']; ?>.08) 0%,var(--bg-2) 70%);
+    border:1px dashed <?php echo $outlet['accent_dim']; ?>.35);
+    font-family:'JetBrains Mono',monospace;
+    font-size:10px;letter-spacing:.14em;text-transform:uppercase;
+  }
+  .ow-evt__gallery-hint{
+    margin:16px 0 0;
+    font-family:'JetBrains Mono',monospace;
+    font-size:11px;letter-spacing:.1em;
+    color:var(--dim);text-align:center;
+  }
+  .ow-evt__gallery-hint strong{color:var(--accent-glow);font-weight:700;}
+
+  /* ===== REVIEWS ===== */
+  .ow-evt__reviews{
+    padding:80px 40px 0;
+    background:var(--bg);
+  }
+  .ow-evt__reviews-inner{max-width:1300px;margin:0 auto;}
+  .ow-evt__reviews-head{
+    display:flex;align-items:baseline;justify-content:space-between;
+    margin-bottom:36px;padding-bottom:20px;
+    border-bottom:1px solid var(--line);
+    gap:24px;flex-wrap:wrap;
+  }
+  .ow-evt__reviews-title{
+    font-family:'Anton','Bebas Neue',sans-serif;
+    font-size:clamp(24px,3vw,34px);line-height:1;font-weight:400;
+    text-transform:uppercase;margin:0;color:#fff;
+  }
+  .ow-evt__reviews-grid{
+    display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:20px;
+  }
+  .ow-evt__review{
+    display:flex;flex-direction:column;
+    padding:26px 26px 24px;
+    background:var(--bg-2);
+    border:1px solid var(--line);
+    border-radius:20px;
+    position:relative;overflow:hidden;
+  }
+  .ow-evt__review::before{
+    content:"";position:absolute;top:0;left:0;right:0;height:3px;
+    background:linear-gradient(to right,transparent,var(--accent),transparent);
+    opacity:.5;
+  }
+  .ow-evt__review-stars{
+    color:var(--accent-glow);
+    font-size:15px;letter-spacing:3px;
+    margin-bottom:14px;
+    text-shadow:0 0 14px <?php echo $outlet['accent_dim']; ?>.4);
+  }
+  .ow-evt__review-text{
+    font-size:14px;line-height:1.65;color:var(--dim);
+    margin:0 0 18px;flex:1;font-style:italic;
+  }
+  .ow-evt__review-name{
+    font-family:'Anton','Bebas Neue',sans-serif;
+    font-size:16px;font-weight:400;text-transform:uppercase;
+    color:#fff;letter-spacing:.02em;
+  }
+  .ow-evt__review-meta{
+    font-family:'JetBrains Mono',monospace;
+    font-size:10px;letter-spacing:.14em;text-transform:uppercase;
+    color:var(--dim);margin-top:4px;
+  }
 
   /* ===== PACKAGES GRID ===== */
   .ow-evt__main{
@@ -475,11 +633,19 @@ $packages = get_posts( array(
   /* Responsive */
   @media (max-width:1000px){
     .ow-evt__hero{padding:90px 28px 60px;}
+    .ow-evt__intro{padding:50px 28px 0;}
+    .ow-evt__gallery{padding:50px 28px 0;}
+    .ow-evt__gallery-grid{grid-template-columns:repeat(2,1fr);grid-auto-rows:160px;}
+    .ow-evt__reviews{padding:60px 28px 0;}
     .ow-evt__main{padding:60px 28px 80px;}
     .ow-evt__grid{grid-template-columns:repeat(2,1fr);gap:18px;}
   }
   @media (max-width:680px){
     .ow-evt__hero{padding:70px 18px 50px;}
+    .ow-evt__intro{padding:40px 18px 0;}
+    .ow-evt__gallery{padding:40px 18px 0;}
+    .ow-evt__gallery-grid{grid-auto-rows:130px;gap:10px;}
+    .ow-evt__reviews{padding:50px 18px 0;}
     .ow-evt__main{padding:50px 18px 70px;}
     .ow-evt__title{font-size:54px;}
     .ow-evt__grid{grid-template-columns:1fr;}
@@ -503,6 +669,43 @@ $packages = get_posts( array(
       <p class="ow-evt__loc">📍 At <strong><?php echo esc_html( $outlet['name'] ); ?></strong></p>
     </div>
   </div>
+
+  <!-- ===== INTRO (ACF event_page_intro) ===== -->
+  <?php if ( $page_intro ) : ?>
+  <div class="ow-evt__intro">
+    <div class="ow-evt__intro-inner">
+      <div class="ow-evt__intro-head">How It Works</div>
+      <p class="ow-evt__intro-text"><?php echo esc_html( $page_intro ); ?></p>
+    </div>
+  </div>
+  <?php endif; ?>
+
+  <!-- ===== GALLERY (ACF event_gallery_1..6 — hidden from visitors when empty) ===== -->
+  <?php if ( ! empty( $gallery_images ) || $can_edit_page ) : ?>
+  <div class="ow-evt__gallery">
+    <div class="ow-evt__gallery-inner">
+      <div class="ow-evt__gallery-grid">
+        <?php if ( ! empty( $gallery_images ) ) : ?>
+          <?php foreach ( $gallery_images as $g_index => $g_img ) : ?>
+            <div class="ow-evt__gallery-item<?php echo 0 === $g_index ? ' ow-evt__gallery-item--lead' : ''; ?>">
+              <img src="<?php echo esc_url( $g_img['src'] ); ?>" alt="<?php echo esc_attr( $g_img['alt'] ); ?>" loading="lazy" />
+            </div>
+          <?php endforeach; ?>
+        <?php else : ?>
+          <?php for ( $g_index = 0; $g_index < 4; $g_index++ ) : ?>
+            <div class="ow-evt__gallery-item ow-evt__gallery-empty<?php echo 0 === $g_index ? ' ow-evt__gallery-item--lead' : ''; ?>">
+              <div>🖼</div>
+              <div>Gallery slot</div>
+            </div>
+          <?php endfor; ?>
+        <?php endif; ?>
+      </div>
+      <?php if ( empty( $gallery_images ) && $can_edit_page ) : ?>
+        <p class="ow-evt__gallery-hint">Only editors see this placeholder — add photos via <strong>Edit Page → Event Page — Intro, Gallery &amp; Reviews</strong>.</p>
+      <?php endif; ?>
+    </div>
+  </div>
+  <?php endif; ?>
 
   <!-- ===== PACKAGES ===== -->
   <div class="ow-evt__main">
@@ -604,6 +807,41 @@ $packages = get_posts( array(
 
     </div>
   </div>
+
+  <!-- ===== REVIEWS (ACF event_review_1..4 — hidden from visitors when empty) ===== -->
+  <?php if ( ! empty( $reviews ) || $can_edit_page ) : ?>
+  <div class="ow-evt__reviews">
+    <div class="ow-evt__reviews-inner">
+
+      <div class="ow-evt__reviews-head">
+        <h2 class="ow-evt__reviews-title">What Groups Say</h2>
+        <div class="ow-evt__section-count">
+          <strong><?php echo count( $reviews ); ?></strong> Review<?php echo count( $reviews ) === 1 ? '' : 's'; ?>
+        </div>
+      </div>
+
+      <?php if ( ! empty( $reviews ) ) : ?>
+        <div class="ow-evt__reviews-grid">
+          <?php foreach ( $reviews as $review ) : ?>
+            <article class="ow-evt__review">
+              <div class="ow-evt__review-stars" aria-label="<?php echo esc_attr( $review['stars'] ); ?> out of 5 stars"><?php echo str_repeat( '★', $review['stars'] ) . str_repeat( '☆', 5 - $review['stars'] ); ?></div>
+              <p class="ow-evt__review-text">“<?php echo esc_html( $review['text'] ); ?>”</p>
+              <?php if ( $review['name'] ) : ?>
+                <div class="ow-evt__review-name"><?php echo esc_html( $review['name'] ); ?></div>
+              <?php endif; ?>
+              <?php if ( $review['meta'] ) : ?>
+                <div class="ow-evt__review-meta"><?php echo esc_html( $review['meta'] ); ?></div>
+              <?php endif; ?>
+            </article>
+          <?php endforeach; ?>
+        </div>
+      <?php else : ?>
+        <p class="ow-evt__gallery-hint">Only editors see this — add reviews via <strong>Edit Page → Event Page — Intro, Gallery &amp; Reviews</strong> and they will appear here for visitors.</p>
+      <?php endif; ?>
+
+    </div>
+  </div>
+  <?php endif; ?>
 
   <!-- ===== ENQUIRY CTA ===== -->
   <div class="ow-evt__enquiry">

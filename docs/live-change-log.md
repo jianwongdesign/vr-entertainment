@@ -1,5 +1,33 @@
 # Live Change Log
 
+## 2026-07-11 - Event Pages: Intro + Gallery + Reviews (client-editable)
+
+Restructured the 6 Team Building / Birthday Party pages (template
+page-event-listing.php) per client: Hero -> Intro -> Photo Gallery ->
+Packages -> Reviews -> Enquiry CTA. Packages remain driven by the Events
+CPT/ACF exactly as before; the new sections are page-editable.
+
+New mu-plugin `overworld-event-page-content.php` — ACF group "Event Page —
+Intro, Gallery & Reviews" on the Event Listing template:
+
+- `event_page_intro` (textarea) — intro under the hero; empty = built-in
+  default copy per event type (TB / BP).
+- `event_gallery_1..6` (image slots) — same collage as the outlet pages
+  (2x2 lead + tiles, 16:9-safe cover crop, 4-photo no-hole rule); hidden
+  from visitors when empty, editors see placeholder tiles + hint.
+- `event_review_1..4` (text / name / detail / stars 1-5) — "What Groups
+  Say" cards with star ratings; hidden from visitors when empty, editors
+  see a hint. Empty review text hides that slot.
+
+Client workflow: WP Admin -> Pages -> the TB/BP outlet page -> "Event Page —
+Intro, Gallery & Reviews" box. Packages continue to be managed under
+Events as before.
+
+Verification (live): 3 of 6 pages spot-checked, all 200 with section order
+HERO -> INTRO -> GALLERY -> PACKAGES -> REVIEWS -> ENQUIRY; default intro
+renders; empty gallery/reviews emit no markup for public visitors;
+browser-checked /team-building/orchard-central/ (intro + 7 packages).
+
 ## 2026-07-11 - Outlet Pages: Per-Outlet FAQ Section (category tabs)
 
 New FAQ section on the 3 outlet pages, between the Gallery and the
