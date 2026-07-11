@@ -12,11 +12,14 @@
  *
  * PAGE STRUCTURE (top to bottom):
  *   1. Hero            — outlet name, tagline, address/phone
- *   2. Activities      — cards for every activity at this outlet, linking to the activity pages
- *   3. Pricing         — full-width pricing tables from the Pricing CPT (pricing_outlet = slug)
- *                        + "Before You Book" terms and booking CTA
- *   4. Events          — Team Building & Birthday Party cards linking to
+ *   2. What We Offer   — intro text + activity cards (client-editable via ACF
+ *                        slots outlet_intro / outlet_act_1..6 with optional
+ *                        image; falls back to the built-in library below)
+ *   3. Events          — Team Building & Birthday Party cards linking to
  *                        /team-building/[slug] and /birthday-party/[slug]
+ *   4. Pricing         — full-width pricing tables from the Pricing CPT
+ *                        (pricing_outlet = slug) + terms and booking CTA
+ *   5. Gallery         — ACF outlet_gallery_1..6 photo collage (last)
  *
  * COLOR UPDATE: Kallang = Blue, Orchard = Orange, Funan = Purple.
  */
@@ -145,11 +148,39 @@ $activity_library = array(
     ),
 );
 
+// Client-editable cards (ACF slots outlet_act_1..6, see mu-plugin
+// overworld-outlet-activities.php). Fallback: built-in activity library.
 $outlet_activities = array();
-foreach ( (array) ( $outlet['activities'] ?? array() ) as $activity_key ) {
-    if ( isset( $activity_library[ $activity_key ] ) ) {
-        $outlet_activities[] = $activity_library[ $activity_key ];
+for ( $ai = 1; $ai <= 6; $ai++ ) {
+    $act_title = trim( (string) get_post_meta( get_the_ID(), 'outlet_act_' . $ai . '_title', true ) );
+    if ( '' === $act_title ) continue;
+    $act_img_id  = get_post_meta( get_the_ID(), 'outlet_act_' . $ai . '_image', true );
+    $act_img_src = ( $act_img_id && is_numeric( $act_img_id ) ) ? wp_get_attachment_image_url( (int) $act_img_id, 'large' ) : '';
+    $outlet_activities[] = array(
+        'name' => $act_title,
+        'desc' => (string) get_post_meta( get_the_ID(), 'outlet_act_' . $ai . '_desc', true ),
+        'url'  => (string) get_post_meta( get_the_ID(), 'outlet_act_' . $ai . '_link', true ),
+        'icon' => (string) get_post_meta( get_the_ID(), 'outlet_act_' . $ai . '_icon', true ),
+        'img'  => $act_img_src ?: '',
+    );
+}
+if ( empty( $outlet_activities ) ) {
+    foreach ( (array) ( $outlet['activities'] ?? array() ) as $activity_key ) {
+        if ( isset( $activity_library[ $activity_key ] ) ) {
+            $outlet_activities[] = $activity_library[ $activity_key ] + array( 'img' => '' );
+        }
     }
+}
+
+// Section intro (ACF outlet_intro, fallback to a per-outlet default)
+$default_intros = array(
+    'kallang-wave-mall' => 'Our flagship VR playground: strap on a headset for 30+ arcade titles, lock your team into a VR escape room, brave the lava floor, or take a spin on Singapore\'s first VR motion ride — all under one roof at Kallang Wave Mall.',
+    'orchard-central'   => 'No headsets here — just pure physical play. Dodge a floor of digital lava, weave through a web of lasers, and race the clock on our light wall. Three fast, sweaty, ridiculously fun games in the heart of Orchard.',
+    'funan'             => 'Free-roam VR arenas, a lava floor, and big-screen XR party games — Funan is built for groups who want to move. Pick one, or bounce between them all in a single visit.',
+);
+$acts_intro = trim( (string) get_post_meta( get_the_ID(), 'outlet_intro', true ) );
+if ( '' === $acts_intro ) {
+    $acts_intro = $default_intros[ $slug ] ?? $outlet['description'];
 }
 
 // ===== Event sections (Team Building / Birthday Party) for this outlet =====
@@ -381,6 +412,11 @@ uasort( $pricing_items, function( $a, $b ) {
   .ow-pri__acts-inner{
     max-width:1200px;margin:0 auto;
   }
+  .ow-pri__acts-intro{
+    max-width:720px;
+    font-size:15.5px;line-height:1.7;color:var(--dim);
+    margin:-14px 0 36px;
+  }
   .ow-pri__acts-grid{
     display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:22px;
   }
@@ -389,14 +425,33 @@ uasort( $pricing_items, function( $a, $b ) {
     background:var(--bg-2);
     border:1px solid var(--line);
     border-radius:20px;
-    padding:28px 26px 26px;
     position:relative;overflow:hidden;
     transition:transform .35s ease, border-color .25s ease, box-shadow .35s ease;
+  }
+  /* Optional card image: fixed aspect ratio + cover-crop, so any upload
+     renders cleanly on mobile / tablet / desktop without distortion */
+  .ow-pri__act-img{
+    position:relative;aspect-ratio:16/9;
+    background:rgba(255,255,255,.02);overflow:hidden;
+    border-bottom:1px solid var(--line);
+  }
+  .ow-pri__act-img img{
+    width:100% !important;height:100% !important;
+    object-fit:cover !important;object-position:center !important;
+    display:block !important;
+    position:absolute !important;top:0 !important;left:0 !important;
+    max-width:none !important;max-height:none !important;
+    transition:transform .4s ease;
+  }
+  .ow-pri__act-card:hover .ow-pri__act-img img{transform:scale(1.05);}
+  .ow-pri__act-body{
+    display:flex;flex-direction:column;flex:1;
+    padding:28px 26px 26px;
   }
   .ow-pri__act-card::before{
     content:"";position:absolute;top:0;left:0;right:0;height:3px;
     background:linear-gradient(to right,transparent,var(--accent),transparent);
-    opacity:.5;
+    opacity:.5;z-index:1;
   }
   .ow-pri__act-card:hover{
     transform:translateY(-6px);
@@ -831,7 +886,7 @@ uasort( $pricing_items, function( $a, $b ) {
 
       <div class="ow-pri__section-head">
         <div>
-          <div class="ow-pri__section-eyebrow">What's Inside</div>
+          <div class="ow-pri__section-eyebrow">What We Offer</div>
           <h2 class="ow-pri__section-title">Activities &amp; Games</h2>
         </div>
         <div class="ow-pri__section-count">
@@ -839,13 +894,26 @@ uasort( $pricing_items, function( $a, $b ) {
         </div>
       </div>
 
+      <p class="ow-pri__acts-intro"><?php echo esc_html( $acts_intro ); ?></p>
+
       <div class="ow-pri__acts-grid">
         <?php foreach ( $outlet_activities as $activity ) : ?>
           <article class="ow-pri__act-card">
-            <div class="ow-pri__act-icon"><?php echo $activity['icon']; ?></div>
-            <h3 class="ow-pri__act-name"><?php echo esc_html( $activity['name'] ); ?></h3>
-            <p class="ow-pri__act-desc"><?php echo esc_html( $activity['desc'] ); ?></p>
-            <a class="ow-pri__act-btn" href="<?php echo esc_url( $activity['url'] ); ?>">Learn More →</a>
+            <?php if ( ! empty( $activity['img'] ) ) : ?>
+              <div class="ow-pri__act-img">
+                <img src="<?php echo esc_url( $activity['img'] ); ?>" alt="<?php echo esc_attr( $activity['name'] . ' at ' . $outlet['name'] ); ?>" loading="lazy" />
+              </div>
+            <?php endif; ?>
+            <div class="ow-pri__act-body">
+              <?php if ( ! empty( $activity['icon'] ) ) : ?>
+                <div class="ow-pri__act-icon"><?php echo $activity['icon']; ?></div>
+              <?php endif; ?>
+              <h3 class="ow-pri__act-name"><?php echo esc_html( $activity['name'] ); ?></h3>
+              <p class="ow-pri__act-desc"><?php echo esc_html( $activity['desc'] ); ?></p>
+              <?php if ( ! empty( $activity['url'] ) ) : ?>
+                <a class="ow-pri__act-btn" href="<?php echo esc_url( $activity['url'] ); ?>">Learn More →</a>
+              <?php endif; ?>
+            </div>
           </article>
         <?php endforeach; ?>
       </div>
@@ -854,45 +922,39 @@ uasort( $pricing_items, function( $a, $b ) {
   </div>
   <?php endif; ?>
 
-  <!-- ===== GALLERY (ACF outlet_gallery_1..6 — hidden from visitors when empty) ===== -->
-  <?php if ( ! empty( $gallery_images ) || $gallery_editor_hint ) : ?>
-  <div class="ow-pri__gallery">
-    <div class="ow-pri__gallery-inner">
+  <!-- ===== EVENTS: Team Building & Birthday Party ===== -->
+  <div class="ow-pri__events">
+    <div class="ow-pri__events-inner">
 
       <div class="ow-pri__section-head">
         <div>
-          <div class="ow-pri__section-eyebrow">Inside <?php echo esc_html( $outlet['short_name'] ); ?></div>
-          <h2 class="ow-pri__section-title">Gallery</h2>
+          <div class="ow-pri__section-eyebrow">Plan Something Bigger</div>
+          <h2 class="ow-pri__section-title">Group Events at <?php echo esc_html( $outlet['short_name'] ); ?></h2>
         </div>
-        <?php if ( ! empty( $gallery_images ) ) : ?>
-          <div class="ow-pri__section-count"><strong><?php echo count( $gallery_images ); ?></strong> Photo<?php echo count( $gallery_images ) === 1 ? '' : 's'; ?></div>
-        <?php endif; ?>
       </div>
 
-      <div class="ow-pri__gallery-grid">
-        <?php if ( ! empty( $gallery_images ) ) : ?>
-          <?php foreach ( $gallery_images as $g_index => $g_img ) : ?>
-            <div class="ow-pri__gallery-item<?php echo 0 === $g_index ? ' ow-pri__gallery-item--lead' : ''; ?>">
-              <img src="<?php echo esc_url( $g_img['src'] ); ?>" alt="<?php echo esc_attr( $g_img['alt'] ); ?>" loading="lazy" />
+      <div class="ow-pri__events-grid">
+        <?php foreach ( $event_sections as $event_section ) : ?>
+          <a class="ow-pri__event-card" href="<?php echo esc_url( $event_section['url'] ); ?>">
+            <div class="ow-pri__event-top">
+              <div class="ow-pri__event-icon"><?php echo $event_section['icon']; ?></div>
+              <?php if ( $event_section['count'] > 0 ) : ?>
+                <div class="ow-pri__event-count">
+                  <strong><?php echo (int) $event_section['count']; ?></strong> Package<?php echo $event_section['count'] === 1 ? '' : 's'; ?>
+                </div>
+              <?php endif; ?>
             </div>
-          <?php endforeach; ?>
-        <?php else : ?>
-          <?php for ( $g_index = 0; $g_index < 4; $g_index++ ) : ?>
-            <div class="ow-pri__gallery-item ow-pri__gallery-empty<?php echo 0 === $g_index ? ' ow-pri__gallery-item--lead' : ''; ?>">
-              <div class="ow-pri__gallery-empty-icon">🖼</div>
-              <div class="ow-pri__gallery-empty-text">Gallery slot</div>
-            </div>
-          <?php endfor; ?>
-        <?php endif; ?>
+            <div class="ow-pri__event-eyebrow"><?php echo esc_html( $event_section['eyebrow'] ); ?></div>
+            <h3 class="ow-pri__event-title"><?php echo esc_html( $event_section['title'] ); ?></h3>
+            <p class="ow-pri__event-tagline"><?php echo esc_html( $event_section['tagline'] ); ?></p>
+            <p class="ow-pri__event-desc"><?php echo esc_html( $event_section['desc'] ); ?></p>
+            <span class="ow-pri__event-link">View Packages →</span>
+          </a>
+        <?php endforeach; ?>
       </div>
-
-      <?php if ( $gallery_editor_hint ) : ?>
-        <p class="ow-pri__gallery-hint">Only editors see this placeholder — add photos via <strong>Edit Page → Outlet Gallery</strong> and they will appear here for visitors.</p>
-      <?php endif; ?>
 
     </div>
   </div>
-  <?php endif; ?>
 
   <!-- ===== PRICING ===== -->
   <div class="ow-pri__main">
@@ -1033,39 +1095,45 @@ uasort( $pricing_items, function( $a, $b ) {
     </div>
   </div>
 
-  <!-- ===== EVENTS: Team Building & Birthday Party ===== -->
-  <div class="ow-pri__events">
-    <div class="ow-pri__events-inner">
+  <!-- ===== GALLERY (ACF outlet_gallery_1..6 — hidden from visitors when empty) ===== -->
+  <?php if ( ! empty( $gallery_images ) || $gallery_editor_hint ) : ?>
+  <div class="ow-pri__gallery">
+    <div class="ow-pri__gallery-inner">
 
       <div class="ow-pri__section-head">
         <div>
-          <div class="ow-pri__section-eyebrow">Plan Something Bigger</div>
-          <h2 class="ow-pri__section-title">Group Events at <?php echo esc_html( $outlet['short_name'] ); ?></h2>
+          <div class="ow-pri__section-eyebrow">Inside <?php echo esc_html( $outlet['short_name'] ); ?></div>
+          <h2 class="ow-pri__section-title">Gallery</h2>
         </div>
+        <?php if ( ! empty( $gallery_images ) ) : ?>
+          <div class="ow-pri__section-count"><strong><?php echo count( $gallery_images ); ?></strong> Photo<?php echo count( $gallery_images ) === 1 ? '' : 's'; ?></div>
+        <?php endif; ?>
       </div>
 
-      <div class="ow-pri__events-grid">
-        <?php foreach ( $event_sections as $event_section ) : ?>
-          <a class="ow-pri__event-card" href="<?php echo esc_url( $event_section['url'] ); ?>">
-            <div class="ow-pri__event-top">
-              <div class="ow-pri__event-icon"><?php echo $event_section['icon']; ?></div>
-              <?php if ( $event_section['count'] > 0 ) : ?>
-                <div class="ow-pri__event-count">
-                  <strong><?php echo (int) $event_section['count']; ?></strong> Package<?php echo $event_section['count'] === 1 ? '' : 's'; ?>
-                </div>
-              <?php endif; ?>
+      <div class="ow-pri__gallery-grid">
+        <?php if ( ! empty( $gallery_images ) ) : ?>
+          <?php foreach ( $gallery_images as $g_index => $g_img ) : ?>
+            <div class="ow-pri__gallery-item<?php echo 0 === $g_index ? ' ow-pri__gallery-item--lead' : ''; ?>">
+              <img src="<?php echo esc_url( $g_img['src'] ); ?>" alt="<?php echo esc_attr( $g_img['alt'] ); ?>" loading="lazy" />
             </div>
-            <div class="ow-pri__event-eyebrow"><?php echo esc_html( $event_section['eyebrow'] ); ?></div>
-            <h3 class="ow-pri__event-title"><?php echo esc_html( $event_section['title'] ); ?></h3>
-            <p class="ow-pri__event-tagline"><?php echo esc_html( $event_section['tagline'] ); ?></p>
-            <p class="ow-pri__event-desc"><?php echo esc_html( $event_section['desc'] ); ?></p>
-            <span class="ow-pri__event-link">View Packages →</span>
-          </a>
-        <?php endforeach; ?>
+          <?php endforeach; ?>
+        <?php else : ?>
+          <?php for ( $g_index = 0; $g_index < 4; $g_index++ ) : ?>
+            <div class="ow-pri__gallery-item ow-pri__gallery-empty<?php echo 0 === $g_index ? ' ow-pri__gallery-item--lead' : ''; ?>">
+              <div class="ow-pri__gallery-empty-icon">🖼</div>
+              <div class="ow-pri__gallery-empty-text">Gallery slot</div>
+            </div>
+          <?php endfor; ?>
+        <?php endif; ?>
       </div>
+
+      <?php if ( $gallery_editor_hint ) : ?>
+        <p class="ow-pri__gallery-hint">Only editors see this placeholder — add photos via <strong>Edit Page → Outlet Gallery</strong> and they will appear here for visitors.</p>
+      <?php endif; ?>
 
     </div>
   </div>
+  <?php endif; ?>
 
 </section>
 

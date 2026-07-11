@@ -1,5 +1,41 @@
 # Live Change Log
 
+## 2026-07-11 - Outlet Pages: "What We Offer" Section + Editable Cards + Reorder
+
+Client requests for all 3 outlet pages (template page-pricing.php):
+
+1. Second section now opens with an intro ("what we offer") before the
+   activity cards. Eyebrow renamed "What's Inside" -> "What We Offer";
+   new intro paragraph under the section head.
+2. Activity cards are now client-editable from WP admin, with an optional
+   image per card.
+3. Section order changed: Hero -> What We Offer -> Events (TB/BP) ->
+   Pricing (+terms/CTA) -> Gallery (last).
+   (Was: Hero -> Activities -> Gallery -> Pricing -> Events.)
+
+Implementation:
+
+- New mu-plugin `overworld-outlet-activities.php`: ACF group "What We Offer
+  — Intro & Activity Cards" on the Pricing Page template. Fields:
+  `outlet_intro` (textarea) + 6 card slots `outlet_act_1..6` (title,
+  description, link, emoji icon, optional image; empty title hides the
+  slot; all empty -> template falls back to the built-in activity library).
+- Template: cards restructured (optional 16:9 cover-cropped image block on
+  top, body below with icon/name/desc/button pinned bottom) so any upload
+  renders undistorted on mobile/tablet/desktop, mixed image/no-image cards
+  stay aligned. Per-outlet default intro texts added.
+- Seeded the ACF slots on pages 504/505/506 with the previous hardcoded
+  card content so the client edits live values immediately. Funan card 1
+  given a demo image (attachment 1252) to show the optional-image layout.
+
+Client workflow: WP Admin -> Pages -> outlet -> "What We Offer" box ->
+edit intro/cards, optionally add a card image -> Update.
+
+Verification (live): all 3 outlets 200; rendered section order
+HERO -> OFFER -> EVENTS -> PRICING -> TERMS -> GALLERY on all 3; Funan
+shows intro + mixed cards (1 image, 2 icon-only) aligned; 360px container
+test: single column, image 358x201 = exact 16:9, no distortion.
+
 ## 2026-07-11 - Game Pages: Tighter Section Padding
 
 Client request: section padding on the activity pages was too large — keep
