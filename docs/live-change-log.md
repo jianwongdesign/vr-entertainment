@@ -1,5 +1,27 @@
 # Live Change Log
 
+## 2026-07-11 - Outlet Pages: Per-Outlet FAQ Section (category tabs)
+
+New FAQ section on the 3 outlet pages, between the Gallery and the
+Terms/booking CTA. Same data as /faq/ (FAQ CPT):
+
+- Filters to the outlet: entries whose `faq_outlet` matches the page slug,
+  plus entries with empty/unknown outlet (= all outlets), mirroring
+  page-faq.php.
+- Grouped by `faq_category` with the same category ordering convention;
+  category pill tabs on top show ONE category at a time (first active);
+  questions are <details> accordions; answers rendered with
+  wp_kses_post(wpautop()) like the FAQ page.
+- Outlet accent styling; active pill hover protected from the button
+  neutralizer via child style.css exception (v1.1.4).
+
+Verification (live, browser): all 3 outlets render GALLERY -> FAQ -> CTA;
+tabs per outlet are correct (Kallang: General/Booking/VR Arcade/Floor Is
+Lava; Orchard: + Laser Maze/Tap Tap; Funan: General/Booking/Floor Is Lava);
+clicked Laser Maze tab on Orchard -> only its questions shown, accordion
+expands with answer text. Content edits in WP Admin -> FAQs reflect on both
+/faq/ and the outlet pages automatically.
+
 ## 2026-07-11 - Outlet Pages: Acts Bottom Spacing + Gallery Before CTA
 
 Two follow-ups to the outlet restructure (template page-pricing.php):

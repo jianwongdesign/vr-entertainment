@@ -20,7 +20,10 @@
  *   4. Pricing         — full-width pricing tables from the Pricing CPT
  *                        (pricing_outlet = slug)
  *   5. Gallery         — ACF outlet_gallery_1..6 photo collage
- *   6. Terms + CTA     — "Before You Book" list and booking buttons (last)
+ *   6. FAQ             — this outlet's FAQs from the FAQ CPT, category tabs,
+ *                        one category at a time (empty faq_outlet = shown at
+ *                        every outlet, same rule as page-faq.php)
+ *   7. Terms + CTA     — "Before You Book" list and booking buttons (last)
  *
  * COLOR UPDATE: Kallang = Blue, Orchard = Orange, Funan = Purple.
  */
@@ -238,6 +241,35 @@ for ( $gi = 1; $gi <= 6; $gi++ ) {
     );
 }
 $gallery_editor_hint = empty( $gallery_images ) && is_user_logged_in() && current_user_can( 'edit_post', get_the_ID() );
+
+// ===== FAQs for this outlet (FAQ CPT — same data as /faq/) =====
+// An FAQ with empty/unknown faq_outlet applies to every outlet (mirrors
+// page-faq.php). Grouped by category; one category shown at a time.
+$faq_by_cat = array();
+$faq_posts  = get_posts( array(
+    'post_type'      => 'faq',
+    'posts_per_page' => -1,
+    'post_status'    => 'publish',
+    'meta_key'       => 'faq_display_order',
+    'orderby'        => 'meta_value_num',
+    'order'          => 'ASC',
+) );
+foreach ( $faq_posts as $faq_post ) {
+    $faq_outlet = get_post_meta( $faq_post->ID, 'faq_outlet', true );
+    if ( $faq_outlet && isset( $outlet_config[ $faq_outlet ] ) && $faq_outlet !== $slug ) continue;
+    $faq_cat = get_post_meta( $faq_post->ID, 'faq_category', true );
+    if ( ! $faq_cat ) $faq_cat = 'General';
+    $faq_by_cat[ $faq_cat ][] = $faq_post;
+}
+// Category display order (same convention as page-faq.php)
+$faq_cat_order = array( 'General', 'Booking', 'VR Arcade', 'VR Escape', 'VR Machine Ride', 'VR Free Roam', 'XR Party Game', 'Floor Is Lava', 'Laser Maze', 'Tap Tap' );
+$faq_cats_sorted = array();
+foreach ( $faq_cat_order as $faq_cat_name ) {
+    if ( isset( $faq_by_cat[ $faq_cat_name ] ) ) $faq_cats_sorted[ $faq_cat_name ] = $faq_by_cat[ $faq_cat_name ];
+}
+foreach ( $faq_by_cat as $faq_cat_name => $faq_items ) {
+    if ( ! isset( $faq_cats_sorted[ $faq_cat_name ] ) ) $faq_cats_sorted[ $faq_cat_name ] = $faq_items;
+}
 
 // ===== Query pricing items for this outlet =====
 $pricing_items = array();
@@ -645,6 +677,66 @@ uasort( $pricing_items, function( $a, $b ) {
     font-size:11px;color:var(--dim);text-align:right;
   }
 
+  /* ===== FAQ (per-outlet, one category at a time) ===== */
+  .ow-pri__faq{
+    padding:80px 40px;
+    background:var(--bg);
+  }
+  .ow-pri__faq-inner{
+    max-width:1000px;margin:0 auto;
+  }
+  .ow-pri__faq-tabs{
+    display:flex;gap:8px;flex-wrap:wrap;
+    margin-bottom:34px;
+  }
+  .ow-pri__faq-tab{
+    padding:10px 20px;border-radius:999px;
+    font-family:'JetBrains Mono',monospace;
+    font-size:11px;letter-spacing:.14em;text-transform:uppercase;
+    font-weight:600;cursor:pointer;
+    background:rgba(255,255,255,.03);color:var(--dim);
+    border:1px solid var(--line);
+    transition:color .2s ease, border-color .2s ease, background .2s ease;
+  }
+  .ow-pri__faq-tab:hover{
+    border-color:<?php echo $outlet['accent_dim']; ?>.5);
+  }
+  .ow-pri__faq-tab.is-active{
+    background:var(--accent);color:#0a0a14;
+    border-color:var(--accent);
+    box-shadow:0 8px 24px -8px var(--accent);
+  }
+  .ow-pri__faq-panel{display:none;}
+  .ow-pri__faq-panel.is-active{display:block;}
+  .ow-pri__faq-item{
+    border-bottom:1px solid var(--line);
+  }
+  .ow-pri__faq-item summary{
+    list-style:none;cursor:pointer;
+    display:flex;align-items:center;justify-content:space-between;gap:18px;
+    padding:20px 4px;
+    font-size:15.5px;font-weight:600;color:var(--fg);
+    transition:color .2s ease;
+  }
+  .ow-pri__faq-item summary::-webkit-details-marker{display:none;}
+  .ow-pri__faq-item summary:hover{color:var(--accent-glow);}
+  .ow-pri__faq-chev{
+    flex-shrink:0;width:10px;height:10px;
+    border-right:2px solid var(--accent);
+    border-bottom:2px solid var(--accent);
+    transform:rotate(45deg);
+    transition:transform .25s ease;
+  }
+  .ow-pri__faq-item[open] .ow-pri__faq-chev{transform:rotate(225deg);}
+  .ow-pri__faq-a{
+    padding:0 4px 22px;
+    font-size:14.5px;line-height:1.7;color:var(--dim);
+    max-width:820px;
+  }
+  .ow-pri__faq-a p{margin:0 0 12px;}
+  .ow-pri__faq-a p:last-child{margin-bottom:0;}
+  .ow-pri__faq-a a{color:var(--accent-glow);}
+
   /* ===== TERMS + CTA ===== */
   .ow-pri__terms{
     background:linear-gradient(180deg,var(--bg) 0%,var(--bg-2) 100%);
@@ -832,6 +924,7 @@ uasort( $pricing_items, function( $a, $b ) {
     .ow-pri__cta-btn{flex:1;min-width:160px;}
     .ow-pri__events{padding:60px 28px 90px;}
     .ow-pri__events-grid{grid-template-columns:1fr;}
+    .ow-pri__faq{padding:60px 28px;}
   }
   @media (max-width:600px){
     .ow-pri__hero{padding:70px 18px 50px;}
@@ -849,6 +942,7 @@ uasort( $pricing_items, function( $a, $b ) {
     .ow-pri__terms{padding:60px 18px 90px;}
     .ow-pri__events{padding:50px 18px 80px;}
     .ow-pri__event-card{padding:30px 24px 28px;}
+    .ow-pri__faq{padding:50px 18px;}
   }
 </style>
 
@@ -1096,6 +1190,64 @@ uasort( $pricing_items, function( $a, $b ) {
 
     </div>
   </div>
+  <?php endif; ?>
+
+  <!-- ===== FAQ (per-outlet, one category at a time) ===== -->
+  <?php if ( ! empty( $faq_cats_sorted ) ) : ?>
+  <div class="ow-pri__faq">
+    <div class="ow-pri__faq-inner">
+
+      <div class="ow-pri__section-head">
+        <div>
+          <div class="ow-pri__section-eyebrow">Good To Know</div>
+          <h2 class="ow-pri__section-title">FAQ</h2>
+        </div>
+        <div class="ow-pri__section-count">
+          Answers for <strong><?php echo esc_html( $outlet['short_name'] ); ?></strong>
+        </div>
+      </div>
+
+      <div class="ow-pri__faq-tabs" role="tablist">
+        <?php $faq_i = 0; foreach ( $faq_cats_sorted as $faq_cat_name => $faq_items ) : ?>
+          <button type="button" class="ow-pri__faq-tab<?php echo 0 === $faq_i ? ' is-active' : ''; ?>" data-faq-tab="<?php echo esc_attr( sanitize_title( $faq_cat_name ) ); ?>">
+            <?php echo esc_html( $faq_cat_name ); ?>
+          </button>
+        <?php $faq_i++; endforeach; ?>
+      </div>
+
+      <?php $faq_i = 0; foreach ( $faq_cats_sorted as $faq_cat_name => $faq_items ) : ?>
+        <div class="ow-pri__faq-panel<?php echo 0 === $faq_i ? ' is-active' : ''; ?>" data-faq-panel="<?php echo esc_attr( sanitize_title( $faq_cat_name ) ); ?>">
+          <?php foreach ( $faq_items as $faq_post ) :
+            $faq_q = get_post_meta( $faq_post->ID, 'faq_question', true ) ?: $faq_post->post_title;
+            $faq_a = get_post_meta( $faq_post->ID, 'faq_answer', true );
+          ?>
+            <details class="ow-pri__faq-item">
+              <summary>
+                <span><?php echo esc_html( $faq_q ); ?></span>
+                <span class="ow-pri__faq-chev" aria-hidden="true"></span>
+              </summary>
+              <div class="ow-pri__faq-a"><?php echo wp_kses_post( wpautop( $faq_a ) ); ?></div>
+            </details>
+          <?php endforeach; ?>
+        </div>
+      <?php $faq_i++; endforeach; ?>
+
+    </div>
+  </div>
+  <script>
+  (function(){
+    var tabs = document.querySelectorAll('.ow-pri__faq-tab');
+    tabs.forEach(function(tab){
+      tab.addEventListener('click', function(){
+        tabs.forEach(function(t){ t.classList.remove('is-active'); });
+        tab.classList.add('is-active');
+        document.querySelectorAll('.ow-pri__faq-panel').forEach(function(p){
+          p.classList.toggle('is-active', p.dataset.faqPanel === tab.dataset.faqTab);
+        });
+      });
+    });
+  })();
+  </script>
   <?php endif; ?>
 
   <!-- ===== TERMS + CTA ===== -->
