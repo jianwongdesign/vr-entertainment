@@ -18,8 +18,9 @@
  *   3. Events          — Team Building & Birthday Party cards linking to
  *                        /team-building/[slug] and /birthday-party/[slug]
  *   4. Pricing         — full-width pricing tables from the Pricing CPT
- *                        (pricing_outlet = slug) + terms and booking CTA
- *   5. Gallery         — ACF outlet_gallery_1..6 photo collage (last)
+ *                        (pricing_outlet = slug)
+ *   5. Gallery         — ACF outlet_gallery_1..6 photo collage
+ *   6. Terms + CTA     — "Before You Book" list and booking buttons (last)
  *
  * COLOR UPDATE: Kallang = Blue, Orchard = Orange, Funan = Purple.
  */
@@ -406,7 +407,7 @@ uasort( $pricing_items, function( $a, $b ) {
 
   /* ===== ACTIVITIES & GAMES ===== */
   .ow-pri__acts{
-    padding:80px 40px 20px;
+    padding:80px 40px 80px;
     background:var(--bg);
   }
   .ow-pri__acts-inner{
@@ -822,7 +823,7 @@ uasort( $pricing_items, function( $a, $b ) {
   /* Responsive */
   @media (max-width:1000px){
     .ow-pri__hero{padding:90px 28px 60px;}
-    .ow-pri__acts{padding:60px 28px 10px;}
+    .ow-pri__acts{padding:60px 28px 60px;}
     .ow-pri__gallery{padding:45px 28px 10px;}
     .ow-pri__gallery-grid{grid-template-columns:repeat(2,1fr);grid-auto-rows:160px;}
     .ow-pri__main{padding:60px 28px 80px;}
@@ -834,7 +835,7 @@ uasort( $pricing_items, function( $a, $b ) {
   }
   @media (max-width:600px){
     .ow-pri__hero{padding:70px 18px 50px;}
-    .ow-pri__acts{padding:50px 18px 6px;}
+    .ow-pri__acts{padding:50px 18px 50px;}
     .ow-pri__gallery{padding:40px 18px 6px;}
     .ow-pri__gallery-grid{grid-auto-rows:130px;gap:10px;}
     .ow-pri__main{padding:50px 18px 70px;}
@@ -1057,44 +1058,6 @@ uasort( $pricing_items, function( $a, $b ) {
     </div>
   </div>
 
-  <!-- ===== TERMS + CTA ===== -->
-  <div class="ow-pri__terms">
-    <div class="ow-pri__terms-inner">
-
-      <div>
-        <div class="ow-pri__terms-head">Good To Know</div>
-        <h3 class="ow-pri__terms-title">Before You Book</h3>
-        <ul class="ow-pri__terms-list">
-          <li>All prices are <strong>per pax</strong>, in Singapore Dollars (SGD)</li>
-          <li><strong>Peak hours:</strong> Fridays, Saturdays, Sundays, and Public Holidays</li>
-          <li><strong>Booking:</strong> Reserve a time slot online — choose your game on arrival</li>
-          <li>Please arrive at least <strong>10 minutes before</strong> your session</li>
-          <li>Comfortable clothing and <strong>closed-toe shoes</strong> recommended for physical games</li>
-          <li>Children under 10 must be <strong>accompanied by an adult</strong> for certain games</li>
-          <li>Hosting a group? Ask us about <a href="/team-building" style="color:var(--accent-glow);text-decoration:none;border-bottom:1px solid var(--accent);">team-building packages</a></li>
-        </ul>
-      </div>
-
-      <div class="ow-pri__cta">
-        <h4 class="ow-pri__cta-title">Ready to Book?</h4>
-        <p class="ow-pri__cta-sub">Reserve your slot now — pick your activity on arrival.</p>
-        <div class="ow-pri__cta-buttons">
-          <?php if ( $outlet['bookeo'] ) : ?>
-            <a class="ow-pri__cta-btn ow-pri__cta-btn--primary" href="<?php echo esc_url( $outlet['bookeo'] ); ?>" target="_blank" rel="noopener">
-              Book <?php echo esc_html( $outlet['short_name'] ); ?> →
-            </a>
-          <?php endif; ?>
-          <?php if ( $outlet['whatsapp'] ) : ?>
-            <a class="ow-pri__cta-btn ow-pri__cta-btn--ghost" href="<?php echo esc_url( $outlet['whatsapp'] ); ?>" target="_blank" rel="noopener">
-              WhatsApp Us
-            </a>
-          <?php endif; ?>
-        </div>
-      </div>
-
-    </div>
-  </div>
-
   <!-- ===== GALLERY (ACF outlet_gallery_1..6 — hidden from visitors when empty) ===== -->
   <?php if ( ! empty( $gallery_images ) || $gallery_editor_hint ) : ?>
   <div class="ow-pri__gallery">
@@ -1134,6 +1097,44 @@ uasort( $pricing_items, function( $a, $b ) {
     </div>
   </div>
   <?php endif; ?>
+
+  <!-- ===== TERMS + CTA ===== -->
+  <div class="ow-pri__terms">
+    <div class="ow-pri__terms-inner">
+
+      <div>
+        <div class="ow-pri__terms-head">Good To Know</div>
+        <h3 class="ow-pri__terms-title">Before You Book</h3>
+        <ul class="ow-pri__terms-list">
+          <li>All prices are <strong>per pax</strong>, in Singapore Dollars (SGD)</li>
+          <li><strong>Peak hours:</strong> Fridays, Saturdays, Sundays, and Public Holidays</li>
+          <li><strong>Booking:</strong> Reserve a time slot online — choose your game on arrival</li>
+          <li>Please arrive at least <strong>10 minutes before</strong> your session</li>
+          <li>Comfortable clothing and <strong>closed-toe shoes</strong> recommended for physical games</li>
+          <li>Children under 10 must be <strong>accompanied by an adult</strong> for certain games</li>
+          <li>Hosting a group? Ask us about <a href="/team-building" style="color:var(--accent-glow);text-decoration:none;border-bottom:1px solid var(--accent);">team-building packages</a></li>
+        </ul>
+      </div>
+
+      <div class="ow-pri__cta">
+        <h4 class="ow-pri__cta-title">Ready to Book?</h4>
+        <p class="ow-pri__cta-sub">Reserve your slot now — pick your activity on arrival.</p>
+        <div class="ow-pri__cta-buttons">
+          <?php if ( $outlet['bookeo'] ) : ?>
+            <a class="ow-pri__cta-btn ow-pri__cta-btn--primary" href="<?php echo esc_url( $outlet['bookeo'] ); ?>" target="_blank" rel="noopener">
+              Book <?php echo esc_html( $outlet['short_name'] ); ?> →
+            </a>
+          <?php endif; ?>
+          <?php if ( $outlet['whatsapp'] ) : ?>
+            <a class="ow-pri__cta-btn ow-pri__cta-btn--ghost" href="<?php echo esc_url( $outlet['whatsapp'] ); ?>" target="_blank" rel="noopener">
+              WhatsApp Us
+            </a>
+          <?php endif; ?>
+        </div>
+      </div>
+
+    </div>
+  </div>
 
 </section>
 

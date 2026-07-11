@@ -1,5 +1,21 @@
 # Live Change Log
 
+## 2026-07-11 - Outlet Pages: Acts Bottom Spacing + Gallery Before CTA
+
+Two follow-ups to the outlet restructure (template page-pricing.php):
+
+- "What We Offer" section bottom padding was near-zero (20px desktop /
+  10px / 6px, from when the gallery followed it directly). Now 80px / 60px
+  / 50px so the cards breathe before the events section.
+- Gallery moved up: final order is now Hero -> What We Offer -> Events ->
+  Pricing -> Gallery -> Terms + booking CTA (page ends on the CTA).
+
+Deploy: single-file rsync; caches purged. Verified on all 3 outlets:
+order HERO -> OFFER -> EVENTS -> PRICING -> GALLERY -> CTA and new padding
+present. Noted while verifying: the client has already used the new card
+fields — Funan cards 2 & 3 now carry client-added images (attachments 450,
+1236), rendering aligned alongside card 1.
+
 ## 2026-07-11 - Outlet Pages: "What We Offer" Section + Editable Cards + Reorder
 
 Client requests for all 3 outlet pages (template page-pricing.php):
