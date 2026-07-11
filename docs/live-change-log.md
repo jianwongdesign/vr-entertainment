@@ -1,5 +1,28 @@
 # Live Change Log
 
+## 2026-07-11 - Game Pages: Tighter Section Padding
+
+Client request: section padding on the activity pages was too large — keep
+it low. The 8 game pages' sections shipped with 120px desktop / 90px tablet
+/ 70px mobile vertical padding (heroes up to 140px top / 180px bottom).
+
+Fix (child `style.css` v1.1.3 — one scoped override instead of patching
+40+ inline section styles across 8 Elementor pages):
+
+- All non-hero `<section class="ow-...">` elements on pages 294 / 312 /
+  326 / 338 / 364 / 420 / 577 / 646 flattened to 72px desktop / 56px
+  tablet / 44px mobile vertical padding. Selector
+  `body.page-id-X section[class*="ow-"]:not([class*="hero"])` at (0,2,1)
+  outranks the sections' own (0,1,0) rules including their media queries.
+- Heroes keep their tall top padding (sticky-header clearance) but the
+  oversized bottom gap drops 180px -> 80px (56px mobile).
+- Horizontal padding untouched.
+
+Verification: computed styles on /vr-arcade/ confirm hero 140/80 and all
+other sections 72/72; stylesheet with both rules confirmed deployed
+(ver=1.1.3); all 8 pages 200. (Gotcha: first hero-fix deploy reused
+ver=1.1.2 and was cache-masked — version bump required per CSS change.)
+
 ## 2026-07-10 - Games Grids Added To VR Arcade + VR Escape Pages
 
 Client request: like VR Free Roam, the VR Arcade and VR Escape pages should
