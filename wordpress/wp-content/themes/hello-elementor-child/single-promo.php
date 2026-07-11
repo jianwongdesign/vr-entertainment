@@ -293,6 +293,33 @@ get_header();
           <p class="ow-promo__tagline"><?php echo esc_html( $tagline ); ?></p>
         <?php endif; ?>
 
+        <?php if ( function_exists( 'ow_promo_timer_html' ) && ( $promo_timer = ow_promo_timer_html( get_the_ID() ) ) ) : ?>
+          <div class="ow-promo__countdown">
+            <div class="ow-promo__countdown-label">Offer ends in</div>
+            <?php echo $promo_timer; ?>
+          </div>
+          <style>
+            .ow-promo__countdown{margin:22px 0 4px;}
+            .ow-promo__countdown-label{
+              font-family:'JetBrains Mono',monospace;
+              font-size:11px;letter-spacing:.2em;text-transform:uppercase;
+              color:var(--ow-lava);margin-bottom:10px;
+            }
+            .ow-promo__countdown .ow-promo-timer{display:flex;gap:10px;font-variant-numeric:tabular-nums;}
+            .ow-promo__countdown .unit{
+              min-width:60px;padding:12px 8px;text-align:center;
+              border:1px solid rgba(255,255,255,.12);border-radius:12px;
+              background:rgba(255,255,255,.04);
+            }
+            .ow-promo__countdown .unit .v{font-size:24px;font-weight:700;line-height:1;letter-spacing:-.02em;}
+            .ow-promo__countdown .unit .u{
+              font-family:'JetBrains Mono',monospace;
+              font-size:9.5px;letter-spacing:.18em;text-transform:uppercase;
+              color:rgba(255,255,255,.5);margin-top:5px;
+            }
+          </style>
+        <?php endif; ?>
+
         <?php if ( ! empty( $outlets ) && is_array( $outlets ) ) : ?>
           <div class="ow-promo__outlets-section">
             <span class="ow-promo__label">Available at</span>

@@ -1,5 +1,47 @@
 # Live Change Log
 
+## 2026-07-11 - Promo Countdown System (featured promo + live timers)
+
+Client request: let the client set a promo end date and get a live countdown
+on the promo page, plus choose ONE promo to feature in the homepage
+countdown bar. The old homepage bar was hardcoded HTML whose target date
+(2026-05-31) had expired weeks ago — it was showing zeros.
+
+New mu-plugin `overworld-promo-countdown.php`:
+
+- ACF side box "Homepage Feature" on Promos: `promo_featured` toggle.
+  Enforced limit of one: switching it on programmatically switches it off
+  on every other promo (acf/save_post hook).
+- Countdown target = the existing `promo_valid_until` date the client
+  already fills (ends 23:59:59 Asia/Singapore that day) — no new date field
+  to learn.
+- Shortcode `[ow_promo_countdown]` renders the homepage bar (same
+  Variation-A design as before, now dynamic): featured promo's tagline as
+  label, title linking to the promo page, live D/H/M/S timer, CTA from
+  promo_cta_url/label. Future date -> timer; no date -> bar without timer;
+  expired or nothing featured -> bar hidden entirely.
+- Helper `ow_promo_timer_html()` shared with the promo detail page.
+
+Other changes:
+
+- Homepage (Elementor page 16): countdown widget swapped from static html
+  widget to a shortcode widget (`[ow_promo_countdown]`). Backup:
+  `~/overworld-backups/home-16-before-dynamic-countdown-*.json`.
+- `single-promo.php`: "Offer ends in" countdown block under the title/
+  tagline whenever the promo has a future valid-until date.
+- Seeded `promo_featured=1` on the live promo (1369, Funan private room).
+  Its valid_until is empty, so the bar currently shows without a timer —
+  the client sets the real deadline in Promos -> Valid Until.
+
+Client workflow: WP Admin -> Promos -> edit a promo -> set "Valid Until"
+(countdown date) and flip "Feature on homepage countdown" -> Update.
+
+Verification (live): homepage bar renders featured promo (browser-checked);
+temp-date test produced correct target 2026-08-01T23:59:59+08:00 on the
+homepage timer and an "Offer ends in" timer on the promo page (then the
+temp date was cleared — real deadline is the client's to set); old
+hardcoded 2026-05-31 gone; only-one-featured enforcement in place.
+
 ## 2026-07-11 - Admin Metaboxes Tidied (tabs + accordions)
 
 Client feedback: the ACF metaboxes added this week rendered as a jagged
