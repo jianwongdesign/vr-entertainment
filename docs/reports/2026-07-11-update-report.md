@@ -4,6 +4,25 @@ Prepared by AdCendes · overworld.com.sg · all changes live and verified
 
 ---
 
+## TL;DR
+
+- **Outlet pages rebuilt**: new flow (Hero → What We Offer → Events →
+  Pricing → Gallery → FAQ → CTA). Intro + game cards now editable in WP
+  Admin, optional card photos auto-crop safely, and each outlet shows its
+  own FAQ with category tabs.
+- **Event pages rebuilt**: Intro, photo gallery and star-rated reviews are
+  now editable per page. Packages workflow unchanged.
+- **Promo countdown is live**: pick ONE promo to feature (enforced), set
+  its Valid Until date, and the homepage bar + promo page count down
+  automatically. Old bar had been stuck at zeros since May — fixed.
+- **Everything is self-service now**: empty fields hide themselves, images
+  can't break layouts, admin boxes are organised into tabs/collapsible
+  rows. Edit once, reflected everywhere.
+- **To do**: set the featured promo's date, fill event galleries/reviews,
+  add Kallang & Orchard card photos, delete the "Test" FAQ.
+
+---
+
 ## 1. What Shipped
 
 ### Outlet pages (Kallang / Orchard / Funan) — restructured & editable
