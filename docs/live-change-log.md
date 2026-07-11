@@ -1,5 +1,26 @@
 # Live Change Log
 
+## 2026-07-11 - Admin Metaboxes Tidied (tabs + accordions)
+
+Client feedback: the ACF metaboxes added this week rendered as a jagged
+mixed-width field soup, hard to navigate. Reorganised all three groups
+(field NAMES/keys unchanged — existing content untouched):
+
+- "What We Offer — Intro & Activity Cards" (outlet pages): each card is now
+  a collapsible accordion row ("Card 1".."Card 6"); inside: Title 50% /
+  Icon 15% / Link 35% on one row, then Description and Image full-width.
+- "Outlet Gallery": per-field instructions (which misaligned the grid)
+  replaced by a single message field on top; 6 image slots in clean rows
+  of three, labels "Image 1 — lead tile" etc.
+- "Event Page — Intro, Gallery & Reviews" (TB/BP pages): split into three
+  top tabs (Intro / Gallery / Reviews); gallery same 3-per-row grid;
+  each review is an accordion row (Text full-width, Name 40 / Detail 40 /
+  Stars 20).
+
+Deploy: rsync of the 3 mu-plugins; object cache flushed. Verified live:
+groups register with the new tab/accordion structure (acf_get_fields) and
+front-end output unchanged (Funan cards + event intro still render).
+
 ## 2026-07-11 - Event Pages: Intro + Gallery + Reviews (client-editable)
 
 Restructured the 6 Team Building / Birthday Party pages (template
