@@ -1,5 +1,14 @@
 # Live Change Log
 
+## 2026-07-11 - FAQ Page: Mobile Outlet Filter In One Row
+
+Client report: the Kallang/Orchard/Funan filter on /faq/ looked off on
+mobile (tabs stacked into a vertical column). The <=760px rules now keep
+the three tabs in ONE straight pill row: flex row, each tab flex:1 with
+compact padding/font, dots shrunk. Verified at 390px viewport (iframe
+test): all three tabs on the same row, equal widths, active state intact.
+Single-file deploy of page-faq.php; cache purged.
+
 ## 2026-07-11 - Promo Countdown System (featured promo + live timers)
 
 Client request: let the client set a promo end date and get a live countdown

@@ -382,9 +382,10 @@ foreach ( $outlets as $oslug => $oconf ) {
     .ow-faq__hero{padding:90px 24px 40px;}
     .ow-faq__acc{padding:50px 24px 90px;}
     .ow-faq__contact-wrap{padding:0 24px;}
-    .ow-faq__tabs{width:100%;flex-direction:column;border-radius:16px;}
-    .ow-faq__tab + .ow-faq__tab{border-left:none;border-top:1px solid var(--ow-line);}
-    .ow-faq__tab{justify-content:center;}
+    /* keep the outlet filter in ONE straight row on mobile */
+    .ow-faq__tabs{width:100%;max-width:100%;flex-direction:row;flex-wrap:nowrap;border-radius:999px;}
+    .ow-faq__tab{flex:1;justify-content:center;padding:12px 6px;font-size:11px;letter-spacing:.1em;gap:6px;}
+    .ow-faq__tab::before{width:6px;height:6px;}
     .ow-faq__contact{flex-direction:column;align-items:flex-start;}
     .ow-faq__cat-title{font-size:28px;}
     .ow-faq__q{font-size:14.5px;padding:20px 4px;gap:16px;}
