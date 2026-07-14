@@ -1,5 +1,23 @@
 # Live Change Log
 
+## 2026-07-14 - Blog: 9 Posts Per Page + Pagination Verified
+
+Prep for a growing blog: the /blog/ index now shows 9 posts per page
+(clean 3x3 card grid) with numbered page-by-page navigation.
+
+- `functions.php`: `pre_get_posts` sets posts_per_page=9 for the main blog
+  query only (archives/search/custom queries unaffected).
+- The pagination UI (numbered pills, current state, dots, prev/next
+  arrows) already existed in home.php but had never rendered (only 1 post
+  at launch). Verified end-to-end by temporarily setting 1-per-page with
+  2 throwaway posts: /blog/page/2..5/ resolved, numbers + active state +
+  dots rendered correctly (browser-checked), then restored to 9 and
+  trashed the test posts.
+
+Noted while testing: the client has published 2 new SEO posts (Free Roam
+groups, VR arcade group play) — blog is at 3 posts; pagination will appear
+automatically from post #10.
+
 ## 2026-07-11 - FAQ Page: Mobile Outlet Filter In One Row
 
 Client report: the Kallang/Orchard/Funan filter on /faq/ looked off on
