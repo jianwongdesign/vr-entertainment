@@ -365,7 +365,7 @@ const pages = [
               title: 'Funan',
               body: [
                 '107 North Bridge Road, #04-14 & K1<br>Funan, Singapore 179105',
-                '<a href="tel:+6589150061">+65 8915 0061</a><br><a href="https://wa.me/6589140061" target="_blank" rel="noopener">WhatsApp +65 8914 0061</a><br><a href="mailto:funansupport@overworld.com.sg">funansupport@overworld.com.sg</a>',
+                '<a href="tel:+6589140061">+65 8914 0061</a><br><a href="https://wa.me/6589140061" target="_blank" rel="noopener">WhatsApp +65 8914 0061</a><br><a href="mailto:funansupport@overworld.com.sg">funansupport@overworld.com.sg</a>',
                 '<a href="https://bookeo.com/overworldfunan" target="_blank" rel="noopener">Book Funan</a>',
               ],
             },
@@ -590,7 +590,7 @@ $replacements = [
   'mailto:REPLACE_ME_EMAIL_KALLANG@overworldvr.com' => 'mailto:support@overworldvr.com',
   'mailto:REPLACE_ME_EMAIL_ORCHARD@overworld.com.sg' => 'mailto:ocsupport@overworld.com.sg',
   'mailto:REPLACE_ME_EMAIL_FUNAN@overworld.com.sg' => 'mailto:funansupport@overworld.com.sg',
-  'tel:+65REPLACE_ME_PHONE">+65 8914 0061' => 'tel:+6589150061">+65 8915 0061',
+  'tel:+65REPLACE_ME_PHONE">+65 8914 0061' => 'tel:+6589140061">+65 8914 0061',
   'https://wa.me/+6596101682' => 'https://wa.me/6596101682',
   'https://wa.me/+6588014303' => 'https://wa.me/6588014303',
   'https://wa.me/+6589140061' => 'https://wa.me/6589140061',

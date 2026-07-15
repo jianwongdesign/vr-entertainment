@@ -1,5 +1,35 @@
 # Live Change Log
 
+## 2026-07-15 - Funan Phone Number Corrected Site-Wide (8914 0061)
+
+Client report: Funan's phone number was wrong in places. Correct number:
++65 8914 0061. Audit found TWO flavours of the bug:
+
+- Display text "+65 8915 0061" in 4 theme templates (outlet, FAQ, event
+  listing, event package pages) and on the Contact page content.
+- Worse: the footer's VISIBLE number was already correct, but its tel:
+  link dialled +6589150061 — tapping it called the wrong number. Same
+  wrong tel: href on the Contact page. (WhatsApp links were fine.)
+
+Fixes:
+
+- Theme templates (page-pricing / page-faq / page-event-listing /
+  single-event_package): phone + phone_raw corrected; deployed.
+- scripts/upsert-footer-pages.mjs seed data corrected (both directions of
+  the old placeholder mapping were wrong).
+- Live DB: wp search-replace "8915 0061"->"8914 0061" (2 rows) and
+  "89150061"->"89140061" (15 rows) across all tables — covers the footer
+  Elementor template (566) + revisions and the Contact page (935) +
+  revision. Row-level backup first:
+  ~/overworld-backups/funan-phone-rows-before-fix-*.json
+  (wp db export unavailable on this host — mysqldump missing; targeted
+  row backup used instead.)
+
+Verification (live): 10 page types swept (home, outlet, FAQ, TB/BP, contact,
+event package, blog, game page, about) — 0 occurrences of 8915 0061 in any
+form, correct 8914 0061 present on all; DB search returns no residual
+matches in any table.
+
 ## 2026-07-14 - Blog: 9 Posts Per Page + Pagination Verified
 
 Prep for a growing blog: the /blog/ index now shows 9 posts per page
