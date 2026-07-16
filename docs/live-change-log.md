@@ -1,5 +1,39 @@
 # Live Change Log
 
+## 2026-07-16 - VR Free Roam: 2-Line Hero + Live Games Grid + Full-Fit Images
+
+Three client requests on /vr-free-roam/:
+
+1. Hero title locked to exactly two lines ("VR" / "FREE ROAM"). The Jul-8
+   inline fix had regressed to 3 lines; the FREE/ROAM spans are now wrapped
+   in a `.ow-vfr-hero__title-line2` block (white-space:nowrap) with child
+   display forced inline-block at equal size — self-enforcing regardless of
+   the base span rules.
+2. Games grid is now LIVE: new mu-plugin `overworld-experience-grid.php`
+   provides `[ow_experience_grid term="..."]` which queries the Experience
+   CPT at request time (exp_display_order then A-Z, matching the archives).
+   Page 646's static 23-card grid (client had added 6 newer games that
+   never appeared, e.g. Mansion of Death) swapped to the shortcode —
+   29 games now render, heading/count are dynamic, first 8 visible with
+   in-page "View More" + "Browse All" to the archive. Any new game
+   published to vr-roam appears automatically. NOTE: the old genre filter
+   tabs were part of the static HTML and are not carried over (genre data
+   does not exist in the CPT); grid matches the arcade/escape page style.
+   Config also ships vr-arcade / vr-escape palettes so those pages can be
+   flipped to the same live grid on request.
+3. Card images: fixed 16:9 cover-crop fills the card border edge-to-edge —
+   small client uploads scale up to fit perfectly, no letterboxing.
+
+Also: child style.css v1.1.5 hover-fill exception for the new View More
+button. Backup: ~/overworld-backups/vfr-646-before-dynamic-grid-*.json
+
+Gotcha for future edits: Elementor's `_elementor_element_cache` post meta
+served stale section HTML even after LiteSpeed/object/CSS purges — delete
+that meta when a DB-patched page won't update.
+
+Verification (live, browser): hero renders 2 lines; grid shows 29 with new
+games; View More expands in-page; images cover-fit; no fatals.
+
 ## 2026-07-16 - XR Party Game Modes: Client-Editable Cards With Images
 
 Client request: upgrade the XR Party Game page's "6 Modes" middle section so

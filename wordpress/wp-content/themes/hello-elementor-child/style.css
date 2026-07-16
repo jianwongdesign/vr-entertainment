@@ -5,7 +5,7 @@ Description:  Child theme for Hello Elementor - used for the Overworld VR experi
 Author:       Overworld VR
 Author URI:   https://overworldvr.com/
 Template:     hello-elementor
-Version:      1.1.4
+Version:      1.1.5
 Text Domain:  hello-elementor-child
 */
 
@@ -738,6 +738,12 @@ button[class*="ow-"]:focus {
 .ow-pri__faq-tab.is-active:focus {
     background: var(--accent) !important;
     color: #0a0a14 !important;
+}
+
+.ow-exg__btn--more:hover,
+.ow-exg__btn--more:focus {
+    background: var(--accent) !important;
+    color: var(--dark, #0a0a14) !important;
 }
 
 /* =====================================================================
