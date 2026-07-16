@@ -1,5 +1,38 @@
 # Live Change Log
 
+## 2026-07-16 - XR Party Game Modes: Client-Editable Cards With Images
+
+Client request: upgrade the XR Party Game page's "6 Modes" middle section so
+the client can add game images per mode and edit the cards easily, like the
+outlet "What We Offer" section.
+
+New mu-plugin `overworld-xr-modes.php`:
+
+- ACF group "XR Party — Game Modes" on page 577: 6 accordion mode rows
+  (Name / Icon / Hook / Description / optional Image). Empty name hides a
+  card; all empty falls back to the built-in defaults (the previous
+  hardcoded content). Images crop to 16:9 full-bleed at the card top —
+  mixed image/no-image cards stay aligned; per-mode accent colors kept.
+- Shortcode `[ow_xr_modes]` renders the section: the original section CSS
+  ported verbatim + image styles; heading count is dynamic ("N Modes. One
+  Carnival.").
+
+Live changes:
+
+- ACF slots seeded with the existing 6 modes (Glass Run Challenge, Vault
+  Heist, Boulder Dash, Fruit vs Zombies, Candy Carnival, Dragon Clash) so
+  the client edits current content immediately.
+- Page 577 section-3 widget swapped from hardcoded html to the shortcode.
+  Backup: ~/overworld-backups/xr-577-before-dynamic-modes-*.json
+
+Client workflow: WP Admin -> Pages -> XR Party Game -> "XR Party — Game
+Modes" box -> expand a Mode row -> edit / add image -> Update.
+
+Verification (live, browser): section renders identically from ACF (6 cards,
+correct names/hooks/colors, dynamic count); temp image on Mode 01 rendered
+full-bleed 16:9 alongside imageless cards without misalignment, then
+cleared (client to add real per-mode screenshots); no fatals.
+
 ## 2026-07-15 - Funan Phone Number Corrected Site-Wide (8914 0061)
 
 Client report: Funan's phone number was wrong in places. Correct number:
