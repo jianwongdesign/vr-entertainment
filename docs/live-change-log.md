@@ -1,5 +1,46 @@
 # Live Change Log
 
+## 2026-07-17 - FAQ Category Field Added To wp-admin
+
+Client report: no way to set an FAQ's category in wp-admin. The FAQ page
+groups FAQs into sections via `faq_category` post meta, but the ACF field
+group "FAQ Details" (381) never had a Category field — existing values
+were written directly to postmeta at import time, so they were invisible
+and uneditable in the editor. New FAQs silently fell into "General".
+
+Changes (live DB only, no theme files touched):
+
+- New ACF select field "Category" (`faq_category`, key
+  `field_6a59b7269d87a`, post 1575) in group 381, positioned between
+  Answer and Outlet (Outlet/Display Order bumped to menu_order 3/4).
+- Choices: General (default), Booking, VR Arcade, VR Free Roam,
+  XR Party Game, Floor Is Lava, Laser Maze, Tap Tap — covers all six
+  values in live use plus the two extra sections page-faq.php already
+  orders. Required, no free text (prevents typo'd stray sections).
+- Backfilled `_faq_category` key-reference meta on all 31 FAQ posts so
+  the dropdown pre-selects each post's existing category.
+- Flushed the object cache (LiteSpeed drop-in) — ACF's field list is
+  cached persistently, so the new field didn't appear until flushed.
+
+Backup: `~/overworld-backups/db-20260717.sql` (35M, taken before the
+change). Note: `scripts/backup-remote.sh` currently fails silently —
+`wp db export` dies on the host (ssh exit 255); direct `mysqldump` with
+creds from `wp config get` works and is what was used.
+
+Verification:
+
+```text
+acf_get_fields(group 381) after cache flush:
+0. Question => faq_question (text)
+1. Answer => faq_answer (wysiwyg)
+2. Category => faq_category (select, key field_6a59b7269d87a)
+3. Outlet => faq_outlet (select)
+4. Display Order => faq_display_order (number)
+
+Sample FAQ #417 "How many players and how long?" -> get_field: "Tap Tap"
+31 FAQs, 31 key refs set, 0 needed backfill to General
+```
+
 ## 2026-07-17 - TB/BP Hub Pages For All 3 Outlets + Footer Links Fixed
 
 Client report: the footer's "Team Building" and "Birthday Party" links went
