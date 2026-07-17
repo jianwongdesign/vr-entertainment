@@ -1,5 +1,60 @@
 # Live Change Log
 
+## 2026-07-17 - Game Cards Get Details On All 3 Game Pages; Arcade + Escape Grids Now Live
+
+Client report: game cards on the game pages lack the small details the
+library archives show (genre e.g. "Shooter", how many pax). Request: add
+them to VR Arcade, VR Escape and VR Free Roam.
+
+mu-plugin `overworld-experience-grid.php` v1.1.0:
+
+- Cards now carry the library-archive details: difficulty badge on the
+  image (easy/medium/hard/extreme, same colours as the archive), players
+  + age row with icons, and genre chips from `exp_vibes` (label map
+  matches the archive; unmapped free-form vibes like "co-op" render
+  ucwords'd). All 81 games already have this data filled, so every card
+  shows details with no content work.
+- New config flag `count_in_title` (false for vr-escape) — the count
+  prefix produced "23 Pick Your Escape"; heading is back to the original
+  "Pick Your Escape" (the "23 Rooms Available" line still shows the count).
+
+Pages 326 (VR Arcade) and 420 (VR Escape) flipped from static snapshot
+grids to the live shortcode (`[ow_experience_grid term="vr-arcade" /
+"vr-escape"]`), same structure as page 646 — new games published to a
+term now appear on all three pages automatically, ending the
+regen-needed caveat from the Jul-10 entry.
+
+Deploy notes / gotchas:
+
+- `push-wp-content.sh` dry-run wanted to sync 7.5k files (remote drift) —
+  deployed the single plugin file via ssh cat instead.
+- After a direct `_elementor_data` edit, the swapped container rendered
+  with Elementor's default 10px padding (white strip between sections):
+  the page's generated CSS file predates the new element. Fix:
+  `wp elementor flush-css` (+ litespeed purge, + delete
+  `_elementor_element_cache` meta per the Jul-16 gotcha).
+
+Backups (before change):
+
+```text
+~/overworld-backups/page-326-before-live-grid-20260717-054628.json
+~/overworld-backups/page-420-before-live-grid-20260717-054628.json
+~/overworld-backups/page-646-before-card-details-20260717-054628.json
+~/overworld-backups/db-20260717.sql
+```
+
+Verification (live, browser + curl):
+
+```text
+/vr-free-roam/: 200, 29 cards, title "29 Worlds To Explore"
+/vr-arcade/:    200, 29 cards, title "29 Worlds On Tap"
+/vr-escape/:    200, 23 cards, title "Pick Your Escape"
+Every card: meta row + diff badge; genre chips render (19x Shooter,
+11x Co-op, 9x PvP on arcade). View More clicked on arcade: 21 hidden
+cards revealed, button hides itself. Section junctions flush after
+flush-css (screenshots on arcade + escape + free roam).
+```
+
 ## 2026-07-17 - FAQ Category Field Added To wp-admin
 
 Client report: no way to set an FAQ's category in wp-admin. The FAQ page

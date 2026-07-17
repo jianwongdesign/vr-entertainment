@@ -1,9 +1,9 @@
 <?php
 /**
  * Plugin Name: Overworld — Dynamic Experience Grid
- * Description: [ow_experience_grid term="vr-roam"] renders a live games grid from the Experience CPT (ordered like the library archives: exp_display_order, then A-Z). First 8 cards visible, "View More" expands in-page, "Browse All" links to the archive. New games published to the term appear automatically — no page regeneration needed.
+ * Description: [ow_experience_grid term="vr-roam"] renders a live games grid from the Experience CPT (ordered like the library archives: exp_display_order, then A-Z). Cards carry the library-archive details (difficulty badge, players, age, genre chips). First 8 cards visible, "View More" expands in-page, "Browse All" links to the archive. New games published to the term appear automatically — no page regeneration needed.
  * Author: Overworld
- * Version: 1.0.0
+ * Version: 1.1.0
  *
  * Images use a fixed 16:9 cover-crop, so small or oddly-sized uploads always
  * fill the card edge-to-edge without distortion.
@@ -46,10 +46,11 @@ function ow_experience_grid_config() {
 			'dark'        => '#0a081a',
 			'bg'          => '#0a081a',
 			'bg2'         => '#110d24',
-			'eyebrow'     => 'Room Library',
-			'title'       => 'Pick Your Escape',
-			'lede'        => 'Haunted mansions, ancient tombs, deep space and more — every room is a different story to survive.',
-			'unit'        => 'Room',
+			'eyebrow'        => 'Room Library',
+			'title'          => 'Pick Your Escape',
+			'count_in_title' => false,
+			'lede'           => 'Haunted mansions, ancient tombs, deep space and more — every room is a different story to survive.',
+			'unit'           => 'Room',
 		),
 	);
 }
@@ -80,14 +81,31 @@ add_shortcode( 'ow_experience_grid', function ( $atts ) {
 	if ( empty( $posts ) ) {
 		return '';
 	}
+	// Vibe label map (matches the archive template / ACF Vibes choices).
+	$vibe_labels = array(
+		'shooter'   => 'Shooter',
+		'pvp'       => 'PvP / Competitive',
+		'rhythm'    => 'Rhythm & Music',
+		'puzzle'    => 'Puzzle & Escape',
+		'casual'    => 'Casual & Party',
+		'adventure' => 'Adventure',
+	);
+
 	$games = array();
 	foreach ( $posts as $p ) {
-		$ord     = get_post_meta( $p->ID, 'exp_display_order', true );
+		$ord   = get_post_meta( $p->ID, 'exp_display_order', true );
+		$vibes = function_exists( 'get_field' )
+			? get_field( 'exp_vibes', $p->ID )
+			: maybe_unserialize( get_post_meta( $p->ID, 'exp_vibes', true ) );
 		$games[] = array(
-			'title' => $p->post_title,
-			'ord'   => ( '' === $ord ) ? 9999 : (int) $ord,
-			'url'   => get_permalink( $p->ID ),
-			'img'   => get_the_post_thumbnail_url( $p->ID, 'large' ),
+			'title'      => $p->post_title,
+			'ord'        => ( '' === $ord ) ? 9999 : (int) $ord,
+			'url'        => get_permalink( $p->ID ),
+			'img'        => get_the_post_thumbnail_url( $p->ID, 'large' ),
+			'players'    => get_post_meta( $p->ID, 'exp_players', true ),
+			'age'        => get_post_meta( $p->ID, 'exp_age', true ),
+			'difficulty' => get_post_meta( $p->ID, 'exp_difficulty', true ),
+			'vibes'      => is_array( $vibes ) ? array_values( $vibes ) : array(),
 		);
 	}
 	usort( $games, function ( $a, $b ) {
@@ -99,6 +117,9 @@ add_shortcode( 'ow_experience_grid', function ( $atts ) {
 	$n           = count( $games );
 	$uid         = 'exg-' . $term;
 
+	$svg_players = '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>';
+	$svg_age     = '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2v4"/><path d="M12 18v4"/><path d="m4.93 4.93 2.83 2.83"/><path d="m16.24 16.24 2.83 2.83"/><path d="M2 12h4"/><path d="M18 12h4"/><path d="m4.93 19.07 2.83-2.83"/><path d="m16.24 7.76 2.83-2.83"/></svg>';
+
 	$cards = '';
 	foreach ( $games as $i => $g ) {
 		$hidden = $i >= $visible ? ' is-hidden' : '';
@@ -106,10 +127,33 @@ add_shortcode( 'ow_experience_grid', function ( $atts ) {
 		$img    = $g['img']
 			? '<img src="' . esc_url( $g['img'] ) . '" alt="' . esc_attr( $g['title'] . ' — ' . $c['eyebrow'] . ' at Overworld Singapore' ) . '" loading="lazy" />'
 			: '<div class="ow-exg__card-noimg">🎮</div>';
+
+		$diff_badge = $g['difficulty']
+			? '<span class="ow-exg__card-diff" data-diff="' . esc_attr( $g['difficulty'] ) . '">' . esc_html( $g['difficulty'] ) . '</span>'
+			: '';
+
+		$meta = '';
+		if ( $g['players'] ) {
+			$meta .= '<span>' . $svg_players . esc_html( $g['players'] ) . '</span>';
+		}
+		if ( $g['age'] ) {
+			$meta .= '<span>' . $svg_age . esc_html( $g['age'] ) . '</span>';
+		}
+		$meta = $meta ? '<div class="ow-exg__card-meta">' . $meta . '</div>' : '';
+
+		$chips = '';
+		foreach ( $g['vibes'] as $v ) {
+			$label  = isset( $vibe_labels[ $v ] ) ? $vibe_labels[ $v ] : ucwords( $v );
+			$chips .= '<span class="ow-exg__card-genre">' . esc_html( $label ) . '</span>';
+		}
+		$chips = $chips ? '<div class="ow-exg__card-genres">' . $chips . '</div>' : '';
+
 		$cards .= '<div class="ow-exg__card' . $hidden . '">'
-			. '<div class="ow-exg__card-img">' . $img . '</div>'
+			. '<div class="ow-exg__card-img">' . $diff_badge . $img . '</div>'
 			. '<div class="ow-exg__card-body">'
 			. '<h3 class="ow-exg__card-name">' . $name . '</h3>'
+			. $meta
+			. $chips
 			. '<a class="ow-exg__card-link" href="' . esc_url( $g['url'] ) . '">Learn More →</a>'
 			. '</div></div>';
 	}
@@ -190,9 +234,35 @@ add_shortcode( 'ow_experience_grid', function ( $atts ) {
     display:flex;align-items:center;justify-content:center;
     font-size:36px;opacity:.35;color:var(--dim);
   }
+  .ow-exg__card-diff{
+    position:absolute;top:10px;left:10px;z-index:2;
+    padding:4px 10px;border-radius:999px;
+    font-family:\'JetBrains Mono\',monospace;
+    font-size:10px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;
+    backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px);
+    background:rgba(0,0,0,.45);color:#fff;border:1px solid rgba(255,255,255,.2);
+  }
+  .ow-exg__card-diff[data-diff="easy"]{background:rgba(74,222,128,.15);color:#4ade80;border-color:rgba(74,222,128,.35);}
+  .ow-exg__card-diff[data-diff="medium"]{background:rgba(250,204,21,.12);color:#facc15;border-color:rgba(250,204,21,.3);}
+  .ow-exg__card-diff[data-diff="hard"]{background:rgba(239,68,68,.15);color:#ef4444;border-color:rgba(239,68,68,.35);}
+  .ow-exg__card-diff[data-diff="extreme"]{background:rgba(185,28,28,.18);color:#fca5a5;border-color:rgba(185,28,28,.4);}
+  .ow-exg__card-meta{
+    display:flex;flex-wrap:wrap;gap:5px 14px;
+    font-size:12.5px;color:var(--dim);
+  }
+  .ow-exg__card-meta span{display:inline-flex;align-items:center;gap:5px;}
+  .ow-exg__card-meta svg{opacity:.6;flex-shrink:0;}
+  .ow-exg__card-genres{display:flex;flex-wrap:wrap;gap:6px;}
+  .ow-exg__card-genre{
+    font-family:\'JetBrains Mono\',monospace;
+    font-size:9.5px;letter-spacing:.08em;text-transform:uppercase;
+    padding:3px 9px;border-radius:999px;
+    border:1px solid var(--line);color:var(--dim);
+    background:rgba(255,255,255,.03);white-space:nowrap;
+  }
   .ow-exg__card-body{
     padding:16px 18px 18px;
-    flex:1;display:flex;flex-direction:column;gap:12px;
+    flex:1;display:flex;flex-direction:column;gap:10px;
   }
   .ow-exg__card-name{
     font-family:\'Anton\',\'Bebas Neue\',sans-serif;
@@ -241,6 +311,8 @@ add_shortcode( 'ow_experience_grid', function ( $atts ) {
     .ow-exg__grid{grid-template-columns:1fr;}
     .ow-exg__actions{flex-direction:column;align-items:stretch;}
     .ow-exg__btn{justify-content:center;}
+    .ow-exg__card-meta{font-size:11.5px;}
+    .ow-exg__card-genre{font-size:9px;padding:2px 7px;}
   }';
 
 	$more_btn = $n > $visible
@@ -252,7 +324,7 @@ add_shortcode( 'ow_experience_grid', function ( $atts ) {
 		. '<section class="ow-exg" id="games"><div class="ow-exg__inner">'
 		. '<div class="ow-exg__head">'
 		. '<div class="ow-exg__eyebrow">' . esc_html( $c['eyebrow'] ) . '</div>'
-		. '<h2 class="ow-exg__title">' . esc_html( $n ) . ' ' . esc_html( $c['title'] ) . '</h2>'
+		. '<h2 class="ow-exg__title">' . ( isset( $c['count_in_title'] ) && ! $c['count_in_title'] ? '' : esc_html( $n ) . ' ' ) . esc_html( $c['title'] ) . '</h2>'
 		. '<p class="ow-exg__lede">' . esc_html( $c['lede'] ) . '</p>'
 		. '</div>'
 		. '<div class="ow-exg__count"><strong>' . esc_html( $n ) . '</strong> ' . esc_html( $c['unit'] ) . 's Available</div>'
