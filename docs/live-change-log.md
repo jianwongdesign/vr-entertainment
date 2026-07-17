@@ -1,5 +1,18 @@
 # Live Change Log
 
+## 2026-07-17 - XR Modes Image Flow Verified + ACF/Element-Cache Guard
+
+Client asked whether the XR Party Game mode images can be inserted from
+wp-admin. Verified end-to-end on live: the "XR Party — Game Modes" field
+group is attached to page 577 with all seeded content; setting an image on
+Mode 2 rendered it in the correct card with alt text; cleared after test.
+
+Hardening added (overworld-xr-modes.php v1.0.1): an `acf/save_post` hook
+now deletes `_elementor_element_cache` on any post whose ACF fields are
+saved — guarantees client edits to ANY of our ACF-driven sections (XR
+modes, outlet cards/gallery/intro, event pages) are never masked by
+Elementor's element cache (the Jul-16 gotcha).
+
 ## 2026-07-16 - VR Free Roam: 2-Line Hero + Live Games Grid + Full-Fit Images
 
 Three client requests on /vr-free-roam/:

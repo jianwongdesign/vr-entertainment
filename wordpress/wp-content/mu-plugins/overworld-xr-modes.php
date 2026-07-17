@@ -410,3 +410,12 @@ CSS;
 		. $body
 		. '</div></section>';
 } );
+
+// ===== Cache safety: ACF saves must never be masked by Elementor's element
+// cache. When fields are saved on any post that carries a cached render,
+// drop that cache so the client's edit shows immediately. =====
+add_action( 'acf/save_post', function ( $post_id ) {
+	if ( is_numeric( $post_id ) && get_post_meta( $post_id, '_elementor_element_cache', true ) ) {
+		delete_post_meta( $post_id, '_elementor_element_cache' );
+	}
+}, 30 );
