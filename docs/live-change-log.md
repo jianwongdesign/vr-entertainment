@@ -1,5 +1,41 @@
 # Live Change Log
 
+## 2026-07-17 - TB/BP Hub Pages For All 3 Outlets + Footer Links Fixed
+
+Client report: the footer's "Team Building" and "Birthday Party" links went
+to the Kallang page only (/team-building/kallang-wave-mall and
+/birthday-party/kallang-wave-mall). Request: a Team Building page and a
+Birthday Party page that host all 3 outlets, linked from the footer.
+
+The parent pages /team-building (521) and /birthday-party (522) already
+existed but were near-blank (default template, ~20 chars of content).
+
+New child-theme template `page-event-hub.php` ("Event Hub (TB / BP — All
+Outlets)"), assigned to 521 + 522:
+
+- Auto-detects event type from the page slug; lava-orange hero matching
+  the site's event-listing design language (.ow-hub, same fonts/CSS
+  conventions as page-event-listing.php).
+- One card per outlet in its own accent colour (Kallang orange, Orchard
+  cyan, Funan purple): brand, address, activity pills, live package count
+  (same event_active meta filter as the listing pages), "View Packages"
+  link into /[type]/[outlet], and a WhatsApp button.
+- Bottom CTA: Contact Us + cross-link to the other event type.
+
+Footer (Elementor template 566, HTML widget): the two links repointed from
+the Kallang URLs to /team-building/ and /birthday-party/ (2 replacements).
+Element cache deleted; object/Elementor CSS/LiteSpeed purged.
+Backup: ~/overworld-backups/event-hub-footer-before-20260717-031107.json
+(page templates + footer _elementor_data before change).
+
+Header untouched — its dropdowns already list all 3 outlets per type.
+
+Verification (live HTML sweep; browser extension unavailable): both hub
+pages render hero + 3 cards with correct per-outlet links and live counts
+(TB 3/7/4, BP 3/3/5 — counts match the listing pages' active filter),
+cross-links + contact CTA present, no PHP warnings/fatals; footer on inner
+pages (FAQ checked) now links /team-building/ and /birthday-party/.
+
 ## 2026-07-17 - XR Modes Image Flow Verified + ACF/Element-Cache Guard
 
 Client asked whether the XR Party Game mode images can be inserted from
