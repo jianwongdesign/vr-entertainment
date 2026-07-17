@@ -1,5 +1,44 @@
 # Live Change Log
 
+## 2026-07-17 - Book Now Pages Redesigned Around The Bookeo Embed
+
+Context: the client-created pages /book-now-kwm/ (898), /book-now-orchard/
+(886) and /book-now-funan/ (893) each held a bare Bookeo widget embed and
+nothing else. All three embeds currently show Bookeo's "Web site
+integration is not enabled" error — that toggle must be enabled by the
+client in EACH outlet's Bookeo account (Settings → Theme and layout →
+Web site integration); until then the calendar cannot render.
+
+Redesign (live DB, each page's single Elementor HTML widget replaced;
+per-outlet Bookeo widget keys kept unchanged):
+
+- Dark site-style hero with the outlet's accent (Kallang blue / Orchard
+  orange / Funan purple): brand eyebrow, "Book <Outlet>" Anton title,
+  venue + address, activity pills, "Choose a different outlet" →
+  /booking/.
+- White full-bleed middle section purpose-built for the white-bg Bookeo
+  embed: "Live availability · <venue>" tag + "Secure booking powered by
+  Bookeo" note above the widget, max-width 1080px.
+- Dark help strip: call + WhatsApp links per outlet.
+- Note: Funan's Bookeo account uses a DARK theme, so its embed renders
+  as a dark block inside the white section — acceptable, but switching
+  that Bookeo account's theme to light would match the other two.
+
+Still pending (after the client enables integration in Bookeo):
+verify calendars render, then repoint the /booking/ chooser buttons from
+bookeo.com to these internal pages, and fix the dead
+order.overworldvr.com/booking links on the three outlet pages
+(that legacy system renders an empty shell).
+
+Backups: ~/overworld-backups/page-{898,886,893}-before-booking-redesign-
+20260717-130238.json. Patch script: scratchpad booking-redesign.php run
+via wp eval-file; caches flushed (object, elementor css, litespeed).
+
+Verification (live, browser): all 3 pages render hero/white-embed/help
+strip in the right accents; Bookeo error shows inside the white section
+(expected until integration enabled); mobile 390px: no horizontal
+scroll, hero scales, hamburger present.
+
 ## 2026-07-17 - Game Cards Get Details On All 3 Game Pages; Arcade + Escape Grids Now Live
 
 Client report: game cards on the game pages lack the small details the
