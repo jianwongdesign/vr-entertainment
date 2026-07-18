@@ -1,5 +1,29 @@
 # Live Change Log
 
+## 2026-07-18 - FAQ Outlet Field Made Optional (couldn't save blank)
+
+Client report: leaving an FAQ's Outlet blank is supposed to show it at every
+outlet, but wp-admin refused to save with Outlet empty.
+
+Root cause: the `faq_outlet` ACF select (key `field_69f4a95df434f`, post 384)
+had BOTH `required=1` and `allow_null=1`. `allow_null` renders the blank
+"— Select —" option, but `required=1` blocks saving it empty — so the
+intended "empty = all outlets" state was unreachable in the editor.
+
+Changes (live DB only, no theme files touched):
+
+- `acf_update_field`: set `required` to 0 on `faq_outlet`. `allow_null`
+  left at 1. Template behavior (`page-faq.php` / `page-pricing.php`:
+  empty `faq_outlet` = shown at every outlet) already matches this.
+- Flushed the object cache (LiteSpeed drop-in) — ACF caches the field
+  config persistently.
+
+Backup: `~/overworld-backups/faq_outlet-field-before.json` (field JSON
+before the change).
+
+Verification: `acf_get_field("faq_outlet")` now reports `required=0`,
+`allow_null=1`.
+
 ## 2026-07-17 - Book Now Pages Redesigned Around The Bookeo Embed
 
 Context: the client-created pages /book-now-kwm/ (898), /book-now-orchard/
