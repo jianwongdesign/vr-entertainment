@@ -1,9 +1,10 @@
 <?php
 /**
  * Redesign the three Book Now pages: dark site-style hero per outlet +
- * black middle section around the Bookeo embed (the Bookeo iframe renders
- * its own white document, so it stays readable on black) + dark help strip.
- * Keeps each page's existing Bookeo widget key.
+ * black middle section around the Bookeo embed + dark help strip. The Bookeo
+ * iframe paints its own document (Kallang/Orchard white, Funan dark-themed),
+ * so the widget card is transparent and the iframe is forced block/full-width
+ * to avoid any section colour showing at its edges. Keeps each widget key.
  * Run: wp eval-file booking-redesign.php
  */
 
@@ -116,7 +117,11 @@ $css = <<<'CSS'
     font-family:'JetBrains Mono',monospace;
     font-size:10.5px;letter-spacing:.12em;text-transform:uppercase;color:rgba(255,255,255,.42);
   }
-  .ow-bk__widget{min-height:420px;background:#fff;border-radius:16px;overflow:hidden;}
+  .ow-bk__widget{min-height:420px;background:transparent;border-radius:16px;overflow:hidden;}
+  /* Bookeo injects the iframe; force block+full-width so no baseline gap or
+     edge sliver shows the section through (Funan's widget is dark-themed,
+     Kallang/Orchard are white — transparent card adapts to either). */
+  .ow-bk__widget iframe{display:block;width:100%;border:0;}
   .ow-bk__help{
     background:#000;border-top:1px solid rgba(255,255,255,.08);
     padding:36px 24px;text-align:center;

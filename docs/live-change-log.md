@@ -1,5 +1,30 @@
 # Live Change Log
 
+## 2026-07-20 - Book Now Funan: White Card Slivers Fixed
+
+Client report: white border on the right and bottom of the Funan booking box.
+
+Root cause: Funan's Bookeo widget is *dark-themed* (black bg, purple text),
+unlike Kallang/Orchard which are white. The 2026-07-20 change gave
+`.ow-bk__widget` a `background:#fff` rounded card (safe for the white widgets).
+On Funan the dark iframe sat on that white card, so white showed at the edges:
+a 7px strip at the bottom (iframe defaults to `display:inline`, leaving a
+baseline gap) and a thin sliver at the right.
+
+Fix (`scripts/booking-redesign.php`, re-run on all 3 pages):
+
+- `.ow-bk__widget` background `#fff` -> `transparent` so the card adapts to
+  whatever the iframe paints (white for KWM/Orchard, dark for Funan) instead
+  of forcing white behind it. `border-radius:16px;overflow:hidden` kept.
+- Added `.ow-bk__widget iframe{display:block;width:100%;border:0;}` to remove
+  the inline baseline gap and guarantee full-width coverage.
+
+Verified live (Funan, browser): `.ow-bk__widget` computed bg
+`rgba(0,0,0,0)`, iframe `display:block`; bottom-right corner is pure black,
+no white sliver. (The faint gray rounded line still visible is Bookeo's own
+internal card border inside the cross-origin iframe — not ours.) Kallang/
+Orchard unchanged — their white iframes still read as rounded white cards.
+
 ## 2026-07-20 - Book Now Embed Section Switched To Black
 
 Client request: make the Bookeo embed section on the outlet Book Now pages
