@@ -1,5 +1,40 @@
 # Live Change Log
 
+## 2026-07-20 - Book Now Embed Section Switched To Black
+
+Client request: make the Bookeo embed section on the outlet Book Now pages
+black instead of the white it was redesigned to on 2026-07-17.
+
+Key finding (browser-verified): the Bookeo widget is a cross-origin iframe
+(bookeo.com) whose *internal document paints its own white background* — the
+iframe element itself is transparent, but the form always renders on white and
+its text stays readable regardless of our section color. So a black section
+does NOT black out the form (my first assumption); it only fills the margins
+around it. Confirmed by flipping `.ow-bk__embed` to black in-browser first.
+
+Changes (`scripts/booking-redesign.php`, re-run on all 3 pages 898/886/893):
+
+- `.ow-bk__embed` background `#fff` -> `#000` (matches the hero + help strip).
+- `.ow-bk__widget`: added `background:#fff;border-radius:16px;overflow:hidden`
+  so the white Bookeo iframe reads as a deliberate rounded card on black.
+- Header contrast fixed for the dark bg: `.ow-bk__embed-head` border
+  `#eceef2` -> `rgba(255,255,255,.1)`; `.ow-bk__embed-tag` `#7b8291` ->
+  `rgba(255,255,255,.72)`; `.ow-bk__embed-note` `#aab0bc` ->
+  `rgba(255,255,255,.42)`. Accent status dot unchanged.
+- Ran via `wp eval-file -` over SSH (stdin); each page's Bookeo key kept.
+
+Cache: `wp cache flush` alone was NOT enough — the served HTML came from the
+LiteSpeed full-page cache. Had to `wp litespeed-purge all` before the change
+showed. (Object cache flush only matters for ACF-style field/meta changes.)
+
+Backup: `~/overworld-backups/booking-{898,886,893}-before-blackbg.json`
+(each page's `_elementor_data` before the change).
+
+Verification (live, browser, Orchard): `.ow-bk__embed` computed bg
+`rgb(0,0,0)`, `.ow-bk__widget` `rgb(255,255,255)` radius `16px`, tag color
+`rgba(255,255,255,.72)`. Form fully readable inside the white card; black is
+seamless with nav above and help strip below.
+
 ## 2026-07-18 - FAQ Outlet Field Made Optional (couldn't save blank)
 
 Client report: leaving an FAQ's Outlet blank is supposed to show it at every

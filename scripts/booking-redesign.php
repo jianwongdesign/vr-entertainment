@@ -1,8 +1,9 @@
 <?php
 /**
  * Redesign the three Book Now pages: dark site-style hero per outlet +
- * white middle section purpose-built for the (white-bg) Bookeo embed +
- * dark help strip. Keeps each page's existing Bookeo widget key.
+ * black middle section around the Bookeo embed (the Bookeo iframe renders
+ * its own white document, so it stays readable on black) + dark help strip.
+ * Keeps each page's existing Bookeo widget key.
  * Run: wp eval-file booking-redesign.php
  */
 
@@ -96,16 +97,16 @@ $css = <<<'CSS'
     padding:10px 20px;transition:color .2s ease,border-color .2s ease;
   }
   .ow-bk__switch:hover{color:#fff;border-color:var(--accent);}
-  .ow-bk__embed{background:#fff;padding:52px 24px 72px;}
+  .ow-bk__embed{background:#000;padding:52px 24px 72px;}
   .ow-bk__embed-inner{max-width:1080px;margin:0 auto;}
   .ow-bk__embed-head{
     display:flex;align-items:center;justify-content:space-between;gap:14px;flex-wrap:wrap;
-    padding-bottom:16px;margin-bottom:28px;border-bottom:1px solid #eceef2;
+    padding-bottom:16px;margin-bottom:28px;border-bottom:1px solid rgba(255,255,255,.1);
   }
   .ow-bk__embed-tag{
     display:inline-flex;align-items:center;gap:8px;
     font-family:'JetBrains Mono',monospace;
-    font-size:10.5px;letter-spacing:.2em;text-transform:uppercase;color:#7b8291;
+    font-size:10.5px;letter-spacing:.2em;text-transform:uppercase;color:rgba(255,255,255,.72);
   }
   .ow-bk__embed-tag::before{
     content:"";width:7px;height:7px;border-radius:50%;
@@ -113,9 +114,9 @@ $css = <<<'CSS'
   }
   .ow-bk__embed-note{
     font-family:'JetBrains Mono',monospace;
-    font-size:10.5px;letter-spacing:.12em;text-transform:uppercase;color:#aab0bc;
+    font-size:10.5px;letter-spacing:.12em;text-transform:uppercase;color:rgba(255,255,255,.42);
   }
-  .ow-bk__widget{min-height:420px;}
+  .ow-bk__widget{min-height:420px;background:#fff;border-radius:16px;overflow:hidden;}
   .ow-bk__help{
     background:#000;border-top:1px solid rgba(255,255,255,.08);
     padding:36px 24px;text-align:center;
