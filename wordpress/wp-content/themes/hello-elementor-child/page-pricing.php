@@ -915,6 +915,8 @@ uasort( $pricing_items, function( $a, $b ) {
   /* Responsive */
   @media (max-width:1000px){
     .ow-pri__hero{padding:90px 28px 60px;}
+    .ow-pri__hero-meta{max-width:100%;}
+    .ow-pri__hero-meta-item{white-space:normal;}
     .ow-pri__acts{padding:60px 28px 60px;}
     .ow-pri__gallery{padding:45px 28px 10px;}
     .ow-pri__gallery-grid{grid-template-columns:repeat(2,1fr);grid-auto-rows:160px;}
@@ -928,6 +930,10 @@ uasort( $pricing_items, function( $a, $b ) {
   }
   @media (max-width:600px){
     .ow-pri__hero{padding:70px 18px 50px;}
+    /* Stack address + phone into a centered column so long addresses (e.g.
+       Funan) wrap inside the pill instead of overflowing off the right edge. */
+    .ow-pri__hero-meta{flex-direction:column;align-items:center;gap:8px;border-radius:20px;padding:14px 18px;}
+    .ow-pri__hero-meta-item{justify-content:center;text-align:center;}
     .ow-pri__acts{padding:50px 18px 50px;}
     .ow-pri__gallery{padding:40px 18px 6px;}
     .ow-pri__gallery-grid{grid-auto-rows:130px;gap:10px;}

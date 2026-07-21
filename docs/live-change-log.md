@@ -1,5 +1,40 @@
 # Live Change Log
 
+## 2026-07-21 - Pricing Hero: Address Overflowed Off-Screen On Mobile
+
+Client report (with screenshot): on mobile the outlet pricing page hero
+address/phone pill was not centered — the address ran off the right edge.
+Reported as "booking site" but the screenshot was the **pricing** page
+(`/outlet/<slug>/`, template `page-pricing.php`), eyebrow "… · PRICING".
+
+Root cause: `.ow-pri__hero-meta-item` had `white-space:nowrap` and the pill
+`.ow-pri__hero-meta` had no width cap. Kallang's short address fit; Funan's
+long one ("107 North Bridge Road, #04-14 & K1, Funan, Singapore 179105")
+could not wrap, so the inline-flex pill grew wider than the phone viewport
+and overflowed/clipped on the right — looking off-centre. Desktop was fine
+(wide enough to fit on one line).
+
+Fix (`page-pricing.php`, theme file — pushed to live, single file):
+
+- `@media (max-width:1000px)`: `.ow-pri__hero-meta{max-width:100%}` and
+  `.ow-pri__hero-meta-item{white-space:normal}` so the address wraps and the
+  pill can never exceed the viewport.
+- `@media (max-width:600px)`: stack the pill into a centred column
+  (`flex-direction:column;align-items:center;gap:8px;border-radius:20px;
+  padding:14px 18px`) with `.ow-pri__hero-meta-item{justify-content:center;
+  text-align:center}` so address + phone read as centred lines.
+
+Deploy: local repo copy was byte-identical to live before the edit; pushed
+just this file via scp (backup `~/overworld-backups/page-pricing-before-
+mobilemeta.php`), then `wp litespeed-purge all`.
+
+Verified: new CSS served on all 3 pricing pages (kallang-wave-mall /
+orchard-central / funan). Rendering check was done by measurement — the
+browser env renders at a fixed 2560px viewport so the mobile media query
+can't be triggered live; simulating 354px phone width + applying the mobile
+rules gives pill width 354px, 0px overflow, centred (0/0 side gaps).
+Applies to all three outlets (same template).
+
 ## 2026-07-20 - Book Now Funan: White Card Slivers Fixed
 
 Client report: white border on the right and bottom of the Funan booking box.
