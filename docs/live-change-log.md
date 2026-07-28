@@ -1,5 +1,41 @@
 # Live Change Log
 
+## 2026-07-28 - INCIDENT: Kallang Outlet Page Went Blank (page template reset)
+
+Client reported `/outlet/kallang-wave-mall/` blank after their edit.
+
+Symptom: page returned 200 but 77KB instead of ~145KB, with the body class
+`page-template-default` and none of the `ow-pri__*` sections. No PHP error —
+the HTML was complete, just empty of page content.
+
+Root cause: page 504's `_wp_page_template` had been reset from
+`page-pricing.php` to `default` (post_modified 18:03), and
+`_elementor_edit_mode` was set to `builder` — the page had been opened/saved
+in Elementor, which dropped the custom template. With the Pricing Page
+template no longer assigned, none of the outlet markup ran, and
+`_elementor_data` was empty (0 bytes), so nothing rendered in its place.
+
+Nothing was lost: all ACF content survived (4 activity cards, 5 gallery
+images, and a new combo the client had just added).
+
+Fix: `update_post_meta(504, '_wp_page_template', 'page-pricing.php')`, then
+cleared `_elementor_element_cache` and purged LiteSpeed. Meta backed up
+first to `~/overworld-backups/page504-meta-before-template-restore.json`.
+
+Verified after: 145KB, all 7 sections present, 4 pricing tables, 10 gallery
+images, 23 FAQs, no PHP notices. `_elementor_edit_mode = builder` was left
+alone — Funan carries the same flag and renders correctly, so builder mode
+alone is not the trigger; the template assignment is.
+
+Client's own Kallang combo now renders: "Floor Is Lava + VR Machine Ride",
+badge "Save $5 each player", $26/$29 entered manually (Floor Is Lava $16 +
+VR Machine Ride $15 = $31, less $5). No image uploaded, so the badge falls
+back to sitting inline above the title — that path works.
+
+Open item: consider a guard that re-asserts `page-pricing.php` on save for
+the three outlet pages, so an accidental Elementor open cannot blank them
+again.
+
 ## 2026-07-28 - Outlet Pages: Client-Editable Combo Deals Section
 
 New section on the outlet pages, directly under "Activities & Games":
