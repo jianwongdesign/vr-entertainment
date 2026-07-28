@@ -689,12 +689,27 @@ if ( '' === $combos_intro ) {
     transition:transform .4s ease;
   }
   .ow-pri__combo-card:hover .ow-pri__combo-img img{transform:scale(1.05);}
+  /* Deliberately loud — this is the reason to read the card. Bright accent
+     fill, dark text for contrast, and a glow that lifts it off the photo. */
   .ow-pri__combo-badge{
-    position:absolute;top:14px;left:14px;z-index:2;
+    position:absolute;top:16px;left:16px;z-index:2;
+    display:inline-flex;align-items:center;gap:8px;
     font-family:'JetBrains Mono',monospace;
-    font-size:10px;letter-spacing:.14em;text-transform:uppercase;font-weight:700;
-    padding:7px 12px;border-radius:999px;
-    background:var(--accent);color:#0a0a14;
+    font-size:13px;letter-spacing:.16em;text-transform:uppercase;font-weight:700;
+    padding:11px 18px;border-radius:999px;
+    background:linear-gradient(135deg,var(--accent-glow),var(--accent));
+    color:#0a0a14;
+    border:2px solid rgba(255,255,255,.9);
+    box-shadow:0 12px 34px -10px var(--accent), 0 0 22px -6px var(--accent);
+    transition:transform .3s ease, box-shadow .3s ease;
+  }
+  .ow-pri__combo-badge::before{
+    content:"";width:7px;height:7px;border-radius:50%;
+    background:#0a0a14;opacity:.55;flex:none;
+  }
+  .ow-pri__combo-card:hover .ow-pri__combo-badge{
+    transform:scale(1.05);
+    box-shadow:0 16px 42px -10px var(--accent), 0 0 30px -4px var(--accent);
   }
   .ow-pri__combo-body{
     display:flex;flex-direction:column;flex:1;
@@ -1147,6 +1162,7 @@ if ( '' === $combos_intro ) {
     .ow-pri__hero-meta-item{justify-content:center;text-align:center;}
     .ow-pri__acts{padding:50px 18px 50px;}
     .ow-pri__combos{padding:0 18px 50px;}
+    .ow-pri__combo-badge{font-size:11.5px;padding:9px 15px;top:12px;left:12px;}
     .ow-pri__combos-inner{padding-top:45px;}
     .ow-pri__gallery{padding:40px 18px 6px;}
     .ow-pri__gallery-grid{grid-auto-rows:130px;gap:10px;}

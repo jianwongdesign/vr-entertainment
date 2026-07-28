@@ -47,6 +47,12 @@ Client workflow: WP Admin → Pages → outlet page → Combo Deals box → expa
 "Combo 1" → fill Combo Name, description, what's included, upload an image,
 Update.
 
+Follow-up (same day): the badge was too quiet against the busy game photos.
+Rebuilt it as the card's hook — 13px (was 10px), accent-glow → accent
+gradient fill, 2px near-white ring so it reads over any image, a dot marker,
+outer glow in the outlet accent, and a scale-up on card hover. Sized down to
+11.5px under 600px. Nothing else in the card changed.
+
 ## 2026-07-28 - Outlet Pages, Section 2: "From" Prices On Activity Cards
 
 Follow-up to the homepage entry below — the client meant the **outlet
