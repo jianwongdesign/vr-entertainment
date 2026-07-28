@@ -307,6 +307,41 @@ foreach ( $pricing_query as $item ) {
 uasort( $pricing_items, function( $a, $b ) {
     return $a['order'] - $b['order'];
 });
+
+// ===== Cheapest weekday / weekend price per activity =====
+// Feeds the "from" line on the activity cards in section 2. Keyed on a
+// normalised activity name so a card titled "Floor is Lava" still finds the
+// "Floor Is Lava" pricing rows; an activity with no match simply shows no
+// price line. Rows without a peak flag repeat the weekday price on the
+// weekend side, exactly like the pricing tables further down the page.
+$activity_from_prices = array();
+foreach ( $pricing_items as $activity_name => $activity_data ) {
+    $act_key = preg_replace( '/[^a-z0-9]/', '', strtolower( $activity_name ) );
+    if ( '' === $act_key ) continue;
+
+    foreach ( $activity_data['rows'] as $price_row ) {
+        $row_weekday = (float) get_post_meta( $price_row->ID, 'pricing_weekday_price', true );
+        if ( $row_weekday <= 0 ) continue;
+
+        $row_has_peak = get_post_meta( $price_row->ID, 'pricing_has_peak', true ) === '1';
+        $row_weekend  = (float) get_post_meta( $price_row->ID, 'pricing_weekend_price', true );
+        if ( ! $row_has_peak || $row_weekend <= 0 ) $row_weekend = $row_weekday;
+
+        if ( ! isset( $activity_from_prices[ $act_key ] ) ) {
+            $activity_from_prices[ $act_key ] = array( 'weekday' => $row_weekday, 'weekend' => $row_weekend );
+            continue;
+        }
+        $activity_from_prices[ $act_key ]['weekday'] = min( $activity_from_prices[ $act_key ]['weekday'], $row_weekday );
+        $activity_from_prices[ $act_key ]['weekend'] = min( $activity_from_prices[ $act_key ]['weekend'], $row_weekend );
+    }
+}
+
+// $16, $9.50 — never a trailing .00
+if ( ! function_exists( 'ow_pri_from_price' ) ) {
+    function ow_pri_from_price( $value ) {
+        return '$' . rtrim( rtrim( number_format( (float) $value, 2, '.', ',' ), '0' ), '.' );
+    }
+}
 ?>
 
 <!-- ============== PRICING PAGE STYLES ============== -->
@@ -508,6 +543,33 @@ uasort( $pricing_items, function( $a, $b ) {
   .ow-pri__act-desc{
     font-size:13.5px;line-height:1.55;color:var(--dim);
     margin:0 0 22px;flex:1;
+  }
+  /* "From" prices — cheapest weekday / weekend row above the card button.
+     .ow-pri__act-desc has flex:1, so this sits on the card floor and lines
+     up across cards no matter how long the description runs. */
+  .ow-pri__act-from{
+    display:flex;gap:10px;
+    margin:0 0 20px;padding-top:16px;
+    border-top:1px solid var(--line);
+  }
+  .ow-pri__act-from-item{flex:1;min-width:0;}
+  /* Sized so the longest label ("Weekend & PH from", ~97px) still fits the
+     narrowest column the grid produces — a 4-card row leaves ~110px. */
+  .ow-pri__act-from-lbl{
+    display:block;
+    font-family:'JetBrains Mono',monospace;
+    font-size:8.5px;letter-spacing:.07em;text-transform:uppercase;
+    color:var(--dim);margin-bottom:6px;white-space:nowrap;
+  }
+  .ow-pri__act-from-val{
+    display:block;
+    font-size:23px;font-weight:700;line-height:1;letter-spacing:-.02em;
+    color:#fff;
+  }
+  .ow-pri__act-from-item.is-peak .ow-pri__act-from-val{color:var(--accent-glow);}
+  .ow-pri__act-from-unit{
+    font-size:11px;font-weight:500;letter-spacing:0;
+    color:var(--dim);margin-left:3px;
   }
   .ow-pri__act-btn{
     display:inline-flex;align-items:center;justify-content:center;gap:8px;
@@ -1011,6 +1073,21 @@ uasort( $pricing_items, function( $a, $b ) {
               <?php endif; ?>
               <h3 class="ow-pri__act-name"><?php echo esc_html( $activity['name'] ); ?></h3>
               <p class="ow-pri__act-desc"><?php echo esc_html( $activity['desc'] ); ?></p>
+              <?php
+              $act_key   = preg_replace( '/[^a-z0-9]/', '', strtolower( $activity['name'] ) );
+              $act_price = isset( $activity_from_prices[ $act_key ] ) ? $activity_from_prices[ $act_key ] : null;
+              if ( $act_price ) : ?>
+                <div class="ow-pri__act-from">
+                  <div class="ow-pri__act-from-item">
+                    <span class="ow-pri__act-from-lbl">Weekday from</span>
+                    <span class="ow-pri__act-from-val"><?php echo esc_html( ow_pri_from_price( $act_price['weekday'] ) ); ?><span class="ow-pri__act-from-unit">/pax</span></span>
+                  </div>
+                  <div class="ow-pri__act-from-item is-peak">
+                    <span class="ow-pri__act-from-lbl">Weekend &amp; PH from</span>
+                    <span class="ow-pri__act-from-val"><?php echo esc_html( ow_pri_from_price( $act_price['weekend'] ) ); ?><span class="ow-pri__act-from-unit">/pax</span></span>
+                  </div>
+                </div>
+              <?php endif; ?>
               <?php if ( ! empty( $activity['url'] ) ) : ?>
                 <a class="ow-pri__act-btn" href="<?php echo esc_url( $activity['url'] ); ?>">Learn More →</a>
               <?php endif; ?>

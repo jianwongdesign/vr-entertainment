@@ -1,5 +1,42 @@
 # Live Change Log
 
+## 2026-07-28 - Outlet Pages, Section 2: "From" Prices On Activity Cards
+
+Follow-up to the homepage entry below — the client meant the **outlet
+detail** pages, not the homepage. Each activity card in "Activities & Games"
+(section 2 of `page-pricing.php`) now shows the cheapest weekday and
+cheapest weekend & PH price for that activity at that outlet, between the
+description and the Learn More button.
+
+`page-pricing.php` only (theme file, no DB change):
+
+- Builds `$activity_from_prices` from the `$pricing_items` already queried
+  for the page — no extra queries. Keyed on a normalised activity name
+  (lowercase, alphanumerics only) so an ACF card titled "Floor is Lava"
+  still matches the "Floor Is Lava" pricing rows. No match = no price line,
+  so combo-deal rows and unpriced cards degrade quietly.
+- Same peak rule as the tables below: rows with `pricing_has_peak != '1'`
+  repeat the weekday price on the weekend side. Zero/empty weekday rows are
+  skipped.
+- `.ow-pri__act-from` sits after `.ow-pri__act-desc`, which has `flex:1`, so
+  the price rows and buttons stay aligned across cards of different text
+  lengths. Weekend figure uses `--accent-glow` (per-outlet colour).
+- Label sized 8.5px/.07em: "Weekend & PH from" measures 97px and the
+  narrowest column the grid produces (4-card row) is 110px. At the original
+  9.5px/.14em it was 120px and overflowed into the card padding.
+
+Verified live on all three outlets — every card matched a pricing group:
+Kallang VR Arcade $23/$26, VR Escape $39/$44, Floor Is Lava $16/$19,
+VR Machine Ride $15/$15; Orchard Floor Is Lava $16/$19, Laser Maze $16/$19,
+Tap Tap $10/$12; Funan VR Free Roam $26/$29, Floor Is Lava $16/$19,
+XR Party Game $16/$19. Rows and buttons measured pixel-aligned.
+
+Backup: `~/overworld-backups/page-pricing-before-act-from-price.php`
+(local repo copy was byte-identical to live before the edit).
+
+Note: these cards have only a Learn More button — there is no per-card
+Book Now on the outlet pages (booking lives in the page's final CTA).
+
 ## 2026-07-28 - Homepage Outlet Cards: "From" Prices (live from Pricing CPT)
 
 Added a two-column price row to the three cards in the homepage OUTLETS
