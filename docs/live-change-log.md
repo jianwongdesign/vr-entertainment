@@ -32,9 +32,26 @@ badge "Save $5 each player", $26/$29 entered manually (Floor Is Lava $16 +
 VR Machine Ride $15 = $31, less $5). No image uploaded, so the badge falls
 back to sitting inline above the title — that path works.
 
-Open item: consider a guard that re-asserts `page-pricing.php` on save for
-the three outlet pages, so an accidental Elementor open cannot blank them
-again.
+Guard added same day — `wp-content/mu-plugins/overworld-outlet-template-guard.php`:
+
+- Blocks `_wp_page_template` writes on the three outlet pages (matched by
+  slug, not ID) unless the value is `page-pricing.php`, via the
+  `update_post_metadata` / `add_post_metadata` filters. Returns `true` so the
+  caller believes it succeeded and carries on instead of erroring.
+- Also blocks deletion of that meta — an empty value falls back to the
+  default template just as surely as writing "default".
+- Belt and braces: `save_post_page` (priority 99) repairs the value with a
+  direct `$wpdb` write, covering anything that bypasses the meta API, and
+  clears `_elementor_element_cache`.
+- Admin notice on those pages' edit screens: locked to the Pricing Page
+  template, edit via the ACF boxes, do not use "Edit with Elementor".
+- Escape hatch: `define( 'OW_DISABLE_TEMPLATE_GUARD', true )` in wp-config,
+  or the `ow_outlet_template_guard_enabled` filter.
+
+Tested live on all three pages: `update_post_meta(..., 'default')` and
+`delete_post_meta` both leave the template at `page-pricing.php`; a direct
+SQL write followed by `wp_update_post` is repaired on save; an unguarded
+page (16) still accepts template changes normally.
 
 ## 2026-07-28 - Outlet Pages: Client-Editable Combo Deals Section
 
