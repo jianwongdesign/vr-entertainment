@@ -662,7 +662,10 @@ if ( '' === $combos_intro ) {
   .ow-pri__combos-grid{
     display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:22px;
   }
+  /* max-width keeps a single combo (Funan) from stretching the card — and
+     its 16:9 image — across the full 1200px row. */
   .ow-pri__combo-card{
+    max-width:520px;
     display:flex;flex-direction:column;
     background:var(--bg-2);
     border:1px solid var(--line);

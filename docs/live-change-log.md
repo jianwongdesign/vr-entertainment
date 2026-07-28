@@ -47,6 +47,21 @@ Client workflow: WP Admin → Pages → outlet page → Combo Deals box → expa
 "Combo 1" → fill Combo Name, description, what's included, upload an image,
 Update.
 
+Follow-up (same day): rolled the section out to Funan (page 506) — one
+combo, "Floor Is Lava + XR Party Game", badge "Save $9", image 1236,
+button → `/book-now-funan/`, prices again resolved from Pricing ($23/$27
+via the "Combo Deal - Floor Is Lava & XR Party Game" row).
+
+**Kallang (504) left empty on purpose:** it has no combo rows in the
+Pricing CPT at all, so there is no real bundle to publish. Needs the client
+to say which combos that outlet sells and at what price — inventing one
+would put a product on the site that does not exist. The section stays
+hidden there until then.
+
+Also capped `.ow-pri__combo-card` at 520px: with a single combo the grid
+track was the full 1200px, which blew the 16:9 image up to 1200×675. Cards
+now cap at 520 and left-align; two or more still fill the row normally.
+
 Follow-up (same day): the badge was too quiet against the busy game photos.
 Rebuilt it as the card's hook — 13px (was 10px), accent-glow → accent
 gradient fill, 2px near-white ring so it reads over any image, a dot marker,
