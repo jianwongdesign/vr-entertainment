@@ -1,5 +1,58 @@
 # Live Change Log
 
+## 2026-07-28 - Homepage Outlet Cards: "From" Prices (live from Pricing CPT)
+
+Added a two-column price row to the three cards in the homepage OUTLETS
+section (the second section, page 16, Elementor HTML widget `b63910e`):
+cheapest **weekday** and cheapest **weekend & PH** price for that outlet.
+It sits below the game pills and directly above the Book / Learn More
+buttons, exactly where the client asked for it.
+
+The figures are **not hardcoded** — they are read live from the
+`pricing_item` CPT, so whatever the client edits under Pricing is what the
+homepage shows.
+
+New mu-plugin `wp-content/mu-plugins/overworld-outlet-from-price.php`:
+
+- `ow_outlet_from_prices()` scans published `pricing_item` posts, groups by
+  `pricing_outlet`, and takes the min of `pricing_weekday_price` and of the
+  weekend price. Rows with `pricing_has_peak != '1'` reuse the weekday price
+  on the weekend side, matching how `page-pricing.php` renders the tables.
+  Rows with no/zero weekday price are ignored.
+- Shortcode `[ow_outlet_from outlet="<slug>"]` prints the row (self-contained
+  `<style>`, emitted once per request). Renders nothing if the outlet has no
+  usable pricing rows, so the card just closes up.
+- Elementor's HTML widget prints markup raw, so a scoped
+  `elementor/widget/render_content` filter runs `do_shortcode()` only on
+  widgets that actually contain `[ow_outlet_from`.
+- Result cached in the `ow_outlet_from_prices` transient; saving/trashing/
+  deleting a `pricing_item` flushes it **plus** all `_elementor_element_cache`
+  postmeta and LiteSpeed. Verified: pricing_item save flushes, page save does
+  not.
+
+Widget edit via `scripts/homepage-outlet-from-price.php`
+(`wp eval-file`, idempotent): inserts one shortcode per card anchored on its
+unique `/book-now-*/` link, and appends CSS to the widget's `<style>` —
+per-outlet accent for the weekend figure (Kallang `#6f9bff`, Orchard
+`#ff8a3d`, Funan `#c89aff`) plus `margin-top:auto` on `.ow-fp` (and
+`margin-top:0` on the following `.actions`) so all three price rows line up
+even though the cards have different numbers of game pills.
+
+Gotcha worth remembering: after editing the mu-plugin's CSS the homepage kept
+serving the old style block — `_elementor_element_cache` postmeta caches the
+*rendered* widget HTML, so a LiteSpeed purge alone is not enough. Clear that
+meta too (the plugin now does it automatically on price edits).
+
+Backups: `~/overworld-backups/page16-elementor-before-outlet-from-price.json`
+(remote) and the same JSON locally in the session scratchpad.
+
+Live values at time of change (per pax): Kallang $15 / $15 (VR Machine Ride),
+Orchard $10 / $12 (Tap Tap 15 Min), Funan $16 / $19 (Floor Is Lava &
+XR Party Game). Browser-verified on the live homepage: three rows rendered,
+aligned, no raw shortcode text, correct accent colours; long label
+"WEEKEND & PH FROM" measured at 120px and shrunk to 98px under 400px viewport
+so it fits the single-column mobile card.
+
 ## 2026-07-21 - Pricing Hero: Address Overflowed Off-Screen On Mobile
 
 Client report (with screenshot): on mobile the outlet pricing page hero
