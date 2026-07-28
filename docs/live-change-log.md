@@ -1,5 +1,52 @@
 # Live Change Log
 
+## 2026-07-28 - Outlet Pages: Client-Editable Combo Deals Section
+
+New section on the outlet pages, directly under "Activities & Games":
+combo/bundle cards the client fills in themselves, with image, copy and
+optional prices. Section hides entirely when no combo has a name, so the
+other outlets are unchanged until someone fills them in.
+
+New mu-plugin `wp-content/mu-plugins/overworld-outlet-combos.php`:
+
+- Field group "Combo Deals" on any page using the Pricing Page template
+  (so all 3 outlet pages get it), following the outlet_act_* convention:
+  free ACF has no repeater, so 4 fixed slots in collapsible accordions.
+- Per combo: `outlet_combo_{i}_title` / `_badge` / `_desc` / `_includes`
+  (comma-separated → pills) / `_weekday` / `_weekend` / `_link` / `_image`,
+  plus a section-level `outlet_combos_intro`.
+- Empty title hides that combo. Empty prices fall back to the Pricing CPT
+  (see below). Empty link hides the button. Empty image drops the photo and
+  moves the badge inline.
+- Clears `_elementor_element_cache` on ACF save.
+
+`page-pricing.php`:
+
+- Loads the slots into `$outlet_combos` and renders a "Better Together /
+  Combo Deals" section between Activities & Games and Group Events.
+- Price fallback: exact normalised name match against the per-activity price
+  map, then the first priced activity whose name *contains* the combo name —
+  so a combo titled "Floor Is Lava + Laser Maze" resolves to the pricing row
+  "Combo A - Floor is Lava & Laser Maze". A weekday price with no weekend
+  price means the same price all week.
+- Reuses the `.ow-pri__act-from` price row from the activity cards (comment
+  added at its definition noting both sections use it).
+
+Sample data written to Orchard Central (page 505) via
+`scripts/sample-outlet-combos.php`: two combos — "Floor Is Lava + Laser
+Maze" (badge "Save $9") and "Floor Is Lava + Tap Tap" (badge "Most
+Popular"), images reused from that page's activity cards (1425, 1536),
+button → `/book-now-orchard/`. Prices deliberately left blank so the page
+demonstrates the Pricing CPT fallback — both render $23 weekday / $27
+weekend from the existing Combo A / Combo Deal B rows.
+
+Verified live: 2 combo cards on Orchard, 0 on Kallang and Funan (section
+correctly absent), prices and badges rendering, field group registered.
+
+Client workflow: WP Admin → Pages → outlet page → Combo Deals box → expand
+"Combo 1" → fill Combo Name, description, what's included, upload an image,
+Update.
+
 ## 2026-07-28 - Outlet Pages, Section 2: "From" Prices On Activity Cards
 
 Follow-up to the homepage entry below — the client meant the **outlet

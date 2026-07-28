@@ -342,6 +342,67 @@ if ( ! function_exists( 'ow_pri_from_price' ) ) {
         return '$' . rtrim( rtrim( number_format( (float) $value, 2, '.', ',' ), '0' ), '.' );
     }
 }
+
+// ===== Combo deals (ACF slots outlet_combo_1..4, see mu-plugin
+// overworld-outlet-combos.php). Empty prices fall back to the matching combo
+// rows in the Pricing CPT. Whole section hides when no combo has a name. =====
+$outlet_combos = array();
+for ( $ci = 1; $ci <= 4; $ci++ ) {
+    $combo_title = trim( (string) get_post_meta( get_the_ID(), 'outlet_combo_' . $ci . '_title', true ) );
+    if ( '' === $combo_title ) continue;
+
+    $combo_weekday = get_post_meta( get_the_ID(), 'outlet_combo_' . $ci . '_weekday', true );
+    $combo_weekend = get_post_meta( get_the_ID(), 'outlet_combo_' . $ci . '_weekend', true );
+
+    // Pricing CPT fallback: exact normalised match first, then the first
+    // priced activity whose name contains this one, so a combo titled
+    // "Floor Is Lava + XR Party Game" still finds the pricing row named
+    // "Combo Deal - Floor Is Lava & XR Party Game".
+    if ( '' === (string) $combo_weekday ) {
+        $combo_key   = preg_replace( '/[^a-z0-9]/', '', strtolower( $combo_title ) );
+        $combo_match = isset( $activity_from_prices[ $combo_key ] ) ? $activity_from_prices[ $combo_key ] : null;
+        if ( ! $combo_match && '' !== $combo_key ) {
+            foreach ( $activity_from_prices as $price_key => $price_pair ) {
+                if ( false !== strpos( $price_key, $combo_key ) ) {
+                    $combo_match = $price_pair;
+                    break;
+                }
+            }
+        }
+        if ( $combo_match ) {
+            $combo_weekday = $combo_match['weekday'];
+            $combo_weekend = $combo_match['weekend'];
+        }
+    }
+    // A weekday price with no weekend price means the same price all week.
+    if ( '' !== (string) $combo_weekday && '' === (string) $combo_weekend ) {
+        $combo_weekend = $combo_weekday;
+    }
+
+    $combo_img_id  = get_post_meta( get_the_ID(), 'outlet_combo_' . $ci . '_image', true );
+    $combo_img_src = ( $combo_img_id && is_numeric( $combo_img_id ) ) ? wp_get_attachment_image_url( (int) $combo_img_id, 'large' ) : '';
+
+    $combo_includes = array_values( array_filter( array_map(
+        'trim',
+        explode( ',', (string) get_post_meta( get_the_ID(), 'outlet_combo_' . $ci . '_includes', true ) )
+    ) ) );
+
+    $outlet_combos[] = array(
+        'title'    => $combo_title,
+        'badge'    => trim( (string) get_post_meta( get_the_ID(), 'outlet_combo_' . $ci . '_badge', true ) ),
+        'desc'     => (string) get_post_meta( get_the_ID(), 'outlet_combo_' . $ci . '_desc', true ),
+        'includes' => $combo_includes,
+        'weekday'  => ( '' === (string) $combo_weekday ) ? null : (float) $combo_weekday,
+        'weekend'  => ( '' === (string) $combo_weekend ) ? null : (float) $combo_weekend,
+        'link'     => trim( (string) get_post_meta( get_the_ID(), 'outlet_combo_' . $ci . '_link', true ) ),
+        'img'      => $combo_img_src,
+    );
+}
+
+$combos_intro = trim( (string) get_post_meta( get_the_ID(), 'outlet_combos_intro', true ) );
+if ( '' === $combos_intro ) {
+    $combos_intro = 'Stack two experiences into one visit and pay less than booking them apart.';
+}
 ?>
 
 <!-- ============== PRICING PAGE STYLES ============== -->
@@ -544,7 +605,9 @@ if ( ! function_exists( 'ow_pri_from_price' ) ) {
     font-size:13.5px;line-height:1.55;color:var(--dim);
     margin:0 0 22px;flex:1;
   }
-  /* "From" prices — cheapest weekday / weekend row above the card button.
+  /* Weekday / weekend price row above a card button. Used by the activity
+     cards ("from" prices) and by the combo cards below, which is why the
+     block lives here rather than inside either section.
      .ow-pri__act-desc has flex:1, so this sits on the card floor and lines
      up across cards no matter how long the description runs. */
   .ow-pri__act-from{
@@ -584,6 +647,90 @@ if ( ! function_exists( 'ow_pri_from_price' ) ) {
   .ow-pri__act-btn:hover{
     background:rgba(255,255,255,.08);
     border-color:var(--accent);
+    transform:translateY(-2px);gap:12px;
+  }
+
+  /* ===== COMBO DEALS ===== */
+  .ow-pri__combos{
+    padding:0 40px 80px;
+    background:var(--bg);
+  }
+  .ow-pri__combos-inner{
+    max-width:1200px;margin:0 auto;
+    padding-top:70px;border-top:1px solid var(--line);
+  }
+  .ow-pri__combos-grid{
+    display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:22px;
+  }
+  .ow-pri__combo-card{
+    display:flex;flex-direction:column;
+    background:var(--bg-2);
+    border:1px solid var(--line);
+    border-radius:20px;
+    position:relative;overflow:hidden;
+    transition:transform .35s ease, border-color .25s ease, box-shadow .35s ease;
+  }
+  .ow-pri__combo-card:hover{
+    transform:translateY(-6px);
+    border-color:var(--accent);
+    box-shadow:0 20px 60px -20px var(--accent);
+  }
+  .ow-pri__combo-img{
+    position:relative;aspect-ratio:16/9;
+    background:rgba(255,255,255,.02);overflow:hidden;
+    border-bottom:1px solid var(--line);
+  }
+  .ow-pri__combo-img img{
+    width:100% !important;height:100% !important;
+    object-fit:cover !important;object-position:center !important;
+    display:block !important;
+    position:absolute !important;top:0 !important;left:0 !important;
+    max-width:none !important;max-height:none !important;
+    transition:transform .4s ease;
+  }
+  .ow-pri__combo-card:hover .ow-pri__combo-img img{transform:scale(1.05);}
+  .ow-pri__combo-badge{
+    position:absolute;top:14px;left:14px;z-index:2;
+    font-family:'JetBrains Mono',monospace;
+    font-size:10px;letter-spacing:.14em;text-transform:uppercase;font-weight:700;
+    padding:7px 12px;border-radius:999px;
+    background:var(--accent);color:#0a0a14;
+  }
+  .ow-pri__combo-body{
+    display:flex;flex-direction:column;flex:1;
+    padding:26px 26px 26px;
+  }
+  .ow-pri__combo-name{
+    font-family:'Anton','Bebas Neue',sans-serif;
+    font-size:22px;line-height:1.15;font-weight:400;
+    text-transform:uppercase;letter-spacing:-.005em;
+    margin:0 0 10px;color:#fff;
+  }
+  .ow-pri__combo-desc{
+    font-size:13.5px;line-height:1.55;color:var(--dim);
+    margin:0 0 16px;
+  }
+  .ow-pri__combo-tags{
+    display:flex;flex-wrap:wrap;gap:6px;margin:0 0 20px;flex:1;align-content:flex-start;
+  }
+  .ow-pri__combo-tag{
+    font-family:'JetBrains Mono',monospace;
+    font-size:10px;letter-spacing:.1em;text-transform:uppercase;
+    padding:6px 10px;border-radius:999px;
+    border:1px solid var(--line);color:rgba(255,255,255,.75);
+  }
+  .ow-pri__combo-btn{
+    display:inline-flex;align-items:center;justify-content:center;gap:8px;
+    padding:12px 18px;border-radius:999px;
+    font-family:'JetBrains Mono',monospace;
+    font-size:11px;letter-spacing:.14em;text-transform:uppercase;
+    text-decoration:none;font-weight:700;
+    background:var(--accent);color:#0a0a14;
+    border:1px solid var(--accent);
+    transition:transform .25s ease, gap .25s ease, filter .25s ease;
+  }
+  .ow-pri__combo-btn:hover{
+    filter:brightness(1.1);
     transform:translateY(-2px);gap:12px;
   }
 
@@ -980,6 +1127,8 @@ if ( ! function_exists( 'ow_pri_from_price' ) ) {
     .ow-pri__hero-meta{max-width:100%;}
     .ow-pri__hero-meta-item{white-space:normal;}
     .ow-pri__acts{padding:60px 28px 60px;}
+    .ow-pri__combos{padding:0 28px 60px;}
+    .ow-pri__combos-inner{padding-top:55px;}
     .ow-pri__gallery{padding:45px 28px 10px;}
     .ow-pri__gallery-grid{grid-template-columns:repeat(2,1fr);grid-auto-rows:160px;}
     .ow-pri__main{padding:60px 28px 80px;}
@@ -997,6 +1146,8 @@ if ( ! function_exists( 'ow_pri_from_price' ) ) {
     .ow-pri__hero-meta{flex-direction:column;align-items:center;gap:8px;border-radius:20px;padding:14px 18px;}
     .ow-pri__hero-meta-item{justify-content:center;text-align:center;}
     .ow-pri__acts{padding:50px 18px 50px;}
+    .ow-pri__combos{padding:0 18px 50px;}
+    .ow-pri__combos-inner{padding-top:45px;}
     .ow-pri__gallery{padding:40px 18px 6px;}
     .ow-pri__gallery-grid{grid-auto-rows:130px;gap:10px;}
     .ow-pri__main{padding:50px 18px 70px;}
@@ -1090,6 +1241,73 @@ if ( ! function_exists( 'ow_pri_from_price' ) ) {
               <?php endif; ?>
               <?php if ( ! empty( $activity['url'] ) ) : ?>
                 <a class="ow-pri__act-btn" href="<?php echo esc_url( $activity['url'] ); ?>">Learn More →</a>
+              <?php endif; ?>
+            </div>
+          </article>
+        <?php endforeach; ?>
+      </div>
+
+    </div>
+  </div>
+  <?php endif; ?>
+
+  <!-- ===== COMBO DEALS ===== -->
+  <?php if ( ! empty( $outlet_combos ) ) : ?>
+  <div class="ow-pri__combos">
+    <div class="ow-pri__combos-inner">
+
+      <div class="ow-pri__section-head">
+        <div>
+          <div class="ow-pri__section-eyebrow">Better Together</div>
+          <h2 class="ow-pri__section-title">Combo Deals</h2>
+        </div>
+        <div class="ow-pri__section-count">
+          <strong><?php echo count( $outlet_combos ); ?></strong> Bundle<?php echo count( $outlet_combos ) === 1 ? '' : 's'; ?> at <?php echo esc_html( $outlet['short_name'] ); ?>
+        </div>
+      </div>
+
+      <p class="ow-pri__acts-intro"><?php echo esc_html( $combos_intro ); ?></p>
+
+      <div class="ow-pri__combos-grid">
+        <?php foreach ( $outlet_combos as $combo ) : ?>
+          <article class="ow-pri__combo-card">
+            <?php if ( ! empty( $combo['img'] ) ) : ?>
+              <div class="ow-pri__combo-img">
+                <?php if ( '' !== $combo['badge'] ) : ?>
+                  <span class="ow-pri__combo-badge"><?php echo esc_html( $combo['badge'] ); ?></span>
+                <?php endif; ?>
+                <img src="<?php echo esc_url( $combo['img'] ); ?>" alt="<?php echo esc_attr( $combo['title'] . ' combo at ' . $outlet['name'] ); ?>" loading="lazy" />
+              </div>
+            <?php endif; ?>
+            <div class="ow-pri__combo-body">
+              <?php if ( empty( $combo['img'] ) && '' !== $combo['badge'] ) : ?>
+                <span class="ow-pri__combo-badge" style="position:static;align-self:flex-start;margin-bottom:14px;"><?php echo esc_html( $combo['badge'] ); ?></span>
+              <?php endif; ?>
+              <h3 class="ow-pri__combo-name"><?php echo esc_html( $combo['title'] ); ?></h3>
+              <?php if ( '' !== trim( $combo['desc'] ) ) : ?>
+                <p class="ow-pri__combo-desc"><?php echo esc_html( $combo['desc'] ); ?></p>
+              <?php endif; ?>
+              <?php if ( ! empty( $combo['includes'] ) ) : ?>
+                <div class="ow-pri__combo-tags">
+                  <?php foreach ( $combo['includes'] as $combo_item ) : ?>
+                    <span class="ow-pri__combo-tag"><?php echo esc_html( $combo_item ); ?></span>
+                  <?php endforeach; ?>
+                </div>
+              <?php endif; ?>
+              <?php if ( null !== $combo['weekday'] ) : ?>
+                <div class="ow-pri__act-from">
+                  <div class="ow-pri__act-from-item">
+                    <span class="ow-pri__act-from-lbl">Weekday</span>
+                    <span class="ow-pri__act-from-val"><?php echo esc_html( ow_pri_from_price( $combo['weekday'] ) ); ?><span class="ow-pri__act-from-unit">/pax</span></span>
+                  </div>
+                  <div class="ow-pri__act-from-item is-peak">
+                    <span class="ow-pri__act-from-lbl">Weekend &amp; PH</span>
+                    <span class="ow-pri__act-from-val"><?php echo esc_html( ow_pri_from_price( $combo['weekend'] ) ); ?><span class="ow-pri__act-from-unit">/pax</span></span>
+                  </div>
+                </div>
+              <?php endif; ?>
+              <?php if ( '' !== $combo['link'] ) : ?>
+                <a class="ow-pri__combo-btn" href="<?php echo esc_url( $combo['link'] ); ?>">Book This Combo →</a>
               <?php endif; ?>
             </div>
           </article>
