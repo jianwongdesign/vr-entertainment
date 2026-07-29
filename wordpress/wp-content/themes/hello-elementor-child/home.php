@@ -12,10 +12,8 @@
 
 if ( ! defined( 'ABSPATH' ) ) exit;
 
-// Meta description for the blog index (no SEO plugin on this site).
-add_action( 'wp_head', function () {
-    echo '<meta name="description" content="News and behind-the-scenes stories from Overworld — Singapore\'s VR arcade and immersive game destination at Kallang Wave Mall, Orchard Central and Funan." />' . "\n";
-}, 5 );
+// Head metadata (title, description, Open Graph, schema) is owned by the
+// mu-plugin overworld-seo.php — see the blog-index entry in ow_seo_page_map().
 
 get_header();
 ?>

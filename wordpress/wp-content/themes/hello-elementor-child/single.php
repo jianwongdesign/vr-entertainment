@@ -5,73 +5,17 @@
  * INSTALL: Upload to your child theme:
  *   /wp-content/themes/hello-elementor-child/single.php
  *
- * Dark reading layout in the site's design language, plus the SEO/GEO layer
- * this site otherwise lacks (no SEO plugin installed):
- *   - meta description + Open Graph / Twitter tags from the post excerpt
- *   - schema.org Article + BreadcrumbList JSON-LD in <head>
- * Content is styled for long-form reading (headings, lists, blockquotes,
- * info boxes) so posts written in the block editor look on-brand.
+ * Dark reading layout in the site's design language. Content is styled for
+ * long-form reading (headings, lists, blockquotes, info boxes) so posts
+ * written in the block editor look on-brand.
+ *
+ * Head metadata (title, description, Open Graph / Twitter, Article and
+ * BreadcrumbList JSON-LD) used to be emitted here. It now lives in the
+ * mu-plugin overworld-seo.php so every URL on the site is described by one
+ * system — see ow_seo_generated() for the 'post' case.
  */
 
 if ( ! defined( 'ABSPATH' ) ) exit;
-
-// ===== SEO / GEO head tags (runs before get_header) =====
-add_action( 'wp_head', function () {
-    if ( ! is_singular( 'post' ) ) return;
-    $p = get_queried_object();
-    if ( ! $p ) return;
-
-    $desc  = $p->post_excerpt ? $p->post_excerpt : wp_trim_words( wp_strip_all_tags( $p->post_content ), 28, '…' );
-    $desc  = esc_attr( wp_strip_all_tags( $desc ) );
-    $url   = get_permalink( $p );
-    $title = esc_attr( get_the_title( $p ) );
-    $img   = get_the_post_thumbnail_url( $p->ID, 'full' );
-
-    echo '<meta name="description" content="' . $desc . '" />' . "\n";
-    echo '<meta property="og:type" content="article" />' . "\n";
-    echo '<meta property="og:title" content="' . $title . '" />' . "\n";
-    echo '<meta property="og:description" content="' . $desc . '" />' . "\n";
-    echo '<meta property="og:url" content="' . esc_url( $url ) . '" />' . "\n";
-    echo '<meta property="og:site_name" content="Overworld" />' . "\n";
-    if ( $img ) echo '<meta property="og:image" content="' . esc_url( $img ) . '" />' . "\n";
-    echo '<meta name="twitter:card" content="' . ( $img ? 'summary_large_image' : 'summary' ) . '" />' . "\n";
-
-    $schema = array(
-        '@context' => 'https://schema.org',
-        '@graph'   => array(
-            array(
-                '@type'            => 'Article',
-                'headline'         => get_the_title( $p ),
-                'description'      => wp_strip_all_tags( $desc ),
-                'datePublished'    => get_the_date( 'c', $p ),
-                'dateModified'     => get_the_modified_date( 'c', $p ),
-                'mainEntityOfPage' => array( '@type' => 'WebPage', '@id' => $url ),
-                'author'           => array(
-                    '@type' => 'Organization',
-                    'name'  => 'Overworld',
-                    'url'   => home_url( '/' ),
-                ),
-                'publisher'        => array(
-                    '@type' => 'Organization',
-                    'name'  => 'Overworld',
-                    'url'   => home_url( '/' ),
-                ),
-                'inLanguage'       => 'en-SG',
-            ),
-            array(
-                '@type'           => 'BreadcrumbList',
-                'itemListElement' => array(
-                    array( '@type' => 'ListItem', 'position' => 1, 'name' => 'Home', 'item' => home_url( '/' ) ),
-                    array( '@type' => 'ListItem', 'position' => 2, 'name' => 'Blog', 'item' => home_url( '/blog/' ) ),
-                    array( '@type' => 'ListItem', 'position' => 3, 'name' => get_the_title( $p ), 'item' => $url ),
-                ),
-            ),
-        ),
-    );
-    if ( $img ) $schema['@graph'][0]['image'] = $img;
-
-    echo '<script type="application/ld+json">' . wp_json_encode( $schema, JSON_UNESCAPED_SLASHES ) . '</script>' . "\n";
-}, 5 );
 
 get_header();
 

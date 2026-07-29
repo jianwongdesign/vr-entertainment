@@ -1,5 +1,98 @@
 # Live Change Log
 
+## 2026-07-29 - Site-Wide SEO Metadata For Every URL
+
+Client reported that pages were missing titles, descriptions and "those".
+Correct: there is no SEO plugin on this site. `soro-seo` is installed but is an
+AI article-publishing connector, not a metadata plugin — it emits no tags.
+
+Before this change, of 169 indexable URLs only 20 had a meta description. The
+rest shipped the WordPress fallback title (`VR Arcade – Overworld`) and nothing
+else, so Google wrote its own snippets from whatever text it hit first. Only
+three places had any metadata at all: `single.php` (blog posts), `home.php`
+(blog index) and `overworld-event-hub-content.php` (the two event landing
+pages).
+
+New mu-plugin `wp-content/mu-plugins/overworld-seo.php` is now the single
+source of truth:
+
+- Title tag, meta description, robots, canonical, Open Graph, Twitter card and
+  schema.org JSON-LD for pages, posts, experiences, event packages, promos and
+  taxonomy archives.
+- ACF "SEO" box on every one of those post types: Search Title, Search
+  Description, Share Image, Hide From Search Engines. Every field optional —
+  empty falls back to the built-in text, same convention as the outlet and
+  event-hub pages.
+- Structured data: `Organization` + `WebSite` everywhere;
+  `EntertainmentBusiness` for each outlet (real address, phone, email, 11:00–
+  22:00 daily) on the homepage, `/outlet/` and each outlet page; `Article` on
+  blog posts; `BreadcrumbList` built from real ancestors, so
+  `/team-building/funan/` reads Home > Team Building > Funan.
+
+**Defaults are keyed by page ID, not slug.** Twelve pages share three slugs —
+`kallang-wave-mall` is page 504 (outlet), 524 (team building), 527 (birthday
+party) and 530 (gift voucher). Slug matching would have given four different
+pages identical metadata. Same reasoning as the template guard.
+
+34 page titles and descriptions were hand-written from copy already on the live
+pages — no invented prices, group sizes or inclusions. Prices were deliberately
+left out of descriptions so they cannot go stale. The remaining 128 CPT URLs
+generate from their own editorial fields (`exp_intro`, `exp_tagline`,
+`event_tagline`, `promo_tagline`) rather than a template.
+
+Meta keywords deliberately not emitted: Google dropped it as a ranking signal
+in 2009 and Bing treats it as a spam signal.
+
+Four problems found and fixed while verifying:
+
+1. **Duplicate description tags on every post with an excerpt.** The Hello
+   Elementor *parent* theme has its own `hello_elementor_add_description_meta_tag`
+   that prints one from `post_excerpt`. Disabled via its
+   `hello_elementor_description_meta_tag` filter.
+2. **Seven pairs of byte-identical titles and descriptions.** Legitimately
+   distinct content that happens to share a name: "Pixel Hack" exists as both a
+   VR Arcade and a VR Free Roam title, and every event package name appears once
+   for team building and once for birthday parties. Titles now carry the
+   qualifier (`Pixel Hack | VR Free Roam | Overworld`) and descriptions come
+   from each item's own copy.
+3. **Beat Saber's description was 8 characters.** Its `post_excerpt` is the
+   category label "VR Games", which was winning over the real 400-word
+   `exp_intro`. Excerpts under 60 characters are now skipped in favour of the
+   custom fields.
+4. **Two titles ran past 60 characters** where a long post name met a brand
+   suffix. Title parts are now dropped from the end until the whole fits.
+
+Crawl hygiene: `elementor-hf` (the header and footer builder templates) and the
+author archives were listed in `wp-sitemap.xml` — both removed, and the header/
+footer fragments now carry `noindex, nofollow`. Canonical added for the blog
+index and taxonomy archives, which core only emits on singular views.
+
+Also trimmed the two event-hub meta descriptions (169 and 161 chars) under 160,
+and gave those two pages the robots directive they lacked.
+
+**Five pages are noindexed because they are empty stubs** — `/outlet/`,
+`/gift-voucher/` and its three outlet children have 20 bytes of post_content,
+no H1 and no Elementor data, but were sitting in the sitemap. They have titles
+and descriptions ready; remove the `noindex` flag in `ow_seo_page_map()` once
+they have real content. **This needs the client's attention** — `/outlet/` in
+particular is a natural landing page.
+
+Backups: `~/overworld-backups/{single,home}.php-before-seo-20260729.bak`,
+`event-hub-content-before-seo-20260729.bak`. The mu-plugin was staged in `/tmp`
+and `php -l`-checked on the server (PHP 8.3) before being moved into
+`mu-plugins/`, since anything in that directory loads automatically and a fatal
+would take the site down.
+
+Verified live by sweeping all 169 sitemap URLs: every one returns 200 with a
+unique title, a description, a robots directive, a canonical and valid JSON-LD.
+165 of 169 descriptions land in the 120–165 character range and none is under
+80. Zero duplicate titles. Editability tested end to end on /vr-arcade/: wrote
+an override via meta, saw it live, reverted, confirmed the default came back.
+
+Remaining content issue for the client: **Dream Hacker 2 and Dream Hacker 3
+share the same intro copy**, so those two URLs have identical descriptions.
+Their titles differ. Needs distinct copy written for one of them.
+
 ## 2026-07-29 - Team Building & Birthday Party Turned Into Search Landing Pages
 
 Client asked for `/team-building/` and `/birthday-party/` to work as Google

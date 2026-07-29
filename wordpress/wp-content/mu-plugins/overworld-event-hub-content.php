@@ -34,7 +34,7 @@ function ow_hub_defaults( $slug ) {
 
 		'team-building' => array(
 			'seo_title'  => 'Team Building Activities in Singapore | Overworld',
-			'meta_desc'  => 'Team building activities at three Overworld outlets in Singapore — VR arcades, escape rooms, laser maze and Floor Is Lava. Compare packages at Kallang, Orchard and Funan.',
+			'meta_desc'  => 'Team building at three Overworld outlets in Singapore — VR arcades, escape rooms, laser maze and Floor Is Lava. Compare packages at Kallang, Orchard and Funan.',
 			'eyebrow'    => 'Team Building At Overworld',
 			'h1'         => 'Team Building Activities in Singapore',
 			'tagline'    => 'Stronger squads. Sharper teams.',
@@ -69,7 +69,7 @@ function ow_hub_defaults( $slug ) {
 
 		'birthday-party' => array(
 			'seo_title'  => 'Birthday Party Venues in Singapore | Overworld',
-			'meta_desc'  => 'Birthday party packages at three Overworld outlets in Singapore — VR, Floor Is Lava, laser maze and XR party games. Compare venues at Kallang, Orchard and Funan.',
+			'meta_desc'  => 'Birthday parties at three Overworld outlets in Singapore — VR, Floor Is Lava, laser maze and XR party games. Compare venues at Kallang, Orchard and Funan.',
 			'eyebrow'    => 'Birthday Parties At Overworld',
 			'h1'         => 'Birthday Party Venues in Singapore',
 			'tagline'    => 'A birthday they\'ll actually remember.',
