@@ -1,6 +1,46 @@
 # Live Change Log
 
-## 2026-07-29 - Template Guard Extended; Combo Badge Moved Below The Title
+## 2026-07-29 - Team Building & Birthday Party Turned Into Search Landing Pages
+
+Client asked for `/team-building/` and `/birthday-party/` to work as Google
+landing pages and to be editable. Both pages already existed on
+`page-event-hub.php`; the problem was that every word was hardcoded in the
+template and the pages had no search plumbing at all — no meta description,
+no Open Graph, no structured data, and an H1 of just "Team Building".
+
+New mu-plugin `wp-content/mu-plugins/overworld-event-hub-content.php`:
+
+- ACF group "Landing Page Content" on any page using the Event Hub template,
+  so both pages get it. Grouped into accordions: Google & Sharing, Top Of
+  Page, About This Page, Why Book With Us (4 points), Outlet Card Blurbs,
+  FAQ (6 slots), Bottom Call To Action.
+- Every field optional. Defaults per event type live in this plugin (not the
+  template) because the title tag and meta description need them too, so an
+  untouched page renders exactly as before.
+- `document_title_parts` filter for the title tag; `wp_head` at priority 2
+  for meta description, Open Graph, Twitter card, and JSON-LD
+  (BreadcrumbList + FAQPage built from the FAQs actually rendered).
+- Clears `_elementor_element_cache` on ACF save.
+
+`page-event-hub.php`: reads those fields through `ow_hub_val()` /
+`ow_hub_points()` / `ow_hub_faqs()`, and gained three sections between the
+outlet cards and the enquiry CTA — "Why Book With Us" (4 points), a body
+copy block, and an FAQ accordion (`<details>`/`<summary>`, no JS).
+
+Copy defaults were also strengthened for search: H1 "Team Building
+Activities in Singapore" / "Birthday Party Venues in Singapore" (was just
+"Team Building" / "Birthday Party"), plus title tags, meta descriptions,
+4 selling points, ~90 words of body copy and 3 FAQs per page. FAQ answers
+were kept to facts already on the site (outlets, activities, how to book) —
+no invented prices, group sizes or inclusions.
+
+Backup: `~/overworld-backups/page-event-hub-before-landing.php`.
+
+Verified live on both pages: title tag, meta description, og:*, H1, 3 outlet
+cards, 4 points, body copy, 3 FAQs, and valid JSON-LD parsing to
+`['BreadcrumbList','FAQPage']`. Page text roughly doubled (~390 → ~780
+words). Editability tested end to end: wrote a test tagline via meta, saw it
+on the live page, reverted, and confirmed the default came back.
 
 Two follow-ups to yesterday's work.
 

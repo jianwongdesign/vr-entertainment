@@ -30,19 +30,11 @@ $type_slug = $post->post_name;
 $event_type_config = array(
     'team-building' => array(
         'label'       => 'Team Building',
-        'eyebrow'     => 'Team Building At Overworld',
-        'title'       => 'Team Building',
-        'tagline'     => 'Stronger squads. Sharper teams.',
-        'description' => 'Bring your team out of the office and into the action. Three outlets across Singapore, each with its own mix of VR and physical challenges — pick the one that fits your crew.',
         'other_slug'  => 'birthday-party',
         'other_label' => 'Planning a birthday instead?',
     ),
     'birthday-party' => array(
         'label'       => 'Birthday Party',
-        'eyebrow'     => 'Birthday Parties At Overworld',
-        'title'       => 'Birthday Party',
-        'tagline'     => 'A birthday they\'ll actually remember.',
-        'description' => 'Forget cake-and-balloons. Throw a birthday that\'s loud, active, and full of bragging rights — at any of our three outlets across Singapore.',
         'other_slug'  => 'team-building',
         'other_label' => 'Planning a team event instead?',
     ),
@@ -52,6 +44,34 @@ if ( ! isset( $event_type_config[ $type_slug ] ) ) {
     $type_slug = 'team-building'; // safe default
 }
 $event_type = $event_type_config[ $type_slug ];
+
+// ===== Client-editable copy (mu-plugin overworld-event-hub-content.php) =====
+// Every field falls back to that plugin's built-in copy for this event type,
+// so an untouched page looks exactly as it always has.
+$page_id     = get_the_ID();
+$hub_default = function_exists( 'ow_hub_defaults' ) ? ow_hub_defaults( $type_slug ) : array();
+$hub_get     = function ( $name, $fallback = '' ) use ( $page_id, $hub_default ) {
+    $default = isset( $hub_default[ $name ] ) ? $hub_default[ $name ] : $fallback;
+    return function_exists( 'ow_hub_val' ) ? ow_hub_val( $page_id, $name, $default ) : $default;
+};
+
+$hub_eyebrow      = $hub_get( 'eyebrow' );
+$hub_h1           = $hub_get( 'h1' );
+$hub_tagline      = $hub_get( 'tagline' );
+$hub_intro        = $hub_get( 'intro' );
+$hub_body         = $hub_get( 'body' );
+$hub_points_title = $hub_get( 'points_title' );
+$hub_faq_title    = $hub_get( 'faq_title' );
+$hub_cta_eyebrow  = $hub_get( 'cta_eyebrow' );
+$hub_cta_title    = $hub_get( 'cta_title' );
+$hub_cta_text     = $hub_get( 'cta_text' );
+
+$hub_points = function_exists( 'ow_hub_points' )
+    ? ow_hub_points( $page_id, isset( $hub_default['points'] ) ? $hub_default['points'] : array() )
+    : array();
+$hub_faqs = function_exists( 'ow_hub_faqs' )
+    ? ow_hub_faqs( $page_id, isset( $hub_default['faqs'] ) ? $hub_default['faqs'] : array() )
+    : array();
 
 // ===== OUTLET CONFIG (same data as the event listing / pricing pages) =====
 $outlets = array(
@@ -64,6 +84,7 @@ $outlets = array(
         'phone'       => '+65 6513 0561',
         'whatsapp'    => 'https://wa.me/6596101682',
         'activities'  => array( 'VR Arcade', 'VR Escape', 'VR Machine Ride', 'Floor Is Lava' ),
+        'blurb_key'   => 'kallang',
         'blurb'       => 'The flagship VR-heavy outlet by the National Stadium — headsets, escape rooms, rides and lava.',
         'accent'      => '#ff5722',
         'accent_glow' => '#ff8a3d',
@@ -78,6 +99,7 @@ $outlets = array(
         'phone'       => '+65 8801 4303',
         'whatsapp'    => 'https://wa.me/message/WJ7MGRFFVGHAF1',
         'activities'  => array( 'Floor Is Lava', 'Laser Maze', 'Tap Tap' ),
+        'blurb_key'   => 'orchard',
         'blurb'       => 'All-physical, all-energy play in the heart of town — built for head-to-head team showdowns.',
         'accent'      => '#22e3ff',
         'accent_glow' => '#5ff0ff',
@@ -92,6 +114,7 @@ $outlets = array(
         'phone'       => '+65 8914 0061',
         'whatsapp'    => 'https://wa.me/6589140061',
         'activities'  => array( 'Floor Is Lava', 'VR Free Roam', 'XR Party Game' ),
+        'blurb_key'   => 'funan',
         'blurb'       => 'City Hall\'s mixed-reality playground — free-roam VR adventures plus lava and XR party games.',
         'accent'      => '#a855f7',
         'accent_glow' => '#c89aff',
@@ -118,6 +141,9 @@ foreach ( $outlets as $i => $o ) {
         ),
     ) );
     $outlets[ $i ]['package_count'] = count( $packages );
+
+    // Client override for this outlet's blurb on this landing page
+    $outlets[ $i ]['blurb'] = $hub_get( 'blurb_' . $o['blurb_key'], $o['blurb'] );
 }
 ?>
 
@@ -392,11 +418,69 @@ foreach ( $outlets as $i => $o ) {
     transform:translateY(-2px);gap:14px;
   }
 
+  /* ===== WHY BOOK WITH US ===== */
+  .ow-hub__points{background:var(--bg-2);border-top:1px solid var(--line);padding:70px 40px;}
+  .ow-hub__points-inner{max-width:1200px;margin:0 auto;}
+  .ow-hub__points-grid{
+    display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:20px;
+    margin-top:32px;
+  }
+  .ow-hub__point{
+    background:rgba(255,255,255,.02);
+    border:1px solid var(--line);
+    border-radius:16px;padding:26px 24px;
+  }
+  .ow-hub__point-icon{font-size:26px;line-height:1;margin-bottom:14px;}
+  .ow-hub__point-title{
+    font-family:'Anton','Bebas Neue',sans-serif;
+    font-size:19px;font-weight:400;line-height:1.15;
+    text-transform:uppercase;margin:0 0 8px;color:#fff;
+  }
+  .ow-hub__point-text{font-size:13.5px;line-height:1.6;color:var(--dim);margin:0;}
+
+  /* ===== BODY COPY ===== */
+  .ow-hub__body{background:var(--bg);border-top:1px solid var(--line);padding:64px 40px;}
+  .ow-hub__body-inner{max-width:860px;margin:0 auto;}
+  .ow-hub__body-inner p{
+    font-size:16px;line-height:1.75;color:var(--dim);margin:0 0 18px;
+  }
+  .ow-hub__body-inner p:last-child{margin-bottom:0;}
+
+  /* ===== FAQ ===== */
+  .ow-hub__faq{background:var(--bg-2);border-top:1px solid var(--line);padding:70px 40px;}
+  .ow-hub__faq-inner{max-width:860px;margin:0 auto;}
+  .ow-hub__faq-item{
+    border:1px solid var(--line);border-radius:14px;
+    background:rgba(255,255,255,.02);
+    margin-top:12px;overflow:hidden;
+  }
+  .ow-hub__faq-item[open]{border-color:rgba(255,87,34,.4);}
+  .ow-hub__faq-q{
+    cursor:pointer;list-style:none;
+    padding:18px 52px 18px 22px;position:relative;
+    font-size:15.5px;font-weight:600;line-height:1.45;color:#fff;
+  }
+  .ow-hub__faq-q::-webkit-details-marker{display:none;}
+  .ow-hub__faq-q::after{
+    content:"+";position:absolute;right:22px;top:50%;transform:translateY(-50%);
+    font-family:'JetBrains Mono',monospace;font-size:19px;color:var(--lava-glow);
+    transition:transform .25s ease;
+  }
+  .ow-hub__faq-item[open] .ow-hub__faq-q::after{content:"–";}
+  .ow-hub__faq-q:hover{color:var(--lava-glow);}
+  .ow-hub__faq-a{
+    padding:0 22px 20px;
+    font-size:14.5px;line-height:1.7;color:var(--dim);
+  }
+
   /* Responsive */
   @media (max-width:1000px){
     .ow-hub__hero{padding:90px 28px 60px;}
     .ow-hub__main{padding:60px 28px 80px;}
     .ow-hub__grid{grid-template-columns:1fr;gap:18px;max-width:560px;margin:0 auto;}
+    .ow-hub__points{padding:55px 28px;}
+    .ow-hub__body{padding:52px 28px;}
+    .ow-hub__faq{padding:55px 28px;}
   }
   @media (max-width:680px){
     .ow-hub__hero{padding:70px 18px 50px;}
@@ -406,6 +490,10 @@ foreach ( $outlets as $i => $o ) {
     .ow-hub__enquiry-inner{padding:36px 24px;}
     .ow-hub__enquiry-buttons{flex-direction:column;}
     .ow-hub__enquiry-btn{justify-content:center;width:100%;}
+    .ow-hub__points{padding:45px 18px;}
+    .ow-hub__body{padding:45px 18px;}
+    .ow-hub__body-inner p{font-size:15px;}
+    .ow-hub__faq{padding:45px 18px;}
   }
 </style>
 
@@ -415,10 +503,10 @@ foreach ( $outlets as $i => $o ) {
   <div class="ow-hub__hero">
     <div class="ow-hub__hero-grid"></div>
     <div class="ow-hub__hero-inner">
-      <div class="ow-hub__eyebrow"><?php echo esc_html( $event_type['eyebrow'] ); ?></div>
-      <h1 class="ow-hub__title"><?php echo esc_html( $event_type['title'] ); ?></h1>
-      <p class="ow-hub__tag"><?php echo esc_html( $event_type['tagline'] ); ?></p>
-      <p class="ow-hub__desc"><?php echo esc_html( $event_type['description'] ); ?></p>
+      <div class="ow-hub__eyebrow"><?php echo esc_html( $hub_eyebrow ); ?></div>
+      <h1 class="ow-hub__title"><?php echo esc_html( $hub_h1 ); ?></h1>
+      <p class="ow-hub__tag"><?php echo esc_html( $hub_tagline ); ?></p>
+      <p class="ow-hub__desc"><?php echo esc_html( $hub_intro ); ?></p>
       <div class="ow-hub__loc"><strong>3 Outlets</strong> · Kallang · Orchard · Funan</div>
     </div>
   </div>
@@ -469,14 +557,62 @@ foreach ( $outlets as $i => $o ) {
     </div>
   </div>
 
+  <!-- WHY BOOK WITH US -->
+  <?php if ( ! empty( $hub_points ) ) : ?>
+  <div class="ow-hub__points">
+    <div class="ow-hub__points-inner">
+      <h2 class="ow-hub__section-title"><?php echo esc_html( $hub_points_title ); ?></h2>
+      <div class="ow-hub__points-grid">
+        <?php foreach ( $hub_points as $point ) : ?>
+          <div class="ow-hub__point">
+            <?php if ( '' !== $point['icon'] ) : ?>
+              <div class="ow-hub__point-icon"><?php echo esc_html( $point['icon'] ); ?></div>
+            <?php endif; ?>
+            <h3 class="ow-hub__point-title"><?php echo esc_html( $point['title'] ); ?></h3>
+            <?php if ( '' !== $point['text'] ) : ?>
+              <p class="ow-hub__point-text"><?php echo esc_html( $point['text'] ); ?></p>
+            <?php endif; ?>
+          </div>
+        <?php endforeach; ?>
+      </div>
+    </div>
+  </div>
+  <?php endif; ?>
+
+  <!-- BODY COPY (what search engines read) -->
+  <?php if ( '' !== $hub_body ) : ?>
+  <div class="ow-hub__body">
+    <div class="ow-hub__body-inner">
+      <?php foreach ( preg_split( '/\n\s*\n/', $hub_body ) as $paragraph ) :
+        $paragraph = trim( $paragraph );
+        if ( '' === $paragraph ) continue; ?>
+        <p><?php echo nl2br( esc_html( $paragraph ) ); ?></p>
+      <?php endforeach; ?>
+    </div>
+  </div>
+  <?php endif; ?>
+
+  <!-- FAQ -->
+  <?php if ( ! empty( $hub_faqs ) ) : ?>
+  <div class="ow-hub__faq">
+    <div class="ow-hub__faq-inner">
+      <h2 class="ow-hub__section-title"><?php echo esc_html( $hub_faq_title ); ?></h2>
+      <?php foreach ( $hub_faqs as $faq ) : ?>
+        <details class="ow-hub__faq-item">
+          <summary class="ow-hub__faq-q"><?php echo esc_html( $faq['q'] ); ?></summary>
+          <div class="ow-hub__faq-a"><?php echo nl2br( esc_html( $faq['a'] ) ); ?></div>
+        </details>
+      <?php endforeach; ?>
+    </div>
+  </div>
+  <?php endif; ?>
+
   <!-- ENQUIRY CTA -->
   <div class="ow-hub__enquiry">
     <div class="ow-hub__enquiry-inner">
-      <div class="ow-hub__enquiry-eyebrow">Not Sure Which Outlet?</div>
-      <h3 class="ow-hub__enquiry-title">We'll Point You To The Right One</h3>
-      <p class="ow-hub__enquiry-sub">
-        Tell us your group size, preferred date, and the vibe you're after — we'll recommend the outlet and package that fit best.
-      </p>
+      <div class="ow-hub__enquiry-eyebrow"><?php echo esc_html( $hub_cta_eyebrow ); ?></div>
+      <h3 class="ow-hub__enquiry-title"><?php echo esc_html( $hub_cta_title ); ?></h3>
+      <p class="ow-hub__enquiry-sub"><?php echo esc_html( $hub_cta_text ); ?></p>
       <div class="ow-hub__enquiry-buttons">
         <a class="ow-hub__enquiry-btn ow-hub__enquiry-btn--primary" href="<?php echo esc_url( home_url( '/contact/' ) ); ?>">
           Contact Us →
