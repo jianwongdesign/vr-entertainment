@@ -1,17 +1,24 @@
 <?php
 /**
- * Plugin Name: Overworld — Outlet Page Template Guard
- * Description: Locks the three outlet pages to the "Pricing Page" template. Opening one in Elementor used to reset its template to Default, which rendered the page blank (28 Jul 2026 incident on Kallang). Blocks the meta write, repairs the value on save, and warns in the editor.
+ * Plugin Name: Overworld — Page Template Guard
+ * Description: Locks the template-driven pages (outlets, FAQ, event hubs, event listings) to their page templates. Opening one in Elementor used to reset its template to Default, which rendered the page blank (28 Jul 2026 incident on Kallang). Blocks the meta write, repairs the value on save, and warns in the editor.
  * Author: Overworld
- * Version: 1.0.0
+ * Version: 1.1.0
  *
- * The outlet pages' entire layout lives in page-pricing.php. Without that
- * template assigned the pages have no content of their own — Elementor holds
- * nothing for them — so the site serves an empty shell.
+ * These pages hold almost no content of their own — the whole layout comes
+ * from the theme template, filled from ACF fields and the pricing_item /
+ * event_package CPTs. Drop the template and WordPress renders an empty shell:
+ * header, footer, nothing in between, and no error to notice it by.
+ *
+ * v1.1.0: extended beyond the outlet pages to FAQ, event hub and event
+ * listing pages, and switched from slug matching to an explicit ID map —
+ * the event listing pages share slugs with the outlet pages
+ * (e.g. "kallang-wave-mall" is both page 504 and page 524), so matching on
+ * slug alone would have forced the wrong template onto them.
  *
  * Escape hatch: define( 'OW_DISABLE_TEMPLATE_GUARD', true ) in wp-config.php,
- * or return false from the 'ow_outlet_template_guard_enabled' filter, if a
- * page ever needs to move to a different template on purpose.
+ * or return false from the 'ow_page_template_guard_enabled' filter, if a page
+ * ever needs to move to a different template on purpose.
  *
  * @package Overworld
  */
@@ -21,15 +28,34 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
-const OW_OUTLET_TEMPLATE = 'page-pricing.php';
-
 /**
- * Slugs of the pages that must keep the Pricing Page template.
+ * Page ID => template it must keep.
  *
- * @return string[]
+ * IDs rather than slugs, deliberately — see the version note above. A page
+ * recreated under a new ID simply falls outside the guard, which is the safe
+ * way to fail.
+ *
+ * @return array<int,string>
  */
-function ow_outlet_guarded_slugs() {
-	return array( 'kallang-wave-mall', 'orchard-central', 'funan' );
+function ow_guarded_page_templates() {
+	return apply_filters( 'ow_guarded_page_templates', array(
+		// Outlet pages
+		504 => 'page-pricing.php',      // kallang-wave-mall
+		505 => 'page-pricing.php',      // orchard-central
+		506 => 'page-pricing.php',      // funan
+		// FAQ
+		372 => 'page-faq.php',
+		// Event hubs
+		521 => 'page-event-hub.php',    // team-building
+		522 => 'page-event-hub.php',    // birthday-party
+		// Event listings (team building + birthday party, per outlet)
+		524 => 'page-event-listing.php',
+		525 => 'page-event-listing.php',
+		526 => 'page-event-listing.php',
+		527 => 'page-event-listing.php',
+		528 => 'page-event-listing.php',
+		529 => 'page-event-listing.php',
+	) );
 }
 
 /**
@@ -37,56 +63,55 @@ function ow_outlet_guarded_slugs() {
  *
  * @return bool
  */
-function ow_outlet_template_guard_enabled() {
+function ow_page_template_guard_enabled() {
 	if ( defined( 'OW_DISABLE_TEMPLATE_GUARD' ) && OW_DISABLE_TEMPLATE_GUARD ) {
 		return false;
 	}
 
-	return (bool) apply_filters( 'ow_outlet_template_guard_enabled', true );
+	return (bool) apply_filters( 'ow_page_template_guard_enabled', true );
 }
 
 /**
- * Is this post one of the guarded outlet pages?
+ * The template this page is locked to, or '' when it is not guarded.
  *
  * @param int $post_id Post ID.
- * @return bool
+ * @return string
  */
-function ow_is_guarded_outlet_page( $post_id ) {
+function ow_guarded_page_template( $post_id ) {
+	$map     = ow_guarded_page_templates();
 	$post_id = (int) $post_id;
-	if ( $post_id <= 0 || 'page' !== get_post_type( $post_id ) ) {
-		return false;
-	}
 
-	return in_array( get_post_field( 'post_name', $post_id ), ow_outlet_guarded_slugs(), true );
+	return isset( $map[ $post_id ] ) ? $map[ $post_id ] : '';
 }
 
 /**
- * Block any attempt to move a guarded page off the Pricing Page template.
- * Returning non-null short-circuits the meta write; `true` makes the caller
- * (Elementor, the editor, whatever) believe it succeeded and carry on.
+ * Block any attempt to move a guarded page off its template. Returning
+ * non-null short-circuits the meta write; `true` makes the caller (Elementor,
+ * the editor, whatever) believe it succeeded and carry on.
  */
-function ow_outlet_template_guard_meta( $check, $object_id, $meta_key, $meta_value ) {
-	if ( '_wp_page_template' !== $meta_key || ! ow_outlet_template_guard_enabled() ) {
+function ow_page_template_guard_meta( $check, $object_id, $meta_key, $meta_value ) {
+	if ( '_wp_page_template' !== $meta_key || ! ow_page_template_guard_enabled() ) {
 		return $check;
 	}
-	if ( OW_OUTLET_TEMPLATE === $meta_value || ! ow_is_guarded_outlet_page( $object_id ) ) {
+	$locked = ow_guarded_page_template( $object_id );
+	if ( '' === $locked || $locked === $meta_value ) {
 		return $check;
 	}
 
 	return true;
 }
-add_filter( 'update_post_metadata', 'ow_outlet_template_guard_meta', 10, 4 );
-add_filter( 'add_post_metadata', 'ow_outlet_template_guard_meta', 10, 4 );
+add_filter( 'update_post_metadata', 'ow_page_template_guard_meta', 10, 4 );
+add_filter( 'add_post_metadata', 'ow_page_template_guard_meta', 10, 4 );
 
 /**
  * Block deletion of the template meta on a guarded page — an empty value
  * falls back to the default template just as surely as writing "default".
  */
 add_filter( 'delete_post_metadata', function ( $check, $object_id, $meta_key ) {
-	if ( '_wp_page_template' !== $meta_key || ! ow_outlet_template_guard_enabled() ) {
+	if ( '_wp_page_template' !== $meta_key || ! ow_page_template_guard_enabled() ) {
 		return $check;
 	}
-	if ( ! ow_is_guarded_outlet_page( $object_id ) ) {
+	if ( '' === ow_guarded_page_template( $object_id ) ) {
 		return $check;
 	}
 
@@ -98,25 +123,27 @@ add_filter( 'delete_post_metadata', function ( $check, $object_id, $meta_key ) {
  * the meta straight to the database and skips the filters above.
  */
 add_action( 'save_post_page', function ( $post_id ) {
-	if ( ! ow_outlet_template_guard_enabled() || ! ow_is_guarded_outlet_page( $post_id ) ) {
+	if ( ! ow_page_template_guard_enabled() ) {
 		return;
 	}
-	if ( OW_OUTLET_TEMPLATE === get_post_meta( $post_id, '_wp_page_template', true ) ) {
+	$locked = ow_guarded_page_template( $post_id );
+	if ( '' === $locked || $locked === get_post_meta( $post_id, '_wp_page_template', true ) ) {
 		return;
 	}
 
 	// The filters above would block update_post_meta, so write it directly.
 	global $wpdb;
-	$wpdb->query( $wpdb->prepare(
-		"UPDATE {$wpdb->postmeta} SET meta_value = %s WHERE post_id = %d AND meta_key = '_wp_page_template'",
-		OW_OUTLET_TEMPLATE,
-		$post_id
-	) );
-	if ( ! metadata_exists( 'post', $post_id, '_wp_page_template' ) ) {
+	if ( metadata_exists( 'post', $post_id, '_wp_page_template' ) ) {
+		$wpdb->query( $wpdb->prepare(
+			"UPDATE {$wpdb->postmeta} SET meta_value = %s WHERE post_id = %d AND meta_key = '_wp_page_template'",
+			$locked,
+			$post_id
+		) );
+	} else {
 		$wpdb->insert( $wpdb->postmeta, array(
 			'post_id'    => $post_id,
 			'meta_key'   => '_wp_page_template',
-			'meta_value' => OW_OUTLET_TEMPLATE,
+			'meta_value' => $locked,
 		) );
 	}
 	wp_cache_delete( $post_id, 'post_meta' );
@@ -132,12 +159,13 @@ add_action( 'admin_notices', function () {
 		return;
 	}
 	$post_id = isset( $_GET['post'] ) ? (int) $_GET['post'] : 0;
-	if ( ! ow_is_guarded_outlet_page( $post_id ) ) {
+	$locked  = ow_guarded_page_template( $post_id );
+	if ( '' === $locked ) {
 		return;
 	}
 
-	echo '<div class="notice notice-info"><p><strong>Outlet page:</strong> this page is locked to the '
-		. '<em>Pricing Page</em> template — its whole layout comes from there. Edit the content using the '
-		. 'boxes below (What We Offer, Combo Deals, Outlet Gallery). Please do <strong>not</strong> use '
+	echo '<div class="notice notice-info"><p><strong>Template-driven page:</strong> this page is locked to the '
+		. '<code>' . esc_html( $locked ) . '</code> template — its whole layout comes from there, so the page '
+		. 'itself is nearly empty. Edit the content using the boxes below. Please do <strong>not</strong> use '
 		. '"Edit with Elementor" on this page.</p></div>';
 } );

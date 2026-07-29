@@ -1,6 +1,37 @@
 # Live Change Log
 
-## 2026-07-28 - INCIDENT: Kallang Outlet Page Went Blank (page template reset)
+## 2026-07-29 - Template Guard Extended; Combo Badge Moved Below The Title
+
+Two follow-ups to yesterday's work.
+
+**1. Guard extended to every template-driven page** (v1.1.0 of
+`overworld-outlet-template-guard.php`, renamed "Page Template Guard"):
+3 outlet pages, FAQ, 2 event hubs, 6 event listings — 12 in all.
+
+Switched from slug matching to an explicit ID => template map. This was a
+latent bug in v1.0.0, not a style preference: the event listing pages reuse
+the outlet slugs (`kallang-wave-mall` is page 504 *and* page 524), so the
+slug-based guard would have forced `page-pricing.php` onto the event
+listings the next time one was saved. No page was saved in that window, so
+nothing was damaged. IDs also mean a page recreated under a new ID falls
+outside the guard rather than getting the wrong template — the safe way to
+fail. Filter `ow_guarded_page_templates` to amend the map.
+
+Tested live across all 12: `update_post_meta(..., 'default')` and
+`delete_post_meta` both leave every page on its own template. All 12 URLs
+verified 200 with full-size responses afterwards.
+
+**2. Combo badge repositioned** (`page-pricing.php`): the badge
+("Save $5 each player", "Most Popular") moved from an overlay on the photo
+to inside the card body, directly under the combo name — the client asked
+for the highlight to sit where "Best Seller" reads, below the title. Order
+is now name → badge → description → included pills → prices → button.
+Dropped the white ring (it existed to survive a busy photo behind it) and
+kept the accent gradient, dot and glow. The old no-image inline fallback and
+its inline styles are gone — one code path now.
+
+Verified on all three outlets; Kallang shows it against the client's new
+"Double Thrill Combo Deal" artwork.
 
 Client reported `/outlet/kallang-wave-mall/` blank after their edit.
 
