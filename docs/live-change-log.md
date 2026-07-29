@@ -33,6 +33,22 @@ its inline styles are gone — one code path now.
 Verified on all three outlets; Kallang shows it against the client's new
 "Double Thrill Combo Deal" artwork.
 
+**3. "Label Next To Name" field for combos.** The client had "Best Seller"
+sitting in the Description field, where it printed as grey body text under
+the badge — redundant once the badge moved there. Added
+`outlet_combo_{i}_label` to the Combo Deals field group (text, "Small tag
+beside the combo name, e.g. Best Seller") rendered as an inline pill inside
+the `<h3>`, so it sits on the title line and wraps with it. Styled quiet on
+purpose — 9.5px mono, accent outline, transparent fill — so it labels the
+combo without fighting the loud savings badge below.
+
+Migrated Kallang combo 1 on the live DB: `outlet_combo_1_desc`
+"Best Seller" → `outlet_combo_1_label`, description cleared. Field key
+references written alongside both values so the ACF boxes show them.
+
+Verified: label renders on the title line, all three outlet pages 200,
+`field_outlet_combo_1_label` registered.
+
 Client reported `/outlet/kallang-wave-mall/` blank after their edit.
 
 Symptom: page returned 200 but 77KB instead of ~145KB, with the body class

@@ -70,6 +70,15 @@ add_action( 'acf/init', function () {
 			'wrapper'      => array( 'width' => '40' ),
 		);
 		$fields[] = array(
+			'key'          => 'field_outlet_combo_' . $i . '_label',
+			'label'        => 'Label Next To Name',
+			'name'         => 'outlet_combo_' . $i . '_label',
+			'type'         => 'text',
+			'instructions' => 'Small tag beside the combo name, e.g. Best Seller. Keep it to two words.',
+			'required'     => 0,
+			'wrapper'      => array( 'width' => '40' ),
+		);
+		$fields[] = array(
 			'key'      => 'field_outlet_combo_' . $i . '_desc',
 			'label'    => 'Description',
 			'name'     => 'outlet_combo_' . $i . '_desc',

@@ -389,6 +389,7 @@ for ( $ci = 1; $ci <= 4; $ci++ ) {
 
     $outlet_combos[] = array(
         'title'    => $combo_title,
+        'label'    => trim( (string) get_post_meta( get_the_ID(), 'outlet_combo_' . $ci . '_label', true ) ),
         'badge'    => trim( (string) get_post_meta( get_the_ID(), 'outlet_combo_' . $ci . '_badge', true ) ),
         'desc'     => (string) get_post_meta( get_the_ID(), 'outlet_combo_' . $ci . '_desc', true ),
         'includes' => $combo_includes,
@@ -717,6 +718,19 @@ if ( '' === $combos_intro ) {
   }
   /* Title sits tighter to the badge that follows it */
   .ow-pri__combo-name{margin-bottom:12px;}
+  /* Quiet tag beside the name ("Best Seller") — deliberately understated so
+     it labels the combo without competing with the badge underneath. */
+  .ow-pri__combo-label{
+    display:inline-block;vertical-align:middle;
+    margin-left:10px;transform:translateY(-2px);
+    font-family:'JetBrains Mono',monospace;
+    font-size:9.5px;letter-spacing:.16em;text-transform:uppercase;font-weight:700;
+    padding:5px 10px;border-radius:999px;
+    color:var(--accent-glow);
+    background:rgba(255,255,255,.04);
+    border:1px solid var(--accent);
+    white-space:nowrap;
+  }
   .ow-pri__combo-body{
     display:flex;flex-direction:column;flex:1;
     padding:26px 26px 26px;
@@ -1299,7 +1313,7 @@ if ( '' === $combos_intro ) {
               </div>
             <?php endif; ?>
             <div class="ow-pri__combo-body">
-              <h3 class="ow-pri__combo-name"><?php echo esc_html( $combo['title'] ); ?></h3>
+              <h3 class="ow-pri__combo-name"><?php echo esc_html( $combo['title'] ); ?><?php if ( '' !== $combo['label'] ) : ?><span class="ow-pri__combo-label"><?php echo esc_html( $combo['label'] ); ?></span><?php endif; ?></h3>
               <?php if ( '' !== $combo['badge'] ) : ?>
                 <span class="ow-pri__combo-badge"><?php echo esc_html( $combo['badge'] ); ?></span>
               <?php endif; ?>
