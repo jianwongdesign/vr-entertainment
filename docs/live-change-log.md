@@ -1,5 +1,49 @@
 # Live Change Log
 
+## 2026-07-29 - Every Page Now Shares A Real Photograph (SEO v1.2.0)
+
+v1.1.0 left 27 URLs falling back to the logo when shared, and flagged setting a
+Share Image on each as a manual job. Asked to cover them too, so the fallback
+chain now derives an image from content the site already has rather than
+waiting for someone to pick one by hand.
+
+**Result: 167 of 167 URLs share a real photograph. None falls back to the logo.**
+
+Every source is read live, so replacing a photo in the CMS updates the share
+image with it — nothing is hardcoded to an attachment ID except the one brand
+default:
+
+- **The 8 activity pages** take the photo from the matching activity card on
+  the outlet pages. Matched on the card's `outlet_act_N_link` — its own pointer
+  at the activity page — with the title as a secondary key, because a link is
+  an exact identifier where two strings merely being equal is a coincidence
+  waiting to break. (First attempt matched on `outlet_act_N_name`; the field is
+  actually `_title`, which is why the first deploy still showed the logo there.)
+- **Book Now and gift voucher pages** take their outlet's photo, so
+  /book-now-funan/ shares the Funan shop front.
+- **The 6 team building / birthday party listing pages** take the first package
+  card shown on that page, matched on `event_type` + `event_outlet`.
+- **Activity pages and experience_type archives** without a card fall back to
+  the first game's artwork from the experience CPT.
+- **Everything genuinely generic** — homepage, /about/, /blog/, /booking/,
+  /outlet/, /contact/, /faq/, the three legal pages, /gift-voucher/ and the
+  category archives, 11 in all — shares one brand image: attachment 707, the
+  wide VR arena shot at 1512x864, which is close to the 1.91:1 that WhatsApp and
+  Facebook crop to. On these pages no specific photograph is more correct than
+  another, and a bare logo reads as a broken preview. Change it with the
+  `ow_seo_default_share_image` filter.
+
+The outlet LocalBusiness nodes pick up the same images, so the structured data
+and the share preview agree.
+
+Backup: `~/overworld-backups/overworld-seo-v1.1.0-20260729.bak`. Re-swept all
+169 URLs: still 169/169 clean, and no PHP errors.
+
+Two content items still need a person, both unchanged from the entries below:
+the five empty stub pages (`/outlet/`, `/gift-voucher/` and its three children)
+have share images and metadata now but still no page content, so they stay
+noindexed; and Dream Hacker 2 and 3 still share one blurb.
+
 ## 2026-07-29 - Structured Data Built From Real Site Data, Plus Keywords (SEO v1.1.0)
 
 Follow-up to the entry below, on request: deepen the schema and add the

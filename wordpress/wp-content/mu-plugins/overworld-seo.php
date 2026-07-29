@@ -3,7 +3,7 @@
  * Plugin Name: Overworld — SEO Metadata
  * Description: Site-wide search-engine metadata: title tag, meta description, robots, Open Graph, Twitter cards and schema.org structured data for every page, post, experience, event package and promo. Hand-written defaults per page, all client-editable through an "SEO" box on the edit screen.
  * Author: Overworld
- * Version: 1.1.0
+ * Version: 1.2.0
  *
  * WHY THIS EXISTS
  * There is no SEO plugin on this site. Before this plugin, almost every URL
@@ -43,7 +43,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
-const OW_SEO_VERSION = '1.1.0';
+const OW_SEO_VERSION = '1.2.0';
 
 /**
  * Post types that get an SEO box and metadata output.
@@ -995,6 +995,194 @@ function ow_seo_content_image( $post_id ) {
 }
 
 /**
+ * The picture used when a page has no image of its own.
+ *
+ * Everything that reaches this point — the legal pages, the booking chooser,
+ * the category archives — is a page where no specific photograph is more
+ * correct than another, so they share one brand image rather than the bare
+ * logo, which reads as a broken link preview when shared.
+ *
+ * Attachment 707 is the wide VR arena shot (1512x864, close to the 1.91:1 that
+ * Facebook and WhatsApp crop to). Change it with the `ow_seo_default_share_image`
+ * filter, or by pointing this at another attachment ID.
+ *
+ * @return string Image URL, or '' to fall through to the site icon.
+ */
+function ow_seo_default_share_image() {
+	$attachment_id = (int) apply_filters( 'ow_seo_default_share_image', 707 );
+
+	if ( $attachment_id && 'attachment' === get_post_type( $attachment_id ) ) {
+		$url = wp_get_attachment_image_url( $attachment_id, 'full' );
+		if ( $url ) {
+			return $url;
+		}
+	}
+
+	return '';
+}
+
+/**
+ * The photograph an outlet page settled on, reused by the pages about that
+ * outlet — its Book Now page and its gift voucher page — so a shared link
+ * shows the venue rather than a logo.
+ *
+ * @param string $slug Outlet slug.
+ * @return string
+ */
+function ow_seo_outlet_image( $slug ) {
+	$page_id = array_search( $slug, ow_seo_outlet_pages(), true );
+	if ( ! $page_id ) {
+		return '';
+	}
+
+	$url = get_the_post_thumbnail_url( $page_id, 'full' );
+
+	return $url ? $url : ow_seo_content_image( $page_id );
+}
+
+/**
+ * The photograph used for an activity on the outlet pages.
+ *
+ * Each outlet page has activity cards — outlet_act_1_title, _link and _image
+ * and so on — and that image is a picture of the activity itself, which is
+ * exactly what the activity's own page should share. Read live rather than
+ * hardcoded, so swapping the photo on an outlet page updates the share image
+ * too.
+ *
+ * Indexed by the card's link path as well as its title: the link is the card's
+ * own pointer at the activity page, so it identifies the target exactly, where
+ * a title match depends on two strings staying in step.
+ *
+ * @param string $activity Activity name, e.g. "Laser Maze".
+ * @param string $path     Path of the activity page, e.g. "/laser-maze/".
+ * @return string
+ */
+function ow_seo_activity_image( $activity, $path = '' ) {
+	static $index = null;
+
+	if ( null === $index ) {
+		$index = array();
+
+		foreach ( array_keys( ow_seo_outlet_pages() ) as $page_id ) {
+			for ( $i = 1; $i <= 8; $i++ ) {
+				$attachment_id = (int) get_post_meta( $page_id, "outlet_act_{$i}_image", true );
+				if ( ! $attachment_id || 'attachment' !== get_post_type( $attachment_id ) ) {
+					continue;
+				}
+
+				$url = wp_get_attachment_image_url( $attachment_id, 'full' );
+				if ( ! $url ) {
+					continue;
+				}
+
+				$title = trim( (string) get_post_meta( $page_id, "outlet_act_{$i}_title", true ) );
+				$link  = trim( (string) get_post_meta( $page_id, "outlet_act_{$i}_link", true ) );
+
+				foreach ( array( $title, $link ) as $handle ) {
+					if ( '' === $handle ) {
+						continue;
+					}
+					$key = strtolower( trailingslashit( $handle ) );
+					if ( ! isset( $index[ $key ] ) ) {
+						$index[ $key ] = $url;
+					}
+				}
+			}
+		}
+	}
+
+	foreach ( array( $path, $activity ) as $handle ) {
+		$handle = trim( (string) $handle );
+		if ( '' === $handle ) {
+			continue;
+		}
+		$key = strtolower( trailingslashit( $handle ) );
+		if ( isset( $index[ $key ] ) ) {
+			return $index[ $key ];
+		}
+	}
+
+	return '';
+}
+
+/**
+ * Pages that list one event type at one outlet, and the packages they show.
+ *
+ * @return array<int, array{type: string, outlet: string}>
+ */
+function ow_seo_event_listing_pages() {
+	return array(
+		524 => array( 'type' => 'team-building', 'outlet' => 'kallang-wave-mall' ),
+		525 => array( 'type' => 'team-building', 'outlet' => 'orchard-central' ),
+		526 => array( 'type' => 'team-building', 'outlet' => 'funan' ),
+		527 => array( 'type' => 'birthday-party', 'outlet' => 'kallang-wave-mall' ),
+		528 => array( 'type' => 'birthday-party', 'outlet' => 'orchard-central' ),
+		529 => array( 'type' => 'birthday-party', 'outlet' => 'funan' ),
+	);
+}
+
+/**
+ * The first package card shown on an event listing page — the same artwork the
+ * visitor sees at the top of that page.
+ *
+ * @param int $page_id Listing page ID.
+ * @return string
+ */
+function ow_seo_event_listing_image( $page_id ) {
+	$pages = ow_seo_event_listing_pages();
+	if ( ! isset( $pages[ $page_id ] ) ) {
+		return '';
+	}
+
+	$packages = get_posts(
+		array(
+			'post_type'        => 'event_package',
+			'post_status'      => 'publish',
+			'numberposts'      => -1,
+			'fields'           => 'ids',
+			'orderby'          => 'title',
+			'order'            => 'ASC',
+			'suppress_filters' => false,
+			'meta_query'       => array(
+				array(
+					'key'   => 'event_type',
+					'value' => $pages[ $page_id ]['type'],
+				),
+				array(
+					'key'   => 'event_outlet',
+					'value' => $pages[ $page_id ]['outlet'],
+				),
+			),
+		)
+	);
+
+	foreach ( $packages as $id ) {
+		$url = get_the_post_thumbnail_url( $id, 'full' );
+		if ( $url ) {
+			return $url;
+		}
+	}
+
+	return '';
+}
+
+/**
+ * Pages that are about one outlet without being that outlet's page.
+ *
+ * @return array<int, string>
+ */
+function ow_seo_outlet_linked_pages() {
+	return array(
+		898 => 'kallang-wave-mall', // Book Now
+		886 => 'orchard-central',
+		893 => 'funan',
+		530 => 'kallang-wave-mall', // Gift vouchers
+		531 => 'orchard-central',
+		532 => 'funan',
+	);
+}
+
+/**
  * A representative image for a page that is really about one experience type.
  *
  * The activity pages and the experience_type archives hold no images of their
@@ -1128,12 +1316,30 @@ function ow_seo_current() {
 		if ( '' === $image ) {
 			$image = ow_seo_content_image( $post->ID );
 		}
+
+		// Pages built from other content have no image of their own, so borrow
+		// the picture that already represents that content elsewhere on the
+		// site. Most specific source first.
+		$activities = ow_seo_activity_pages();
+		if ( '' === $image && isset( $activities[ $post->ID ] ) ) {
+			$image = ow_seo_activity_image(
+				$activities[ $post->ID ],
+				wp_parse_url( $url, PHP_URL_PATH )
+			);
+		}
+
+		$outlet_linked = ow_seo_outlet_linked_pages();
+		if ( '' === $image && isset( $outlet_linked[ $post->ID ] ) ) {
+			$image = ow_seo_outlet_image( $outlet_linked[ $post->ID ] );
+		}
+
 		if ( '' === $image ) {
-			// Activity pages build their content from the experience CPT.
-			$activities = ow_seo_activity_pages();
-			if ( isset( $activities[ $post->ID ] ) ) {
-				$image = ow_seo_experience_type_image( $activities[ $post->ID ] );
-			}
+			$image = ow_seo_event_listing_image( $post->ID );
+		}
+
+		// Activity pages also build their game grid from the experience CPT.
+		if ( '' === $image && isset( $activities[ $post->ID ] ) ) {
+			$image = ow_seo_experience_type_image( $activities[ $post->ID ] );
 		}
 	} elseif ( is_front_page() ) {
 		$map     = ow_seo_page_map();
@@ -1201,6 +1407,11 @@ function ow_seo_current() {
 		$title = sprintf( '%s - Page %d', $title, $paged );
 	}
 
+	// Anything with no picture of its own shares the brand image rather than
+	// the bare logo, which reads as a broken preview.
+	if ( '' === $image ) {
+		$image = ow_seo_default_share_image();
+	}
 	if ( '' === $image ) {
 		$icon = get_site_icon_url( 512 );
 		if ( $icon ) {
