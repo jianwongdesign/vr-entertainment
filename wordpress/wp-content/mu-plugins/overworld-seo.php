@@ -3,7 +3,7 @@
  * Plugin Name: Overworld — SEO Metadata
  * Description: Site-wide search-engine metadata: title tag, meta description, robots, Open Graph, Twitter cards and schema.org structured data for every page, post, experience, event package and promo. Hand-written defaults per page, all client-editable through an "SEO" box on the edit screen.
  * Author: Overworld
- * Version: 1.0.0
+ * Version: 1.1.0
  *
  * WHY THIS EXISTS
  * There is no SEO plugin on this site. Before this plugin, almost every URL
@@ -28,9 +28,12 @@
  * no entry in the map still gets a sensible generated title and description
  * rather than nothing.
  *
- * NOTE ON META KEYWORDS: not emitted. Google dropped it as a ranking signal in
- * 2009 and Bing treats it as a spam signal. The effort belongs in the title,
- * description and structured data instead.
+ * NOTE ON META KEYWORDS: emitted on request, and kept honest and short. Google
+ * dropped it as a ranking signal in 2009 and Bing treats a stuffed tag as a
+ * spam signal, so the sets in ow_seo_page_keywords() describe the page rather
+ * than chase terms. Real ranking work is in the title, description, headings
+ * and structured data. Removing the tag is a one-line change if it is ever
+ * decided against — delete the keywords block in the wp_head handler.
  *
  * @package Overworld
  */
@@ -40,7 +43,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
-const OW_SEO_VERSION = '1.0.0';
+const OW_SEO_VERSION = '1.1.0';
 
 /**
  * Post types that get an SEO box and metadata output.
@@ -85,6 +88,227 @@ function ow_seo_outlets() {
 			'url'      => '/outlet/funan/',
 		),
 	);
+}
+
+/**
+ * Which outlet each outlet page belongs to.
+ *
+ * @return array<int, string>
+ */
+function ow_seo_outlet_pages() {
+	return array(
+		504 => 'kallang-wave-mall',
+		505 => 'orchard-central',
+		506 => 'funan',
+	);
+}
+
+/**
+ * Which pricing_item activity each activity page sells.
+ *
+ * The strings on the right are the exact pricing_activity values used by the
+ * pricing rows, so the Offer prices below always match the pricing table the
+ * visitor sees. Combo rows are intentionally excluded — they belong to more
+ * than one activity page.
+ *
+ * @return array<int, string>
+ */
+function ow_seo_activity_pages() {
+	return array(
+		326 => 'VR Arcade',
+		420 => 'VR Escape',
+		338 => 'VR Machine Ride',
+		294 => 'Floor Is Lava',
+		312 => 'Laser Maze',
+		364 => 'Tap Tap',
+		577 => 'XR Party Game',
+		646 => 'VR Free Roam',
+	);
+}
+
+/**
+ * Every published FAQ, in the order the templates render them.
+ *
+ * Mirrors the query in page-faq.php and page-pricing.php exactly: ordered by
+ * faq_display_order, and an FAQ with an empty or unrecognised faq_outlet
+ * applies to every outlet. Structured data must describe what is actually on
+ * the page, so this must not drift from those templates.
+ *
+ * @param string $outlet_slug Limit to one outlet, or '' for the whole set.
+ * @return array<int, array{q: string, a: string}>
+ */
+function ow_seo_faqs( $outlet_slug = '' ) {
+	static $all = null;
+
+	if ( null === $all ) {
+		$all      = array();
+		$outlets  = ow_seo_outlet_pages();
+		$known    = array_values( $outlets );
+		$posts    = get_posts(
+			array(
+				'post_type'        => 'faq',
+				'posts_per_page'   => -1,
+				'post_status'      => 'publish',
+				'meta_key'         => 'faq_display_order',
+				'orderby'          => 'meta_value_num',
+				'order'            => 'ASC',
+				'suppress_filters' => false,
+			)
+		);
+
+		foreach ( $posts as $post ) {
+			$question = trim( wp_strip_all_tags( (string) get_post_meta( $post->ID, 'faq_question', true ) ) );
+			$answer   = trim( wp_strip_all_tags( (string) get_post_meta( $post->ID, 'faq_answer', true ) ) );
+			if ( '' === $question || '' === $answer ) {
+				continue;
+			}
+
+			$outlet = (string) get_post_meta( $post->ID, 'faq_outlet', true );
+			$all[]  = array(
+				'q'      => $question,
+				'a'      => preg_replace( '/\s+/u', ' ', $answer ),
+				'outlet' => in_array( $outlet, $known, true ) ? $outlet : '',
+			);
+		}
+	}
+
+	$out  = array();
+	$seen = array();
+
+	foreach ( $all as $faq ) {
+		// '' means the FAQ applies everywhere, so it survives any filter.
+		if ( '' !== $outlet_slug && '' !== $faq['outlet'] && $faq['outlet'] !== $outlet_slug ) {
+			continue;
+		}
+
+		// The same question is asked of every outlet, so the site-wide set
+		// would otherwise repeat it three times. Google wants each question
+		// once per FAQPage.
+		$key = strtolower( preg_replace( '/[^a-z0-9]+/i', '', $faq['q'] ) );
+		if ( isset( $seen[ $key ] ) ) {
+			continue;
+		}
+		$seen[ $key ] = true;
+
+		$out[] = array(
+			'q' => $faq['q'],
+			'a' => $faq['a'],
+		);
+	}
+
+	return $out;
+}
+
+/**
+ * Lowest and highest published price for one activity, across all outlets.
+ *
+ * Uses the same peak-price rule as the pricing tables: no peak flag means the
+ * weekday price applies at the weekend too.
+ *
+ * @param string $activity pricing_activity value.
+ * @return array{low: float, high: float}|null
+ */
+function ow_seo_activity_prices( $activity ) {
+	static $by_activity = null;
+
+	if ( null === $by_activity ) {
+		$by_activity = array();
+
+		$items = get_posts(
+			array(
+				'post_type'        => 'pricing_item',
+				'post_status'      => 'publish',
+				'numberposts'      => -1,
+				'fields'           => 'ids',
+				'suppress_filters' => false,
+			)
+		);
+
+		foreach ( $items as $id ) {
+			$name = trim( (string) get_post_meta( $id, 'pricing_activity', true ) );
+			if ( '' === $name ) {
+				continue;
+			}
+
+			$weekday = (float) get_post_meta( $id, 'pricing_weekday_price', true );
+			if ( $weekday <= 0 ) {
+				continue;
+			}
+
+			$has_peak = '1' === get_post_meta( $id, 'pricing_has_peak', true );
+			$weekend  = (float) get_post_meta( $id, 'pricing_weekend_price', true );
+			if ( ! $has_peak || $weekend <= 0 ) {
+				$weekend = $weekday;
+			}
+
+			if ( ! isset( $by_activity[ $name ] ) ) {
+				$by_activity[ $name ] = array(
+					'low'  => $weekday,
+					'high' => $weekend,
+				);
+				continue;
+			}
+
+			$by_activity[ $name ]['low']  = min( $by_activity[ $name ]['low'], $weekday );
+			$by_activity[ $name ]['high'] = max( $by_activity[ $name ]['high'], $weekend );
+		}
+	}
+
+	return isset( $by_activity[ $activity ] ) ? $by_activity[ $activity ] : null;
+}
+
+/**
+ * Price band for one outlet, expressed the way schema.org priceRange wants it.
+ *
+ * @param string $slug Outlet slug.
+ * @return string e.g. "$10-$84", or '' when the outlet has no pricing rows.
+ */
+function ow_seo_outlet_price_range( $slug ) {
+	static $ranges = null;
+
+	if ( null === $ranges ) {
+		$ranges = array();
+
+		$items = get_posts(
+			array(
+				'post_type'        => 'pricing_item',
+				'post_status'      => 'publish',
+				'numberposts'      => -1,
+				'fields'           => 'ids',
+				'suppress_filters' => false,
+			)
+		);
+
+		foreach ( $items as $id ) {
+			$outlet = (string) get_post_meta( $id, 'pricing_outlet', true );
+			if ( '' === $outlet ) {
+				continue;
+			}
+
+			foreach ( array( 'pricing_weekday_price', 'pricing_weekend_price' ) as $key ) {
+				$price = (float) get_post_meta( $id, $key, true );
+				if ( $price <= 0 ) {
+					continue;
+				}
+				if ( ! isset( $ranges[ $outlet ] ) ) {
+					$ranges[ $outlet ] = array( $price, $price );
+					continue;
+				}
+				$ranges[ $outlet ][0] = min( $ranges[ $outlet ][0], $price );
+				$ranges[ $outlet ][1] = max( $ranges[ $outlet ][1], $price );
+			}
+		}
+	}
+
+	if ( ! isset( $ranges[ $slug ] ) ) {
+		return '';
+	}
+
+	$fmt = function ( $value ) {
+		return '$' . rtrim( rtrim( number_format( (float) $value, 2, '.', '' ), '0' ), '.' );
+	};
+
+	return $fmt( $ranges[ $slug ][0] ) . '-' . $fmt( $ranges[ $slug ][1] );
 }
 
 /**
@@ -260,6 +484,171 @@ function ow_seo_page_map() {
 	);
 
 	return apply_filters( 'ow_seo_page_map', $map );
+}
+
+/**
+ * Keywords per page, keyed by post ID.
+ *
+ * A caveat worth repeating from the file header: Google stopped using meta
+ * keywords as a ranking signal in 2009 and Bing treats a stuffed tag as a spam
+ * signal. These are written as an honest, short description of what the page
+ * is about — the tag is emitted because it was asked for, and kept clean so it
+ * cannot do harm. Ranking still comes from the title, description, headings
+ * and structured data.
+ *
+ * @return array<int, string[]>
+ */
+function ow_seo_page_keywords() {
+	$map = array(
+		16   => array( 'VR arcade Singapore', 'virtual reality Singapore', 'indoor activities Singapore', 'VR escape room', 'group activities Singapore' ),
+		934  => array( 'about Overworld', 'VR company Singapore', 'immersive entertainment Singapore' ),
+		935  => array( 'Overworld contact', 'VR arcade contact Singapore', 'Kallang Orchard Funan outlets' ),
+		372  => array( 'Overworld FAQ', 'VR arcade opening hours', 'booking questions', 'age limit VR Singapore' ),
+		1350 => array( 'Overworld blog', 'VR gaming Singapore', 'things to do Singapore' ),
+
+		867  => array( 'book VR Singapore', 'VR arcade booking', 'Overworld booking' ),
+		898  => array( 'book Kallang Wave Mall VR', 'VR arcade Kallang booking' ),
+		886  => array( 'book Orchard Central', 'Laser Maze Orchard booking' ),
+		893  => array( 'book Overworld Funan', 'VR Free Roam Funan booking' ),
+
+		503  => array( 'Overworld outlets', 'VR arcade locations Singapore' ),
+		504  => array( 'VR arcade Kallang Wave Mall', 'VR Kallang Singapore', 'Floor Is Lava Kallang', 'VR escape room Kallang' ),
+		505  => array( 'Laser Maze Orchard Central', 'Floor Is Lava Orchard', 'Tap Tap Orchard', 'indoor activities Orchard Road' ),
+		506  => array( 'VR Free Roam Funan', 'XR party game Funan', 'Floor Is Lava Funan', 'things to do Funan' ),
+
+		326  => array( 'VR arcade Singapore', 'VR games Singapore', 'Beat Saber Singapore', 'virtual reality arcade Kallang' ),
+		420  => array( 'VR escape room Singapore', 'virtual escape room', 'escape room Kallang', 'team escape room Singapore' ),
+		646  => array( 'VR free roam Singapore', 'free roam VR arena', 'walk in VR Funan', 'multiplayer VR Singapore' ),
+		338  => array( 'VR motion ride Singapore', 'VR simulator ride', 'VR ride Kallang Wave Mall' ),
+		577  => array( 'XR party game Singapore', 'mixed reality games', 'party games Funan', 'group games Singapore' ),
+		312  => array( 'laser maze Singapore', 'laser tag alternative', 'laser maze Orchard Central' ),
+		294  => array( 'Floor Is Lava Singapore', 'interactive floor game', 'active games Singapore', 'Floor Is Lava Kallang Orchard Funan' ),
+		364  => array( 'Tap Tap Singapore', 'reflex game Singapore', 'light wall game Orchard' ),
+
+		524  => array( 'team building Kallang Wave Mall', 'corporate team building Singapore', 'VR team building' ),
+		525  => array( 'team building Orchard Central', 'corporate team building Singapore', 'physical team building' ),
+		526  => array( 'team building Funan', 'corporate team building Singapore', 'VR team building Funan' ),
+
+		527  => array( 'birthday party Kallang Wave Mall', 'VR birthday party Singapore', 'kids birthday venue Singapore' ),
+		528  => array( 'birthday party Orchard Central', 'birthday venue Orchard Road', 'active birthday party Singapore' ),
+		529  => array( 'birthday party Funan', 'VR birthday party Singapore', 'birthday venue Funan' ),
+
+		523  => array( 'Overworld gift voucher', 'VR gift voucher Singapore', 'gaming gift card Singapore' ),
+		530  => array( 'gift voucher Kallang Wave Mall', 'VR gift voucher Singapore' ),
+		531  => array( 'gift voucher Orchard Central', 'gaming gift voucher Singapore' ),
+		532  => array( 'gift voucher Funan', 'VR gift voucher Singapore' ),
+
+		// The event-hub plugin owns the copy on these two, but not the tags below.
+		521  => array( 'team building Singapore', 'corporate team building', 'VR team building Singapore', 'company outing Singapore' ),
+		522  => array( 'birthday party Singapore', 'VR birthday party', 'kids party venue Singapore', 'birthday venue Singapore' ),
+
+		936  => array( 'Overworld privacy policy' ),
+		937  => array( 'Overworld terms of service' ),
+		938  => array( 'Overworld refund policy', 'booking change policy' ),
+	);
+
+	return apply_filters( 'ow_seo_page_keywords', $map );
+}
+
+/**
+ * Keywords for whatever is being viewed: the per-post field, then the
+ * hand-written set, then a small set generated from what the post actually is.
+ *
+ * Returns '' when there is nothing meaningful to say, and the tag is then
+ * omitted rather than padded out.
+ *
+ * @param array $seo Resolved metadata.
+ * @return string Comma-separated list.
+ */
+function ow_seo_keywords( array $seo ) {
+	$post = $seo['post'];
+
+	if ( $post instanceof WP_Post ) {
+		$field = trim( (string) get_post_meta( $post->ID, 'ow_seo_keywords', true ) );
+		if ( '' !== $field ) {
+			return $field;
+		}
+
+		$map = ow_seo_page_keywords();
+		if ( isset( $map[ $post->ID ] ) ) {
+			return implode( ', ', $map[ $post->ID ] );
+		}
+
+		$words = array();
+		$name  = wp_strip_all_tags( get_the_title( $post ) );
+
+		switch ( $post->post_type ) {
+			case 'experience':
+				$terms   = wp_get_post_terms( $post->ID, 'experience_type', array( 'fields' => 'names' ) );
+				$words[] = $name . ' Singapore';
+				if ( $terms && ! is_wp_error( $terms ) ) {
+					$words[] = $terms[0] . ' Singapore';
+				}
+				$words[] = 'VR games Singapore';
+				break;
+
+			case 'event_package':
+				$type    = get_post_meta( $post->ID, 'event_type', true );
+				$words[] = ( 'birthday-party' === $type ) ? 'birthday party package Singapore' : 'team building package Singapore';
+				$words[] = $name;
+				break;
+
+			case 'promo':
+				$words[] = 'Overworld promotion';
+				$words[] = 'VR deals Singapore';
+				break;
+
+			case 'post':
+				// Post tags are the author's own keywords for the piece. None
+				// of the 17 posts is tagged today, so fall back to the post's
+				// own subject rather than leaving the tag off entirely.
+				$tags = wp_get_post_terms( $post->ID, 'post_tag', array( 'fields' => 'names' ) );
+				if ( $tags && ! is_wp_error( $tags ) ) {
+					$words = $tags;
+					break;
+				}
+
+				$words[] = $name;
+				$cats    = wp_get_post_terms( $post->ID, 'category', array( 'fields' => 'names' ) );
+				if ( $cats && ! is_wp_error( $cats ) ) {
+					foreach ( $cats as $cat ) {
+						if ( 'Uncategorized' !== $cat ) {
+							$words[] = $cat;
+						}
+					}
+				}
+				$words[] = 'VR gaming Singapore';
+				break;
+		}
+
+		return implode( ', ', array_unique( array_filter( $words ) ) );
+	}
+
+	// Taxonomy archives describe themselves well enough.
+	if ( is_tax() || is_category() || is_tag() ) {
+		$term = get_queried_object();
+		if ( $term instanceof WP_Term ) {
+			return implode( ', ', array( $term->name . ' Singapore', 'VR games Singapore' ) );
+		}
+	}
+
+	if ( is_front_page() ) {
+		$map = ow_seo_page_keywords();
+		$id  = (int) get_option( 'page_on_front' );
+		if ( isset( $map[ $id ] ) ) {
+			return implode( ', ', $map[ $id ] );
+		}
+	}
+
+	if ( is_home() ) {
+		$map = ow_seo_page_keywords();
+		$id  = (int) get_option( 'page_for_posts' );
+		if ( isset( $map[ $id ] ) ) {
+			return implode( ', ', $map[ $id ] );
+		}
+	}
+
+	return '';
 }
 
 /**
@@ -508,6 +897,151 @@ function ow_seo_generated( $post ) {
 }
 
 /**
+ * A representative image for a page that has no featured image.
+ *
+ * None of the pages on this site set a featured image — the visuals live
+ * inside Elementor — so before this, sharing any page on WhatsApp or Facebook
+ * showed the site logo. This digs the first reasonably large image out of the
+ * page's own Elementor content instead.
+ *
+ * Only attachments at least 800px wide qualify, which skips icons, logos and
+ * decorative flourishes. The answer is cached in post meta because parsing the
+ * Elementor blob on every request would be wasteful; it is cleared whenever the
+ * post is saved.
+ *
+ * @param int $post_id Post ID.
+ * @return string Image URL, or '' when nothing suitable was found.
+ */
+function ow_seo_content_image( $post_id ) {
+	$cached = get_post_meta( $post_id, '_ow_seo_og_image', true );
+	if ( '' !== $cached && null !== $cached ) {
+		return ( 'none' === $cached ) ? '' : $cached;
+	}
+
+	$found = '';
+
+	// The visuals on this site are ACF image fields holding attachment IDs
+	// (outlet_gallery_1, outlet_act_2_image, exp_image_1, promo_poster …),
+	// not Elementor image widgets — the Elementor blobs contain no upload
+	// URLs at all. So collect the candidate IDs from post meta and rank them.
+	$candidates = array();
+
+	foreach ( get_post_meta( $post_id ) as $key => $values ) {
+		// ACF mirrors every field under a leading-underscore key; skip those.
+		if ( '_' === $key[0] ) {
+			continue;
+		}
+
+		$value = is_array( $values ) ? reset( $values ) : $values;
+		if ( ! is_scalar( $value ) || ! ctype_digit( (string) $value ) ) {
+			continue;
+		}
+
+		$lower = strtolower( $key );
+		if ( false === strpos( $lower, 'image' )
+			&& false === strpos( $lower, 'gallery' )
+			&& false === strpos( $lower, 'photo' )
+			&& false === strpos( $lower, 'poster' )
+			&& false === strpos( $lower, 'thumb' ) ) {
+			continue;
+		}
+
+		// A hero or first-gallery shot represents the page better than the
+		// fourth combo-deal thumbnail.
+		$rank = 3;
+		if ( false !== strpos( $lower, 'hero' ) || false !== strpos( $lower, 'poster' ) ) {
+			$rank = 0;
+		} elseif ( false !== strpos( $lower, 'gallery' ) ) {
+			$rank = 1;
+		} elseif ( false !== strpos( $lower, 'act' ) ) {
+			$rank = 2;
+		}
+
+		$candidates[] = array(
+			'rank' => $rank,
+			'key'  => $key,
+			'id'   => (int) $value,
+		);
+	}
+
+	usort(
+		$candidates,
+		function ( $a, $b ) {
+			return ( $a['rank'] === $b['rank'] ) ? strcmp( $a['key'], $b['key'] ) : ( $a['rank'] - $b['rank'] );
+		}
+	);
+
+	foreach ( $candidates as $candidate ) {
+		if ( 'attachment' !== get_post_type( $candidate['id'] ) ) {
+			continue;
+		}
+
+		// Big enough to be a real photograph rather than an icon or logo.
+		$meta = wp_get_attachment_metadata( $candidate['id'] );
+		if ( ! is_array( $meta ) || empty( $meta['width'] ) || $meta['width'] < 800 ) {
+			continue;
+		}
+
+		$url = wp_get_attachment_image_url( $candidate['id'], 'full' );
+		if ( $url ) {
+			$found = $url;
+			break;
+		}
+	}
+
+	update_post_meta( $post_id, '_ow_seo_og_image', '' === $found ? 'none' : $found );
+
+	return $found;
+}
+
+/**
+ * A representative image for a page that is really about one experience type.
+ *
+ * The activity pages and the experience_type archives hold no images of their
+ * own — /vr-arcade/ builds its game grid from the experience CPT at render
+ * time. Borrowing the first game's artwork is both accurate and the picture a
+ * visitor would expect to see when the link is shared.
+ *
+ * @param string $type_name experience_type term name.
+ * @return string Image URL, or ''.
+ */
+function ow_seo_experience_type_image( $type_name ) {
+	$term = get_term_by( 'name', $type_name, 'experience_type' );
+	if ( ! $term instanceof WP_Term ) {
+		return '';
+	}
+
+	$posts = get_posts(
+		array(
+			'post_type'        => 'experience',
+			'post_status'      => 'publish',
+			'numberposts'      => 8,
+			'fields'           => 'ids',
+			'suppress_filters' => false,
+			'tax_query'        => array(
+				array(
+					'taxonomy' => 'experience_type',
+					'field'    => 'term_id',
+					'terms'    => $term->term_id,
+				),
+			),
+		)
+	);
+
+	foreach ( $posts as $id ) {
+		$url = get_the_post_thumbnail_url( $id, 'full' );
+		if ( ! $url ) {
+			$url = ow_seo_content_image( $id );
+		}
+		if ( $url ) {
+			return $url;
+		}
+	}
+
+	return '';
+}
+
+/**
  * True when the event-hub plugin already owns this page's metadata.
  *
  * @param int $post_id Post ID.
@@ -591,6 +1125,16 @@ function ow_seo_current() {
 		if ( '' === $image ) {
 			$image = (string) get_the_post_thumbnail_url( $post->ID, 'full' );
 		}
+		if ( '' === $image ) {
+			$image = ow_seo_content_image( $post->ID );
+		}
+		if ( '' === $image ) {
+			// Activity pages build their content from the experience CPT.
+			$activities = ow_seo_activity_pages();
+			if ( isset( $activities[ $post->ID ] ) ) {
+				$image = ow_seo_experience_type_image( $activities[ $post->ID ] );
+			}
+		}
 	} elseif ( is_front_page() ) {
 		$map     = ow_seo_page_map();
 		$home_id = (int) get_option( 'page_on_front' );
@@ -620,6 +1164,9 @@ function ow_seo_current() {
 		$url = get_term_link( $term );
 		if ( is_wp_error( $url ) ) {
 			$url = '';
+		}
+		if ( 'experience_type' === $term->taxonomy ) {
+			$image = ow_seo_experience_type_image( $term->name );
 		}
 	} elseif ( is_search() ) {
 		$title   = sprintf( 'Search results for "%s" | Overworld', get_search_query() );
@@ -707,12 +1254,38 @@ add_action(
 		$seo = ow_seo_current();
 
 		if ( ! $seo ) {
-			// The event-hub plugin owns the title, description and social tags
-			// on /team-building/ and /birthday-party/, but emits no robots
-			// directive. Supply just that, so every indexable URL on the site
-			// asks for large image previews and untruncated snippets.
+			// The event-hub plugin owns the title, description, social tags and
+			// FAQ schema on /team-building/ and /birthday-party/, but not the
+			// robots directive, the keywords or the site-wide entity. Fill in
+			// only those, so the two landing pages are described the same way
+			// as every other URL without either plugin overwriting the other.
 			if ( is_singular() && ow_seo_handled_elsewhere( get_queried_object_id() ) ) {
 				echo '<meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1" />' . "\n";
+
+				$hub_id = get_queried_object_id();
+				$hub_kw = ow_seo_page_keywords();
+				$hub_kw = isset( $hub_kw[ $hub_id ] ) ? implode( ', ', $hub_kw[ $hub_id ] ) : '';
+				$custom = trim( (string) get_post_meta( $hub_id, 'ow_seo_keywords', true ) );
+				if ( '' !== $custom ) {
+					$hub_kw = $custom;
+				}
+				if ( '' !== $hub_kw ) {
+					printf( '<meta name="keywords" content="%s" />' . "\n", esc_attr( $hub_kw ) );
+				}
+
+				// Organization and WebSite only. The hub plugin already emits
+				// its own BreadcrumbList and FAQPage; a second copy of those
+				// would be a contradiction rather than extra detail.
+				printf(
+					'<script type="application/ld+json">%s</script>' . "\n",
+					wp_json_encode(
+						array(
+							'@context' => 'https://schema.org',
+							'@graph'   => ow_seo_entity_graph(),
+						),
+						JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE
+					)
+				);
 			}
 			return;
 		}
@@ -727,6 +1300,11 @@ add_action(
 
 		if ( '' !== $seo['desc'] ) {
 			printf( '<meta name="description" content="%s" />' . "\n", esc_attr( $seo['desc'] ) );
+		}
+
+		$keywords = ow_seo_keywords( $seo );
+		if ( '' !== $keywords ) {
+			printf( '<meta name="keywords" content="%s" />' . "\n", esc_attr( $keywords ) );
 		}
 
 		// WordPress core only emits rel=canonical on singular views, so the
@@ -782,16 +1360,15 @@ add_action(
 );
 
 /**
- * Build the schema.org graph for the current view.
+ * The site-wide entity: who this business is, and what site this is.
  *
- * Organization and WebSite are emitted everywhere so the entity is consistent
- * across the site; the three outlets are attached on the homepage, the outlet
- * hub and each outlet's own page.
+ * Split out so the two event-hub landing pages — whose page-level tags belong
+ * to another plugin — can still carry the same Organization and WebSite nodes
+ * as everywhere else.
  *
- * @param array $seo Resolved metadata.
  * @return array
  */
-function ow_seo_schema_graph( array $seo ) {
+function ow_seo_entity_graph() {
 	$home  = home_url( '/' );
 	$org   = $home . '#organization';
 	$brand = get_bloginfo( 'name' );
@@ -824,16 +1401,82 @@ function ow_seo_schema_graph( array $seo ) {
 	}
 	$organization['contactPoint'] = $contacts;
 
+	// Verified profiles only — sameAs is how a search engine confirms two
+	// profiles are the same business, so a wrong entry is worse than none.
+	$organization['sameAs'] = array(
+		'https://www.facebook.com/OverworldSG/',
+		'https://www.instagram.com/overworldsg/',
+	);
+
+	// Registered address: the flagship outlet.
+	$flagship                = ow_seo_outlets()['kallang'];
+	$organization['address'] = array(
+		'@type'           => 'PostalAddress',
+		'streetAddress'   => $flagship['street'],
+		'addressLocality' => 'Singapore',
+		'postalCode'      => $flagship['postcode'],
+		'addressCountry'  => 'SG',
+	);
+
 	$graph[] = $organization;
 
 	$graph[] = array(
-		'@type'     => 'WebSite',
-		'@id'       => $home . '#website',
-		'url'       => $home,
-		'name'      => $brand,
-		'publisher' => array( '@id' => $org ),
-		'inLanguage' => 'en-SG',
+		'@type'           => 'WebSite',
+		'@id'             => $home . '#website',
+		'url'             => $home,
+		'name'            => $brand,
+		'publisher'       => array( '@id' => $org ),
+		'inLanguage'      => 'en-SG',
+		'potentialAction' => array(
+			'@type'       => 'SearchAction',
+			'target'      => array(
+				'@type'       => 'EntryPoint',
+				'urlTemplate' => $home . '?s={search_term_string}',
+			),
+			'query-input' => 'required name=search_term_string',
+		),
 	);
+
+	return $graph;
+}
+
+/**
+ * Build the schema.org graph for the current view.
+ *
+ * Organization and WebSite are emitted everywhere so the entity is consistent
+ * across the site; the three outlets are attached on the homepage, the outlet
+ * hub and each outlet's own page.
+ *
+ * @param array $seo Resolved metadata.
+ * @return array
+ */
+function ow_seo_schema_graph( array $seo ) {
+	$home  = home_url( '/' );
+	$org   = $home . '#organization';
+	$graph = ow_seo_entity_graph();
+
+	// The sameAs list is shared with the outlet nodes below.
+	$social = isset( $graph[0]['sameAs'] ) ? $graph[0]['sameAs'] : array();
+
+	// Ties the current URL into the graph above.
+	if ( '' !== $seo['url'] ) {
+		$webpage = array(
+			'@type'      => 'WebPage',
+			'@id'        => $seo['url'] . '#webpage',
+			'url'        => $seo['url'],
+			'name'       => $seo['title'],
+			'isPartOf'   => array( '@id' => $home . '#website' ),
+			'about'      => array( '@id' => $org ),
+			'inLanguage' => 'en-SG',
+		);
+		if ( '' !== $seo['desc'] ) {
+			$webpage['description'] = $seo['desc'];
+		}
+		if ( '' !== $seo['image'] ) {
+			$webpage['primaryImageOfPage'] = $seo['image'];
+		}
+		$graph[] = $webpage;
+	}
 
 	// LocalBusiness entries where they are relevant.
 	$post_id     = $seo['post'] instanceof WP_Post ? $seo['post']->ID : 0;
@@ -846,9 +1489,12 @@ function ow_seo_schema_graph( array $seo ) {
 		$emit = array( $outlet_page[ $post_id ] );
 	}
 
+	$outlet_slugs = ow_seo_outlet_pages();
+
 	foreach ( $emit as $key ) {
-		$outlet  = ow_seo_outlets()[ $key ];
-		$graph[] = array(
+		$outlet   = ow_seo_outlets()[ $key ];
+		$slug     = basename( untrailingslashit( $outlet['url'] ) );
+		$business = array(
 			'@type'   => 'EntertainmentBusiness',
 			'@id'     => home_url( $outlet['url'] ) . '#business',
 			'name'    => $outlet['name'],
@@ -871,7 +1517,136 @@ function ow_seo_schema_graph( array $seo ) {
 					'closes'    => '22:00',
 				),
 			),
+			'currenciesAccepted' => 'SGD',
+			'isAccessibleForFree' => false,
+			'sameAs'  => $social,
 		);
+
+		// Straight from the outlet's own pricing table, so it cannot drift.
+		$range = ow_seo_outlet_price_range( $slug );
+		if ( '' !== $range ) {
+			$business['priceRange'] = $range;
+		}
+
+		$page_id = array_search( $slug, $outlet_slugs, true );
+		if ( $page_id ) {
+			$thumb = get_the_post_thumbnail_url( $page_id, 'full' );
+			if ( ! $thumb ) {
+				$thumb = ow_seo_content_image( $page_id );
+			}
+			if ( $thumb ) {
+				$business['image'] = $thumb;
+			}
+		}
+
+		$graph[] = $business;
+	}
+
+	// FAQPage — the questions actually rendered on this page, and only those.
+	$faq_outlet = null;
+	if ( isset( $outlet_slugs[ $post_id ] ) ) {
+		$faq_outlet = $outlet_slugs[ $post_id ];
+	} elseif ( 372 === $post_id ) {
+		$faq_outlet = ''; // /faq/ shows every outlet's set.
+	}
+
+	if ( null !== $faq_outlet ) {
+		$faqs = ow_seo_faqs( $faq_outlet );
+		if ( $faqs ) {
+			$entities = array();
+			foreach ( $faqs as $faq ) {
+				$entities[] = array(
+					'@type'          => 'Question',
+					'name'           => $faq['q'],
+					'acceptedAnswer' => array(
+						'@type' => 'Answer',
+						'text'  => $faq['a'],
+					),
+				);
+			}
+			$graph[] = array(
+				'@type'      => 'FAQPage',
+				'@id'        => $seo['url'] . '#faq',
+				'mainEntity' => $entities,
+			);
+		}
+	}
+
+	// Activity pages describe a bookable service with a real published price.
+	$activities = ow_seo_activity_pages();
+	if ( isset( $activities[ $post_id ] ) ) {
+		$activity = $activities[ $post_id ];
+		$service  = array(
+			'@type'       => 'Service',
+			'@id'         => $seo['url'] . '#service',
+			'name'        => $activity,
+			'serviceType' => $activity,
+			'description' => $seo['desc'],
+			'provider'    => array( '@id' => $org ),
+			'areaServed'  => array(
+				'@type' => 'Country',
+				'name'  => 'Singapore',
+			),
+		);
+
+		$prices = ow_seo_activity_prices( $activity );
+		if ( $prices ) {
+			$service['offers'] = array(
+				'@type'         => 'AggregateOffer',
+				'priceCurrency' => 'SGD',
+				'lowPrice'      => (string) $prices['low'],
+				'highPrice'     => (string) $prices['high'],
+				'availability'  => 'https://schema.org/InStock',
+				'url'           => home_url( '/booking/' ),
+			);
+		}
+
+		$graph[] = $service;
+	}
+
+	// Individual VR titles are games, and the CMS holds player count and age.
+	if ( $seo['post'] instanceof WP_Post && 'experience' === $seo['post']->post_type ) {
+		$exp   = $seo['post'];
+		$terms = wp_get_post_terms( $exp->ID, 'experience_type', array( 'fields' => 'names' ) );
+		$game  = array(
+			'@type'       => 'VideoGame',
+			'@id'         => $seo['url'] . '#game',
+			'name'        => get_the_title( $exp ),
+			'description' => $seo['desc'],
+			'url'         => $seo['url'],
+			'gamePlatform' => 'Virtual Reality',
+			'playMode'    => 'MultiPlayer',
+			'provider'    => array( '@id' => $org ),
+		);
+		if ( $terms && ! is_wp_error( $terms ) ) {
+			$game['genre'] = $terms[0];
+		}
+		if ( '' !== $seo['image'] ) {
+			$game['image'] = $seo['image'];
+		}
+
+		// "1-5" -> a min/max the schema can express.
+		$players = trim( (string) get_post_meta( $exp->ID, 'exp_players', true ) );
+		if ( preg_match( '/^(\d+)\s*[-–]\s*(\d+)$/u', $players, $m ) ) {
+			$game['numberOfPlayers'] = array(
+				'@type'    => 'QuantitativeValue',
+				'minValue' => (int) $m[1],
+				'maxValue' => (int) $m[2],
+			);
+		} elseif ( preg_match( '/^(\d+)$/', $players, $m ) ) {
+			$game['numberOfPlayers'] = array(
+				'@type' => 'QuantitativeValue',
+				'value' => (int) $m[1],
+			);
+		}
+
+		// "8+" is already the format schema.org expects.
+		$age = trim( (string) get_post_meta( $exp->ID, 'exp_age', true ) );
+		if ( '' !== $age ) {
+			$game['typicalAgeRange'] = $age;
+		}
+
+		$graph[] = $game;
 	}
 
 	// Article for blog posts.
@@ -1009,6 +1784,14 @@ add_action(
 						'maxlength'    => 200,
 					),
 					array(
+						'key'          => 'field_ow_seo_keywords',
+						'label'        => 'Focus Keywords',
+						'name'         => 'ow_seo_keywords',
+						'type'         => 'text',
+						'instructions' => 'Comma-separated, e.g. "VR arcade Singapore, VR games Kallang". Worth keeping accurate for your own reference, but be aware Google has ignored this tag since 2009 — the Search Title and Search Description above are what actually affect ranking. Leave empty to use the built-in set.',
+						'maxlength'    => 255,
+					),
+					array(
 						'key'          => 'field_ow_seo_image',
 						'label'        => 'Share Image',
 						'name'         => 'ow_seo_image',
@@ -1046,7 +1829,20 @@ add_action(
 	function ( $post_id ) {
 		if ( is_numeric( $post_id ) ) {
 			delete_post_meta( (int) $post_id, '_elementor_element_cache' );
+			delete_post_meta( (int) $post_id, '_ow_seo_og_image' );
 		}
+	},
+	20
+);
+
+/**
+ * The share-image guess is derived from Elementor content, so it has to be
+ * dropped whenever the page is edited — not only when the ACF box is saved.
+ */
+add_action(
+	'save_post',
+	function ( $post_id ) {
+		delete_post_meta( (int) $post_id, '_ow_seo_og_image' );
 	},
 	20
 );

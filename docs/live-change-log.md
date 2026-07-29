@@ -1,5 +1,76 @@
 # Live Change Log
 
+## 2026-07-29 - Structured Data Built From Real Site Data, Plus Keywords (SEO v1.1.0)
+
+Follow-up to the entry below, on request: deepen the schema and add the
+keywords tag that v1.0.0 deliberately left out.
+
+**Keywords.** Now emitted, and every URL has one — 34 hand-written sets in
+`ow_seo_page_keywords()`, generated sets for the CPTs, plus a "Focus Keywords"
+field in the SEO box. Written as an honest description of each page rather than
+a term list: Google has ignored the tag since 2009 and Bing treats a stuffed one
+as a spam signal, so a clean tag is the only version worth shipping. The field's
+instructions say so plainly, so nobody later mistakes it for a ranking lever.
+Blog posts have no tags (0 of 17), so those fall back to the post's own subject
+rather than shipping an empty tag.
+
+**Schema, all from data already in the CMS — nothing invented:**
+
+- `FAQPage` on /faq/ and the three outlet pages, built from the 47-item FAQ CPT.
+  The query mirrors page-faq.php and page-pricing.php exactly, including the
+  rule that an FAQ with an empty `faq_outlet` applies to every outlet, because
+  the markup has to describe what is actually rendered. Site-wide questions
+  repeat per outlet, so /faq/ is deduplicated: 38 unique questions from 47 rows,
+  17 on Funan, 21 on Orchard, 23 on Kallang. Verified every question in the
+  markup appears verbatim in the page body.
+- `priceRange` on each outlet, computed from the `pricing_item` rows using the
+  same peak-price rule as the pricing tables ($15-$84 Kallang, $10-$27 Orchard,
+  $16-$49 Funan), so it cannot drift from the published prices.
+- `Service` + `AggregateOffer` on the 8 activity pages, with real low/high
+  prices in SGD keyed off `pricing_activity`. Combo rows excluded — they belong
+  to more than one activity page.
+- `VideoGame` on all 81 experiences, with `genre` from experience_type and
+  `numberOfPlayers` / `typicalAgeRange` parsed from `exp_players` ("1-5") and
+  `exp_age` ("8+").
+- `Organization` gains `sameAs` (the Facebook and Instagram profiles linked in
+  the footer — verified profiles only, since a wrong entry is worse than none)
+  and a postal address; `WebSite` gains a `SearchAction`; outlets gain
+  `currenciesAccepted`, `isAccessibleForFree` and an image; and a `WebPage` node
+  ties each URL into the graph.
+
+Node counts across 169 URLs: 169 Organization / WebSite / BreadcrumbList, 167
+WebPage, 81 VideoGame, 17 Article, 9 EntertainmentBusiness, 8 Service, 6
+FAQPage.
+
+**The two event-hub pages are no longer a gap.** `overworld-event-hub-content.php`
+owns their title, description, social tags and FAQ schema, so this plugin used
+to skip them entirely — leaving them without robots, keywords or the site-wide
+entity. It now fills in exactly those three and nothing else, as a second
+JSON-LD block containing only Organization and WebSite. Deliberately not a
+second BreadcrumbList or FAQPage: a duplicate of those would be a contradiction
+rather than extra detail.
+
+**Share images.** No page on this site sets a featured image, so every page was
+falling back to the logo when shared on WhatsApp or Facebook. `_elementor_data`
+turned out to hold no upload URLs at all — the visuals are ACF image fields
+holding attachment IDs. The resolver now scans post meta for those, ranks them
+(hero/poster > gallery > activity > rest), and requires at least 800px wide so
+it cannot pick an icon. Activity pages and experience_type archives have no
+images of their own, so they borrow the first game's artwork from the
+experience CPT. Result: **140 of 167 URLs now share a real photograph, up from
+about 98.** Cached in `_ow_seo_og_image`, cleared on `save_post`.
+
+The 27 still on the logo are the legal pages, the booking pages, the noindexed
+gift-voucher stubs, the category archives and the five physical-activity pages
+(Floor Is Lava, Laser Maze, Tap Tap, XR Party Game, VR Machine Ride) that have
+no image field anywhere. **Setting a Share Image on those in the SEO box is a
+one-minute job per page** and is the intended use of that field — it needs
+someone to choose the photo.
+
+Backup: `~/overworld-backups/overworld-seo-v1.0.0-20260729.bak`. Re-swept all
+169 URLs after each deploy: still 169/169 clean, zero duplicate titles, every
+URL carrying title, description, keywords, robots, canonical and valid JSON-LD.
+
 ## 2026-07-29 - Site-Wide SEO Metadata For Every URL
 
 Client reported that pages were missing titles, descriptions and "those".
