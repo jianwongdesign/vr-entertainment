@@ -42,6 +42,26 @@ cards, 4 points, body copy, 3 FAQs, and valid JSON-LD parsing to
 words). Editability tested end to end: wrote a test tagline via meta, saw it
 on the live page, reverted, and confirmed the default came back.
 
+Follow-up: **the landing pages were unreachable from the menu.** In the
+header nav, Events → "Team Building" and "Birthday Party" were both
+`href="#"` — they existed only to open their submenu, so on desktop clicking
+them did nothing and the only way in was via an outlet child page. Nobody
+would have found the new landing pages, and Google follows internal links.
+
+Fixed via `scripts/nav-event-hub-links.php` (header-footer-elementor
+template post 29, HTML widget `36ab9a3`, idempotent):
+
+- Each parent now points at its landing page, so a desktop click navigates
+  while hover still opens the submenu.
+- Added an explicit "All Outlets →" item as the first entry in each submenu.
+  Necessary, not decorative: the nav JS calls `preventDefault()` on
+  `.has-submenu > a` for touch/≤1300px so the tap opens the submenu, which
+  means the parent link alone would never work on a phone.
+
+Backup: `~/overworld-backups/header29-elementor-before-nav-links.json`.
+Verified by clicking the live menu — lands on /team-building/ with the right
+title and H1; all four event URLs return 200.
+
 Two follow-ups to yesterday's work.
 
 **1. Guard extended to every template-driven page** (v1.1.0 of
