@@ -1,5 +1,798 @@
 # Live Change Log
 
+## 2026-08-11 - Video Section: The Cropped Frame Was YouTube's Own Poster
+
+Reported as the video looking heavily cut off once the embed loads. First look
+at it in a real browser (the Chrome extension is connected again), on
+`/vr-machine-ride/` — the first page with a video in it, `sAerBP-DFIk`.
+
+**Our frame was never the problem.** Measured live: the frame is 1200×675, the
+iframe fills it at 1198×673, `aspect-ratio` computes to 16/9, and the video is
+16:9 (oEmbed reports 200×113). Our own cover is a 16:9 image in a 16:9 box, so
+`object-fit:cover` crops nothing. At full width YouTube's poster is not cropped
+either — screenshotted to be sure.
+
+**What is cropped is YouTube's own pre-play screen at phone widths.** Injecting
+the embed at 324×182 and 324×210 — a 16:9 frame on a 360px phone — YouTube
+zooms its poster hard and truncates the title to "VR Machine Fantasy Starship
+P…". That screen is only reached when autoplay does not start, which on iOS is
+always: Safari refuses autoplay with sound, full stop. So the sequence on a
+phone was: tap our play button → YouTube's cropped poster and red button →
+tap again. That is the "cut off" being reported.
+
+Three changes:
+
+1. **Start muted.** `mute=1` is the only autoplay every browser allows, so the
+   player goes straight into playback and its poster is never reached.
+2. **Sound comes back on `PLAYING`, not on `onReady`.** Unmuting before
+   playback has begun can trip the autoplay gate and leave the video paused.
+   The visitor pressed our button, so the page carries the activation the
+   unmute needs. Where the browser still refuses — iOS — a small accent
+   "Tap for sound" pill appears over the player; a direct tap is its own
+   gesture, which iOS does accept.
+3. **Our cover stays on top until the video is genuinely playing**, with a
+   spinner in place of the play triangle, and a 2.5s fallback so nobody is
+   ever trapped behind it if the API never answers. Whatever YouTube paints
+   while it spins up is now behind our own still.
+
+Also `padding:54px 18px` → `54px 12px` at ≤600px. YouTube's chrome crowds and
+crops below roughly 340px of player width, so the extra 12px of frame width is
+worth more than the symmetry.
+
+```text
+Live, in-browser, after deploy:
+  at click   children order [IFRAME, BUTTON] — iframe behind the cover
+             cover visible, is-loading (spinner) ✓
+  +2.6s      cover hidden, one iframe playing ✓
+  unmute on PLAYING ✓   no unMute in onReady ✓
+php -l clean both ends · sha1 identical · LiteSpeed purged
+```
+
+Not verifiable from here: whether sound actually returns on desktop and whether
+the pill appears on iOS — YouTube will not stream inside this automated
+browser, so playback itself stalls at 0:00 regardless of the code. Worth one
+check on a real phone and one on a desktop.
+
+## 2026-08-07 - Video Section Under The Hero On All 11 Game + Outlet Pages
+
+Asked for a YouTube placeholder as the second section on the game pages and
+the individual outlet pages, matching the content width, with the YouTube look
+played down to a play button and no "watch next" at the end.
+
+New mu-plugin `overworld-video-section.php`. One renderer, two ways in — the
+game pages are Elementor documents in the database and the outlet pages are a
+theme template, so the plugin exposes both a `[ow_video]` shortcode and an
+`ow_video_section()` function.
+
+**It is a facade, not an embed.** On page load there is no iframe, no request
+to youtube.com and no cookie — just our own cover image, scrim and accent play
+button, so there is no YouTube chrome to play down. The player is built only
+when someone presses play, from `youtube-nocookie.com` with `rel=0`,
+`modestbranding=1`, `iv_load_policy=3`, `playsinline=1`.
+
+**The "watch next" grid is genuinely gone.** `rel=0` narrows suggestions to the
+same channel, but YouTube still paints a grid over the last frame when a video
+finishes. So the section attaches the IFrame API, watches for `ENDED`, removes
+the iframe and puts the cover back. If the API fails to load the video still
+plays — only the reset is lost. What no embed parameter can remove: end screens
+and cards baked into the last seconds of a video. Those are a per-video setting
+in YouTube Studio and have to be switched off there.
+
+Fields on each page (ACF group "Video", first on the edit screen): YouTube Link
+(watch / youtu.be / Shorts / bare ID all parse), optional Cover Image — falls
+back to the video's own thumbnail — optional Heading (default "See It In
+Action") and one optional line under it.
+
+**Nothing is visible yet, by design.** With no link set the section renders
+nothing at all — for visitors *and* for editors. The first cut showed a dashed
+"Video slot" placeholder to anyone who could edit the page, following the
+outlet gallery convention; that was dropped on request, because a logged-in
+client browsing the site sees the same page a visitor does and a placeholder
+box reads as something visitors can see too. The ACF field group carries the
+explanation instead. Verified as an administrator: all eight game pages return
+an empty string with no link set, and the cover comes back the moment one is.
+
+```text
+Game pages   container + shortcode widget spliced in at index 1 of _elementor_data
+             (hero stays first) — the shape the existing [ow_experience_grid]
+             block already uses on these pages:
+  326 vr-arcade #ff5722   420 vr-escape #a855f7   294 floor-is-lava #ff5722
+  312 laser-maze #22e3ff  364 tap-tap #ff2db8     338 vr-machine-ride #00d4ff
+  646 vr-free-roam #00ff88  577 xr-party-game #ffd60a
+Outlet pages page-pricing.php calls ow_video_section() after the hero; the
+             section inherits --accent from .ow-pri, so it takes the outlet
+             colour without being told.
+```
+
+Each page passes its own hero accent, so the play button and eyebrow match the
+page. Inner width is 1200px — the same measure as every other section on both
+page types — with the video in a 16:9 frame across it.
+
+One trap worth recording: an empty Elementor container would leave a band
+between hero and section 2 if its zero padding never reached the generated
+stylesheet. `_elementor_css` was dropped on all eight pages and each was warmed
+so Elementor rewrote it; the padding-0 rule for the new container is now
+present in all eight `post-<id>.css` files, so the empty section has no height.
+
+```text
+All 11 pages 200 · 0 PHP warnings · 0 ow-vid markup for logged-out visitors
+             · 0 raw [ow_video] leaking into the HTML
+Outlet pages still render the store introduction (unchanged)
+Render test (fake link injected via filter, nothing written to the DB):
+  7429 bytes · cover button · data-ow-video · ytimg poster · youtube-nocookie
+  · rel=0 · modestbranding=1 · iv_load_policy=3 · PlayerState.ENDED · accent
+ID parsing: watch?v= / youtu.be / shorts / embed / bare ID all resolve; junk -> ''
+Elementor: padding-0 rule present for the new container on all 8 game pages
+```
+
+Not seen in a browser — the Chrome extension is not connected. Paste a link
+into any one page's Video field to check the cover, the play behaviour and the
+end-of-video reset.
+
+**Order note for the outlet pages:** the video is now section 2 and the store
+introduction section 3, which is what was asked for literally. If the intro
+should come first, it is a two-line swap.
+
+## 2026-08-07 - Game Page Heroes: Stats Pill Is 2×2 On Phones, Not A Ladder
+
+Reported as the middle text of the hero listing one line at a time on mobile,
+asking for 2 by 2.
+
+The pill under the hero copy ("30+ Games · 1-17 Players · 8+ Years Old ·
+3 Session Lengths") is a single row on desktop. Seven of the eight game pages
+switched it to `flex-direction:column` below 560px, so four stats became four
+stacked lines — a tall ladder pushing the buttons down the screen. Every page
+carries exactly four stats, so a two-column grid gives a clean 2×2.
+
+```diff
+- .ow-<pre>-hero__stats{flex-direction:column;border-radius:24px;padding:16px 24px;gap:12px;}
++ .ow-<pre>-hero__stats{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));
++   border-radius:24px;padding:16px 18px;gap:14px 16px;
++   width:100%;max-width:420px;margin-left:auto;margin-right:auto;}
+- .ow-<pre>-hero__stat{padding:0;}
++ .ow-<pre>-hero__stat{padding:0;white-space:normal;justify-content:center;}
+```
+
+Two details that keep it from overflowing a small phone. The base rule sets
+`max-width:max-content`, which on a two-column row is exactly what would push
+the pill past the viewport — hence the explicit `width:100%;max-width:420px`.
+And the base sets `white-space:nowrap`; released at this tier, so a long label
+wraps inside its own cell instead of widening the grid. Worst case measured
+from the served CSS: the widest cell ("3 Session Lengths", 10px mono at .16em)
+is ~132px, so two columns plus gap and padding come to ~315px against ~320px
+available on a 360px screen — and if a narrower phone appears, the label wraps
+rather than overflows.
+
+Applied to vr-arcade (326), vr-escape (420), floor-is-lava (294), laser-maze
+(312), tap-tap (364), vr-machine-ride (338), xr-party-game (577) at ≤560px.
+
+**VR Free Roam (646) is built differently** — it never stacked, it wraps, in a
+single ≤760 tier — so it gets the same grid at its own breakpoint. It could not
+fit one row below 760px anyway (that is what the 2026-08-05 separator fix was
+about), so a deliberate 2×2 replaces ragged wrapping.
+
+Nothing above 560px changed on the seven; desktop keeps its single row with
+separators. `scripts/hero-stats-2x2.php`, guarded `str_replace` on both
+`post_content` and `_elementor_data`, originals in
+`~/overworld-backups/hero-stats-2x2-20260807/`, element caches dropped,
+LiteSpeed purged.
+
+```text
+Served CSS, all 8 pages: grid rule present 1× · old column rule 0× · HTTP 200 · 0 PHP warnings
+Cascade order on vr-arcade: base(61406) < ≤900(64405) < ≤560 grid(65018) < ≤560 cell(65216)
+Both new rules confirmed inside @media (max-width:560px).
+```
+
+Verified as served CSS and cascade order, not in a browser — the Chrome
+extension is not connected, so the 2×2 has not been seen rendered.
+
+## 2026-08-06 - Gift Vouchers: Booking-Style Pages With The Bookeo Embed (NOT LIVE)
+
+Asked for the gift voucher section to work like the booking pages — refer back
+to the outlet and embed Bookeo — and explicitly asked for it to be prepared
+without going live.
+
+Today vouchers are three nav links straight out to
+`bookeo.com/<account>/buyvoucher`; the visitor leaves the site. Booking used to
+work that way too until `scripts/booking-redesign.php` gave each outlet its own
+page with the Bookeo widget embedded, behind a `/booking/` outlet chooser. This
+mirrors that set exactly.
+
+**The key finding: no Bookeo back-office work is needed.** Bookeo's `widget.js`
+forwards unknown query parameters into the frame it builds — `widget.js?a=KEY`
+plus `&buyvoucher=true` produces
+`b_<KEY>_start.html?inwidget=true&a=<KEY>&buyvoucher=true`, the voucher flow,
+using the **same three widget keys** the booking pages already use. Verified by
+diffing the served `widget.js` with and without the parameter. (Framing the
+short `bookeo.com/.../buyvoucher` URL directly is not an option — it answers
+`X-Frame-Options: SAMEORIGIN`.)
+
+`scripts/voucher-pages.php` builds four pages, all as **drafts**:
+
+```text
+1765  /voucher-kwm/            Kallang  key 231YALUW419DA4CE7973
+1766  /voucher-orchard/        Orchard  key 231T6UX7U19D0A676CD2
+1767  /voucher-funan/          Funan    key 231RYKULN19D91C736C8
+1768  /gift-voucher-preview/   outlet chooser, mirrors /booking/
+```
+
+Layout is the Book Now layout with voucher wording: per-outlet accent hero,
+venue and address, activity pills, "Choose a different outlet" pointing at the
+final `/gift-voucher/` URL, then the black embed section and the phone/WhatsApp
+help strip. No claims about validity, denominations or terms — nothing is
+asserted about vouchers that the site does not already say.
+
+Nothing is live: the pages are drafts (anonymous request to `/voucher-kwm/`
+returns 404), the published `/gift-voucher/` stub (523, still
+`<!-- placeholder -->`) was not touched, and the nav was not touched. The
+script refuses to write to any page that is already published, and is
+idempotent — re-running updates the same four pages.
+
+**Not verified: whether the voucher widget renders inside the frame.** Bookeo
+answers a bot check to `curl`, and the Chrome extension is not connected, so
+this needs one human look at a preview link while logged in. That is the
+approval gate for the go-live steps, which are written out at the bottom of the
+script and deliberately not automated: publish the three pages, move the hub
+onto 523, repoint the three nav links, purge.
+
+## 2026-08-06 - VR Arcade / VR Escape: Hero "Browse The Games" Goes To The Library
+
+Reported as the hero button scrolling down the page instead of opening the game
+library. Both pages had `href="#games"` on the ghost button next to Book Now,
+which jumped to the on-page grid; the same pages already link out to the real
+library twice lower down.
+
+| Page | Was | Now |
+|---|---|---|
+| /vr-arcade/ (326) | `#games` | `/experience-type/vr-arcade/` |
+| /vr-escape/ (420) | `#games` | `/experience-type/vr-escape/` |
+
+Both are Elementor pages, so the edit is a guarded `str_replace` on the DB, on
+an anchor unique enough to hit one button and nothing else
+(`ow-vra-hero__btn--ghost\" href=\"#games\"`). vr-arcade needed only
+`_elementor_data` — its `post_content` copy already pointed at the library,
+having drifted out of step at some earlier edit. vr-escape needed both fields.
+`_elementor_element_cache` deleted on both, LiteSpeed purged (see
+[[elementor-element-cache-blocks-db-edits]] — without that the change is
+invisible). Originals in `~/overworld-backups/hero-browse-links-20260806/`.
+
+The `#games` section itself is untouched — the grid is still there, it just
+isn't what the hero button points at now. The other six activity pages were
+checked for the same pattern: none of them have it.
+
+```text
+Served HTML after purge:
+  vr-arcade  hero btn -> /experience-type/vr-arcade/  "Browse The Games" · 0 "#games" left · id="games" still present
+  vr-escape  hero btn -> /experience-type/vr-escape/  "Browse The Games" · 0 "#games" left · id="games" still present
+  both library archives 200 · 0 PHP warnings on either page
+```
+
+## 2026-08-06 - Outlet Pages: Client-Written Store Introduction
+
+Asked for a text holder on all three outlet pages so the client can introduce
+the store in their own words and the page carries more content.
+
+New mu-plugin `overworld-outlet-about.php` adds a **Store Introduction** field
+group to anything on the Pricing Page template — heading plus a WYSIWYG body.
+It sits first on the edit screen (`menu_order` 2, above What We Offer). The
+body is a WYSIWYG rather than the plain textarea used by the other outlet
+fields: an introduction wants paragraphs, a bold phrase and the odd link.
+Output goes through `wpautop()` then `wp_kses_post()`.
+
+`page-pricing.php` renders it as section 2, directly under the hero and above
+Activities & Games, using the shared `.ow-pri__section-head` so it reads like
+the rest of the page. Body copy is capped at 820px — the reading measure, not
+the 1200px grid — with paragraph, list and link styling in the outlet accent.
+
+**It is never blank.** Empty fields fall back to a per-outlet default, the same
+pattern `outlet_intro` already uses. The defaults were written only from what
+the page already asserts — the activity line-up in `$outlet_config` and the
+street address — plus the MRT each outlet sits beside. No opening hours, no
+walk-in policy, no claims that are not already on the page. **They are
+placeholder copy and should be read and rewritten by the client**; anything
+typed into the field replaces them outright.
+
+| Outlet | Default opens with |
+|---|---|
+| Kallang | flagship arena, four ways to play under one roof |
+| Orchard | the headset-free one — lava floor, laser maze, light wall |
+| Funan | built for groups who want to move |
+
+Heading default is "Welcome To [outlet name]". Backup of the previous template
+in `~/overworld-backups/outlet-about-20260806/`.
+
+```text
+php -l clean local and remote; sha1 identical on both files.
+ACF: group_ow_outlet_about registered, location page_template==page-pricing.php.
+Field group count 16, all previously existing groups still present.
+
+Served HTML, all three outlets, cache-busted:
+  kallang   .ow-pri__about-body present · "Welcome To Kallang Wave Mall" · 2 <p>
+  orchard   .ow-pri__about-body present · "Welcome To Orchard Central"   · 2 <p>
+  funan     .ow-pri__about-body present · "Welcome To Funan"             · 2 <p>
+  pricing rows 17 / 17 / 15 · FAQ blocks present · 0 PHP warnings each
+```
+
+Checked as source HTML, not in a browser — the Chrome extension is not
+connected, so the visual spacing above Activities & Games is unconfirmed.
+
+## 2026-08-06 - Incident: WPCode Cache Delete Took 5 CPTs Off The Site
+
+Reported as "you removed some of the ACF items". Nothing was deleted — but for
+roughly 35 minutes FAQs, Pricing, Events, Promos and Experiences were not
+registered at all, so their admin menus, their ACF field groups and their
+content were missing from wp-admin and from the front end.
+
+**Cause.** Those five post types are registered by WPCode snippets, not by the
+repo. WPCode decides what to run from the `wpcode_snippets` option, a cache of
+active snippets by location. While deactivating snippet #617 (the admin colour
+CSS, being replaced by a mu-plugin) that option was deleted to force the change
+through. It never came back: WPCode rebuilds it in exactly two places —
+`WPCode_Snippet::save()` and a visit to the Code Snippets admin page — and
+neither a front-end request nor wp-cli triggers either. With the option gone,
+every snippet stopped executing, including the ones that register the CPTs.
+
+Deleting the option was unnecessary in the first place: setting the snippet's
+`post_status` to `draft` already deactivates it.
+
+**Fix.** `wp eval 'wpcode()->cache->cache_all_loaded_snippets();'`
+
+```text
+wpcode_snippets rebuilt: everywhere => 906,604,603,473,435,380,280,13
+                         site_wide_header => 15,14      (admin_only now empty
+                                                         — #617 is draft)
+Post types back:  faq 47 · pricing_item 17 · event_package 26 · promo 4 ·
+                  experience 83  (published counts — no content was lost)
+ACF field groups: 16 registered, every group present.
+```
+
+Never `delete_option( 'wpcode_snippets' )`. WPCode's own `delete_cache()` is no
+safer — it writes an empty array and is equally inert until something rebuilds.
+
+**Unrelated, same window:** the first of the stalled Elementor auto-updates —
+see the entry below.
+
+## 2026-08-06 - Stalled Elementor Auto-Update Is Taking The Site Down Hourly
+
+Reported as "why is the system in maintenance".
+
+Something tries to update Elementor 4.1.4 → 4.2.1, unpacks all 2,566 files into
+`wp-content/upgrade/`, then dies before swapping them in. WordPress writes
+`.maintenance` at the start of any plugin install and deletes it at the end;
+the process never reaches the end, so the flag is orphaned and every visitor
+gets a 503 until WordPress treats the flag as stale 10 minutes later.
+
+```text
+08:12:25 UTC  flag written · ACF updated OK · Elementor unpacked, not installed · 503 until 08:22:25
+09:32:15 UTC  identical stall, same files                                       · 503 until 09:42:15
+Elementor still 4.1.4 · no PHP error logged · retries roughly hourly
+```
+
+**Not WordPress doing it.** `hostinger-auto-updates.php` disables WP's own
+updater (`automatic_updater_disabled`, `auto_update_plugin` → false), the
+`auto_update_plugins` option is `false`, every plugin reports auto-update
+"off", and there is no user crontab. That leaves Hostinger's platform-level
+auto-update in hPanel. Dying mid-copy with no PHP error, in a run where the
+much smaller ACF update completed, reads as the process being killed on a host
+resource limit while copying ~3,000 files.
+
+**The complication:** `elementor_pro_license_key` is empty. Both Elementor and
+Elementor Pro have 4.2.1 available, but without a licence Pro cannot download —
+so any successful run moves core only and leaves Pro at 4.0.4. The homepage and
+all eight activity pages are Elementor-built, so a core/Pro split is not
+something to walk into casually.
+
+**Decision: stop the auto-updates rather than force the update through.**
+Versions stay matched at core 4.1.4 / Pro 4.0.4, the outages stop, and the
+update gets planned properly once the Pro licence is in place. The switch is in
+hPanel (Websites → overworld.com.sg → WordPress → Auto updates) — panel-side,
+so it is the client's to flip; nothing in WordPress needed changing, it was
+already off there.
+
+Left in place: the stale `.maintenance` flag (WordPress already ignores it —
+anything older than 10 minutes is treated as expired) and the abandoned
+`wp-content/upgrade/elementor.4.2.1/` unpack. Both are inert leftovers; removing
+them was blocked by the local safety policy on remote deletes and is not
+required for the site to run.
+
+## 2026-08-06 - Admin Sidebar: Two Zones, Popups Gets Its Colour
+
+Asked for the new Popups section to carry a colour like the other client
+sections, and for the left menu to be arranged so the coloured (client) items
+sit together and everything else drops to the bottom as admin tooling.
+
+**The colour code was living in the database.** It was WPCode snippet #617
+("Overworld :: Color-Coded Admin UI", v3) — never in Git, so it was invisible
+to the repo and easy to lose. Ported verbatim into
+`wp-content/mu-plugins/overworld-admin-ui.php`, snippet set to draft
+(WPCode treats `post_status !== publish` as inactive — verified in
+`class-wpcode-snippet.php:423`), and its cache option `wpcode_snippets`
+deleted so the deactivation took effect. Original snippet body and post row
+saved to `~/overworld-backups/admin-ui-20260806/`. Deactivate-then-upload was
+the required order: both copies declare `ow_admin_color_map()`, so any overlap
+would have been a redeclare fatal on every admin page.
+
+**Colours.** The five existing ones are unchanged. Added: Popups green
+`#22c55e` 📢, Pages blue `#3b82f6` 📄, Media and Posts slate `#94a3b8`. Each
+item gets the same treatment as before — 4px accent on the sidebar item,
+coloured icon, tinted current state, accented page title, Add New button,
+Publish button and row hover on its own screens.
+
+**Two zones.** `custom_menu_order` + `menu_order` at priority 9999, with the
+stock separators removed and two labelled ones put in their place:
+
+```text
+Dashboard
+── WEBSITE CONTENT ──
+Pages · Experiences · Events · Pricing · FAQs · Promos · Popups · Media · Posts
+── WEB ADMIN TOOLS ──
+Site Kit · Elementor · Comments · Templates · Hello · Appearance · Plugins ·
+Users · Tools · All-in-One WP Migration · Settings · (ACF, LiteSpeed, WPCode…)
+```
+
+Only the client list is enumerated; everything else keeps its default relative
+order and lands below the divider on its own, so a plugin installed next month
+needs no change here.
+
+Two things that would have broken it quietly:
+
+- Core deletes the second of any two adjacent separators, so the stock
+  separators are unset first — otherwise ours could vanish depending on where
+  they landed.
+- Site Kit filters `menu_order` too, to hoist itself next to the Dashboard. At
+  the default priority it ran after us and sat inside the client zone. Priority
+  9999 puts us last and the zones hold.
+
+The labels are drawn with `::after` on the separator `<li>`, and blanked when
+the sidebar is collapsed (`.folded` / `.auto-fold`) where there is no room.
+
+Verification — the admin menu was rebuilt under wp-cli against the live
+database (globals bound first, otherwise `wp-admin/menu.php` writes core's
+items into a local scope and the result is nonsense; the four WPCode-registered
+CPTs were stood in, as WPCode snippets do not execute under wp-cli):
+
+```text
+ 1 index.php                        Dashboard
+ 2 separator-ow-client
+ 3 edit.php?post_type=page          Pages
+ 4 …experience / event_package / pricing_item / faq / promo / ow_popup
+10 upload.php                       Media
+11 edit.php                         Posts
+12 separator-ow-admin
+13 googlesitekit-dashboard … 24 options-general.php
+
+CSS emitted on a dashboard load: 6434 bytes, all 9 menu ids present,
+#22c55e present, both zone labels present.
+php -l clean local and remote, sha1 identical, homepage + wp-login 200.
+```
+
+Not verified in a browser — the Chrome extension was not connected. Hard-refresh
+wp-admin (Cmd/Ctrl + Shift + R) to see it.
+
+## 2026-08-05 - Site-Wide Sweep For Stray Separators On Wrapped Rows
+
+Asked to confirm the VR Free Roam divider problem does not exist anywhere else.
+All 179 sitemap URLs were fetched and scanned statically for the bug class: a
+separator drawn on adjacent siblings inside a flex container that is allowed to
+wrap. Detection is viewport-independent — a container that CAN wrap at any
+breakpoint plus children that CARRY a separator is latent whether or not it
+happens to be wrapping at the width you are looking at. Parent/child
+relationships came from parsing the real DOM, not from guessing at BEM names.
+
+**Correction to the previous entry.** It claimed "none of the seven sibling
+pages use dividers at all". That was wrong. It was based on searching only for
+`border-left` on an adjacent-sibling selector. The seven pages do draw
+separators — as `:not(:last-child)::after` pseudo-elements — which the first
+scan did not look for. A second pass covering pseudo-element separators,
+`border-top`/`bottom`, and `display:none` neutralisation found them.
+
+**Seven pages had a real, reachable defect.** They hide the separator and switch
+to a column at `<=560px`, but the pill starts wrapping while still in row
+direction above that. Measured on vr-arcade: under the `<=900px` tier the pill
+needs 542px of content against 513px available at a 561px viewport. So between
+roughly 561px and 664px (varies with stat text length, 43-57 chars across the
+seven) it wraps with separators still painted, and every non-last item leaves a
+line hanging off the end of its row. Narrow window, but reachable on small
+tablets, foldables and large phones in landscape.
+
+Fix: hide the separator across the whole `<=900px` tier rather than only
+`<=560px`. Above 900px the pill cannot wrap — worst-case content is ~776px
+against 853px available — so separators remain where they are actually wanted.
+
+```diff
+  .ow-<pre>-hero__stat{padding:0 14px;font-size:10px;}
++ .ow-<pre>-hero__stat:not(:last-child)::after{display:none;}
+```
+
+Applied to vr-arcade (326), laser-maze (312), floor-is-lava (294), vr-escape
+(420), xr-party-game (577), vr-machine-ride (338), tap-tap (364). Database edits
+to both `post_content` and `_elementor_data`, guarded on a unique anchor,
+verified by counting the hide-rule (1 before, 2 after), element caches cleared,
+originals in `~/overworld-backups/stat-separators-20260805/`.
+
+**One remaining candidate, deliberately not changed.** `/faq/` has
+`.ow-faq__tab + .ow-faq__tab { border-left }` inside `.ow-faq__tabs`, which
+carries `flex-wrap:wrap` at base. It cannot currently wrap: measured 3 tabs
+totalling 406px inside 867px of available width, and below 760px the container
+is `flex-wrap:nowrap` with `flex:1` tabs. The wrap branch is unreachable, so
+there is nothing to fix today. It would become real if a fourth or fifth outlet
+tab were added — 5 tabs would be ~676px against ~681px available at 761px, right
+at the edge. Worth remembering when an outlet is added.
+
+Verification:
+
+```text
+Scan pass 1 (border-left/right only)      2 candidates
+Scan pass 2 (+ pseudo separators,
+             + display:none neutralised)  9 candidates
+After fix:  SAFE 8  /  UNGUARDED 1 (faq, unreachable)
+
+All 7 pages: hide-rule present twice in served CSS, HTTP 200, 0 PHP errors.
+Rendered offline at 570px from live CSS, before and after: 3 stray lines gone.
+```
+
+## 2026-08-05 - Activity Page Hero Padding + VR Free Roam Stat Dividers
+
+Reported as the mobile header-to-hero gap still being big ("reduce 30 px"), and
+the VR Free Roam 25/50 section still showing a line that looks weird.
+
+**Why the earlier padding change missed these.** The 2026-08-04 entry reduced
+nine heroes, all of them child-theme templates. The eight activity pages are
+Elementor pages whose hero CSS lives in `post_content` / `_elementor_data`, not
+in the repo, so nothing in that change reached them. Measured on live
+`/vr-free-roam/`: the DOM chain from `#masthead` to the hero contributes
+**zero** margin or padding at every level — `#page`, `#content`, `.page-content`,
+`.elementor`, and two Elementor wrappers all sat at top 87px with 0/0. The whole
+gap was the hero's own `padding-top`, which was still 140px on desktop and
+120px on a phone.
+
+| Page | tablet | phone |
+|---|---|---|
+| vr-arcade, laser-maze, floor-is-lava, vr-escape, xr-party-game, vr-machine-ride, tap-tap | 100 → **70px** (≤900) | 80 → **50px** (≤560) |
+| vr-free-roam | 120 → **50px** (≤760, single tier) | same |
+
+The seven siblings got exactly the −30px asked for. VR Free Roam went 120 → 50
+rather than 120 → 90: it has only one breakpoint and was sitting 40px above its
+siblings on a phone, so a literal −30 would have left it at 90px and still
+visibly the odd one out. Matching the siblings was the point of the request.
+
+Desktop base padding (140px) was left alone — the report was about mobile.
+
+**The stray line.** The stats pill draws its dividers with
+`.ow-vfr-hero__stat + .ow-vfr-hero__stat { border-left }`. Once centring made it
+wrap (previous entry), the first item of every new row drew a border against
+nothing — a vertical line hanging at the left of row 2. None of the seven
+sibling pages use dividers at all; they separate stats with padding alone. So
+the divider is now switched off at the wrap breakpoint and kept on desktop,
+where the pill is a single row and the dividers are intentional.
+
+```diff
+  .ow-vfr-hero__stats{flex-wrap:wrap;border-radius:16px;}
++ .ow-vfr-hero__stat+.ow-vfr-hero__stat{border-left:0;}
+```
+
+All eight are database edits — guarded `str_replace` on fragments containing no
+JSON-special characters, applied to both `post_content` and `_elementor_data`,
+with each page's originals backed up to
+`~/overworld-backups/activity-hero-pad-20260805/`. `_elementor_element_cache`
+deleted per page (see the previous entry — without it the edits are invisible).
+
+Verification (served CSS, cache-busted):
+
+```text
+vr-free-roam     50px 24px 80px    (both tiers)   divider fix: yes
+vr-arcade        70px 24px 140px   50px 18px 120px
+laser-maze       70px 24px 140px   50px 18px 120px
+floor-is-lava    70px 24px 140px   50px 18px 120px
+vr-escape        70px 24px 140px   50px 18px 120px
+xr-party-game    70px 24px 140px   50px 18px 120px
+vr-machine-ride  70px 24px 140px   50px 18px 120px
+tap-tap          70px 24px 140px   50px 18px 120px
+
+All 8: HTTP 200, 0 PHP errors, JSON valid, fragments unique before replace.
+```
+
+The pill was rendered offline at 390px from the live CSS, before and after: the
+stray row-2 line is gone and both rows centre. The script's own verify flagged
+vr-free-roam as failed — a bug in the check, not the edit: the divider
+replacement string contains the search string as a prefix, so `strpos` still
+finds it afterwards. Confirmed correct by direct read-back (old padding absent,
+new rule present exactly once, JSON valid).
+
+Note: the nine template heroes sit at 40px on mobile, these eight now at 50px.
+Different design weight, but worth aligning if it reads inconsistent.
+
+## 2026-08-05 - VR Free Roam Hero Stats Pill Centred
+
+Reported as the hero text on the "25 / 50" section not being centre-justified
+like the other activity pages.
+
+The stats pill (`25 / 50 Min Session · 20+ Games · 2–6 Players · Age 7+`) picks
+up `flex-wrap:wrap` at `<=760px` but never had `justify-content:center`, so once
+it wrapped onto a second row the items packed left while the rest of the hero
+stayed centred. Above 760px it looked fine — it is `inline-flex` inside a
+`text-align:center` parent — which is why this only showed on mobile.
+
+All seven sibling activity pages already carry `justify-content:center` on their
+own `__stats` rule (`ow-vra-`, `ow-lm-`, `ow-fil-`, `ow-vre-`, `ow-xr-`,
+`ow-vmr-`, `ow-tt-`). VR Free Roam was the only one without it.
+
+```diff
+- .ow-vfr-hero__stats{ display:inline-flex;align-items:center;gap:0;
++ .ow-vfr-hero__stats{ display:inline-flex;justify-content:center;flex-wrap:wrap;align-items:center;gap:0;
+```
+
+`inline-flex` was kept deliberately — the pill hugs its content on this page,
+where the siblings use a full-width bar. The brief was to centre it, not to
+restyle it. `flex-wrap:wrap` was added at base to match the siblings so it can
+never overflow between 760px and the width where it stops fitting.
+
+This page is Elementor-built, so the change is a database edit, not a file edit.
+Page 646, applied to both `post_content` and `_elementor_data` via a scripted
+`str_replace` on a fragment containing no JSON-special characters, so the
+Elementor JSON stayed valid. Originals backed up to
+`~/overworld-backups/vfr-hero-stats-20260805/`.
+
+**Gotcha worth remembering:** the edit appeared to do nothing at first. Elementor
+keeps a rendered copy of the page in the `_elementor_element_cache` post meta and
+serves that; a LiteSpeed purge does not touch it, and a cache-busting query
+string returned the same stale HTML. Deleting that meta key made the change
+appear immediately.
+
+Verification:
+
+```text
+DB read-back:  post_content YES, _elementor_data YES, JSON valid, old fragment gone
+               _elementor_data 28488 -> 28526 bytes
+Served page:   justify-content:center  present
+               flex-wrap:wrap          present
+               4 stat items rendered, 0 PHP errors, HTTP 200
+```
+
+NOT visually verified at mobile width — the same viewport limitation as the
+padding change applies, and this defect only manifests below 760px. The CSS now
+matches the seven sibling pages exactly, but worth a glance on a phone.
+
+## 2026-08-05 - Homepage Popups (new mu-plugin)
+
+New `overworld-popups.php`: a **Popups** section in wp-admin where the client
+prepares homepage popups ahead of time — poster image, optional heading and
+text, a button with their own label and link, a start/end validity window, an
+on/off switch, a display order and a per-visitor frequency.
+
+**Why a post type, not a repeater.** ACF here is the free tier (6.8.4) — no
+Repeater, no Flexible Content, no Options page. The rest of the codebase works
+around that with flat numbered fields (`outlet_act_1_title`, `_2_`, …), which
+caps the list at whatever was hardcoded. Popups are open-ended and each needs
+its own dates and button, so each popup is a post. `public => false`, so it has
+no URL, no archive, and never enters the sitemap; it is also absent from
+`ow_seo_post_types()`, so overworld-seo.php ignores it.
+
+Fields: `ow_popup_enabled`, `_image`, `_heading`, `_text`, `_btn_label`,
+`_btn_url`, `_btn_blank`, `_start`, `_end`, `_order`, `_frequency`.
+
+**Validity** is inclusive and read in Asia/Singapore, matching
+overworld-promo-countdown.php: a start date opens at 00:00:00, an end date runs
+to 23:59:59 that day. Either may be blank (no start = live once switched on, no
+end = runs until switched off).
+
+**The date check runs twice, deliberately.** LiteSpeed caches the homepage, so a
+popup filtered out server-side is only filtered at the moment the page was
+generated — a cached copy could keep serving a popup hours after it expired.
+Every slide therefore also carries `data-start`/`data-end` unix timestamps and
+the script re-checks them before opening. Cache purges on save/trash/delete
+cover the common case; the JS check covers a window that rolls over while a
+cached page is still being served.
+
+**Presentation.** Renders via `wp_footer` (the homepage is Elementor-built, so
+there is no template to hook). One image modal; when more than one popup is
+live it becomes a carousel with arrows, dots, a keyboard path (Esc, ←/→), a
+focus trap, `inert` on off-screen slides, backdrop dismiss and
+`prefers-reduced-motion` support. Slides stack in one grid cell so the dialog
+takes the height of the tallest and never jumps between slides. Poster frame is
+locked to `aspect-ratio: 1200/630` with `object-fit: cover`, so an off-ratio
+upload is centre-cropped rather than letterboxed. Palette and type match the
+info/pricing templates.
+
+**Frequency** is per-popup but they share one modal, so the *most frequent*
+setting among the live set wins — suppressing an "every visit" campaign because
+an unrelated popup said "once a day" would be the wrong call. Changing the live
+set (adding, switching on, expiring) resets every visitor's dismissal.
+
+**Preview.** `?ow_popup_preview=1` on the homepage while logged in with
+`edit_posts` shows every published popup ignoring the switch and the dates, with
+a "Preview" flag and no dismissal written. Lets a popup be checked before it
+goes live, and made the verification below possible without exposing anything.
+
+Verification (draft popups only, created and deleted inside one `wp eval-file`,
+so nothing was ever publicly visible):
+
+```text
+STATUS      live / scheduled / expired / off        5/5 PASS
+WINDOW      start 2026-08-03 00:00:00, end 2026-08-10 23:59:59 (inclusive)
+ORDERING    order=1 leads order=5 despite later creation    PASS
+FILTERING   scheduled + expired + off + no-image excluded   PASS
+FREQUENCY   day + always -> always                          PASS
+MARKUP      slide class, is-active, data-start/end, <img>,
+            button label + href, nl2br, no target on internal link  PASS
+PREVIEW     returns all 5 with an image, ignoring state     PASS
+CLEANUP     6 test popups deleted, 0 remaining in DB
+
+Image size: ow_popup => 1200x630 crop=true (registered)
+Post-deploy: homepage HTTP 200, 0 popup markup (none exist yet), 0 PHP errors
+             /outlet/funan/ 200, /blog/ 200
+```
+
+The plugin is inert until the first popup is created and switched on — nothing
+on the site changes yet.
+
+NOT visually verified. The modal's rendered appearance and its carousel/keyboard
+behaviour have not been seen in a browser; the checks above are server-side
+markup and logic assertions. Worth opening the homepage with
+`?ow_popup_preview=1` once a real poster is in.
+
+## 2026-08-04 - Mobile/Tablet Hero Top Padding Reduced Site-Wide
+
+Reported as "in mobile view, most of the pages padding is huge" — the gap
+between the sticky header nav and the start of hero content.
+
+Root cause: `#masthead` is `position: sticky`, not `fixed`. A sticky header
+occupies normal flow space, so it never overlaps the content beneath it.
+Measured on live `/outlet/funan/`: the hero's `top` equals the header height
+exactly (87px). Every pixel of the hero's own top padding was therefore
+additive whitespace *below* the header, not clearance for it. The comment at
+`style.css:780` ("heroes keep their own padding — they sit under the sticky
+header") describes fixed-header behaviour that does not apply here, which is
+the likely reason the values drifted as high as 80–96px.
+
+Ten hero blocks each carried their own padding across nine files. All now
+follow one ladder — **56px tablet / 40px mobile / 36px small phone** —
+horizontal and bottom padding left untouched.
+
+| File | Class | Tablet | Mobile |
+|---|---|---|---|
+| `page-pricing.php` | `.ow-pri__hero` | 90 → 56 | 70 → 40 |
+| `page-event-hub.php` | `.ow-hub__hero` | 90 → 56 | 70 → 40 |
+| `page-event-listing.php` | `.ow-evt__hero` | 90 → 56 | 70 → 40 |
+| `single-event_package.php` | `.ow-pkg__hero` | 90 → 56 | 70 → 40 |
+| `single-experience.php` | `.ow-single__hero` | 80 → 56 | 56 → 40 (≤380: 48 → 36) |
+| `single.php` | `.ow-post__hero` | *(none)* → 56 | 80 → 40 |
+| `home.php` | `.ow-blog__hero` | 90 → 56 | 70 → 40 |
+| `page-faq.php` | `.ow-faq__hero` | 90 → 56 | 70 → 40 |
+| `style.css` | `.ow-info__hero` | 96 → 56 | 76 → 40 |
+
+`single.php` had no tablet tier at all — it jumped from 110px straight to the
+mobile value, leaving blog posts the lone outlier between 641–1000px. A
+`max-width:1000px` block was added so it matches the rest.
+
+The hero `::before` glow is anchored `bottom:0; height:80%` in every template
+and hero content sits in a normal-flow `-grid`/`-inner` wrapper, so no
+decoration or absolutely-positioned element depended on the old top padding.
+
+Deploy: all nine files verified byte-identical to live *before* editing (no
+server-side drift), backed up to `~/overworld-backups/hero-padding-20260804/`,
+pushed by targeted rsync, LiteSpeed purged.
+
+Verification:
+
+```text
+Post-deploy md5 local vs live: 9/9 MATCH
+php -l on all 8 templates:     no syntax errors
+
+Values confirmed served:
+  /outlet/funan/          .ow-pri__hero  56px tablet / 40px mobile
+  /blog/                  .ow-blog__hero 56px / 40px
+  /faq/                   .ow-faq__hero  56px / 40px
+  /team-building/         .ow-hub__hero  56px / 40px
+  /events/funan-package-a/ .ow-pkg__hero 56px / 40px
+  style.css               .ow-info__hero 100px base / 56px / 40px
+```
+
+NOT visually verified. `resize_window` reported success but `innerWidth` stayed
+pinned at 947px and `outerWidth` read 0, so no real mobile viewport was
+obtained in this environment. Values above are read from the served CSS, which
+is exact, but the rendered result was never seen — worth an eyeball on a phone.
+
 ## 2026-07-29 - Every Page Now Shares A Real Photograph (SEO v1.2.0)
 
 v1.1.0 left 27 URLs falling back to the logo when shared, and flagged setting a

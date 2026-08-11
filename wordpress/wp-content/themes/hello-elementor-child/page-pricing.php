@@ -12,18 +12,25 @@
  *
  * PAGE STRUCTURE (top to bottom):
  *   1. Hero            — outlet name, tagline, address/phone
- *   2. What We Offer   — intro text + activity cards (client-editable via ACF
+ *   2. Video           — client-set YouTube section (ACF ow_video_*, see
+ *                        mu-plugin overworld-video-section.php). Hidden from
+ *                        visitors until a link is set.
+ *   3. About This      — client-written store introduction (ACF
+ *      Outlet            outlet_about_heading / outlet_about_text, see
+ *                        mu-plugin overworld-outlet-about.php; falls back to
+ *                        the per-outlet default in $default_about below)
+ *   4. What We Offer   — intro text + activity cards (client-editable via ACF
  *                        slots outlet_intro / outlet_act_1..6 with optional
  *                        image; falls back to the built-in library below)
- *   3. Events          — Team Building & Birthday Party cards linking to
+ *   5. Events          — Team Building & Birthday Party cards linking to
  *                        /team-building/[slug] and /birthday-party/[slug]
- *   4. Pricing         — full-width pricing tables from the Pricing CPT
+ *   6. Pricing         — full-width pricing tables from the Pricing CPT
  *                        (pricing_outlet = slug)
- *   5. Gallery         — ACF outlet_gallery_1..6 photo collage
- *   6. FAQ             — this outlet's FAQs from the FAQ CPT, category tabs,
+ *   7. Gallery         — ACF outlet_gallery_1..6 photo collage
+ *   8. FAQ             — this outlet's FAQs from the FAQ CPT, category tabs,
  *                        one category at a time (empty faq_outlet = shown at
  *                        every outlet, same rule as page-faq.php)
- *   7. Terms + CTA     — "Before You Book" list and booking buttons (last)
+ *   9. Terms + CTA     — "Before You Book" list and booking buttons (last)
  *
  * COLOR UPDATE: Kallang = Blue, Orchard = Orange, Funan = Purple.
  */
@@ -186,6 +193,27 @@ $acts_intro = trim( (string) get_post_meta( get_the_ID(), 'outlet_intro', true )
 if ( '' === $acts_intro ) {
     $acts_intro = $default_intros[ $slug ] ?? $outlet['description'];
 }
+
+// ===== Store introduction (ACF outlet_about_heading / outlet_about_text, see
+// mu-plugin overworld-outlet-about.php). The client's copy wins. Left empty,
+// a per-outlet default keeps the section from ever rendering blank — written
+// from what this page already states: the activity line-up and the address.
+$default_about = array(
+    'kallang-wave-mall' => "Overworld VR at Kallang Wave Mall is our flagship arena — four different ways to play under one roof. Pick up a headset at the VR arcade, lock your team into a VR escape room, test your footwork on the interactive lava floor, or strap into the VR motion ride. They all sit in the same space, so a group can move from one to the next in a single visit.\n\nYou'll find us at 1 Stadium Place, inside Kallang Wave Mall and a short walk from Stadium MRT. Every activity, and what it costs, is listed further down this page.",
+    'orchard-central'   => "Overworld Lava at Orchard Central is the headset-free one. Three physical games, all built on lights, reflexes and footwork: dodge your way across the interactive lava floor, weave through the laser maze, and race the clock on the light wall.\n\nWe're on level 5 of Orchard Central at 181 Orchard Road, a few minutes from Somerset MRT. It suits anyone who would rather run around than sit down — and every game is priced per pax further down this page.",
+    'funan'             => "Overworld Funan is built for groups who want to move. Free-roam VR drops your whole crew into the same arena with nothing plugged in, the interactive lava floor turns the ground itself into a game, and the big-screen XR party games pull everyone in — no headset experience needed.\n\nWe're on level 4 of Funan at 107 North Bridge Road, right by City Hall MRT. Full rates for every activity are listed further down this page.",
+);
+$about_heading = trim( (string) get_post_meta( get_the_ID(), 'outlet_about_heading', true ) );
+$about_text    = trim( (string) get_post_meta( get_the_ID(), 'outlet_about_text', true ) );
+if ( '' === $about_text ) {
+    $about_text = $default_about[ $slug ] ?? $outlet['description'];
+}
+if ( '' === $about_heading ) {
+    $about_heading = 'Welcome To ' . $outlet['name'];
+}
+// WYSIWYG field: wpautop handles the plain-text defaults and any line breaks
+// the editor left behind; wp_kses_post keeps the markup to what a post can use.
+$about_html = wp_kses_post( wpautop( $about_text ) );
 
 // ===== Event sections (Team Building / Birthday Party) for this outlet =====
 $event_sections = array(
@@ -533,6 +561,35 @@ if ( '' === $combos_intro ) {
     color:var(--dim);white-space:nowrap;
   }
   .ow-pri__section-count strong{color:var(--accent-glow);font-weight:700;}
+
+  /* ===== STORE INTRODUCTION ===== */
+  .ow-pri__about{
+    padding:80px 40px 80px;
+    background:var(--bg);
+  }
+  .ow-pri__about-inner{
+    max-width:1200px;margin:0 auto;
+  }
+  /* Reading measure, not the 1200px grid — long lines of body copy are the
+     one thing on this page that must not run the full width. */
+  .ow-pri__about-body{
+    max-width:820px;
+    font-size:16.5px;line-height:1.8;color:var(--dim);
+  }
+  .ow-pri__about-body p{margin:0 0 20px;}
+  .ow-pri__about-body p:last-child{margin-bottom:0;}
+  .ow-pri__about-body strong,
+  .ow-pri__about-body b{color:#fff;font-weight:600;}
+  .ow-pri__about-body a{
+    color:var(--accent-glow);
+    text-decoration:underline;text-underline-offset:3px;
+    text-decoration-thickness:1px;
+  }
+  .ow-pri__about-body a:hover{color:#fff;}
+  .ow-pri__about-body ul,
+  .ow-pri__about-body ol{margin:0 0 20px;padding-left:22px;}
+  .ow-pri__about-body li{margin:0 0 8px;}
+  .ow-pri__about-body li::marker{color:var(--accent);}
 
   /* ===== ACTIVITIES & GAMES ===== */
   .ow-pri__acts{
@@ -1158,9 +1215,10 @@ if ( '' === $combos_intro ) {
 
   /* Responsive */
   @media (max-width:1000px){
-    .ow-pri__hero{padding:90px 28px 60px;}
+    .ow-pri__hero{padding:56px 28px 60px;}
     .ow-pri__hero-meta{max-width:100%;}
     .ow-pri__hero-meta-item{white-space:normal;}
+    .ow-pri__about{padding:60px 28px 60px;}
     .ow-pri__acts{padding:60px 28px 60px;}
     .ow-pri__combos{padding:0 28px 60px;}
     .ow-pri__combos-inner{padding-top:55px;}
@@ -1175,11 +1233,13 @@ if ( '' === $combos_intro ) {
     .ow-pri__faq{padding:60px 28px;}
   }
   @media (max-width:600px){
-    .ow-pri__hero{padding:70px 18px 50px;}
+    .ow-pri__hero{padding:40px 18px 50px;}
     /* Stack address + phone into a centered column so long addresses (e.g.
        Funan) wrap inside the pill instead of overflowing off the right edge. */
     .ow-pri__hero-meta{flex-direction:column;align-items:center;gap:8px;border-radius:20px;padding:14px 18px;}
     .ow-pri__hero-meta-item{justify-content:center;text-align:center;}
+    .ow-pri__about{padding:50px 18px 50px;}
+    .ow-pri__about-body{font-size:15.5px;line-height:1.75;}
     .ow-pri__acts{padding:50px 18px 50px;}
     .ow-pri__combos{padding:0 18px 50px;}
     .ow-pri__combo-badge{font-size:11.5px;padding:9px 14px;}
@@ -1228,6 +1288,36 @@ if ( '' === $combos_intro ) {
       </div>
     </div>
   </div>
+
+  <!-- ===== VIDEO (ACF ow_video_* — see mu-plugin overworld-video-section.php).
+       Prints nothing for visitors until a YouTube link is set; editors see a
+       placeholder. Inherits --accent from .ow-pri, so it takes the outlet
+       colour without being told. ===== -->
+  <?php
+  if ( function_exists( 'ow_video_section' ) ) {
+      echo ow_video_section( get_the_ID() ); // Escaped inside the renderer.
+  }
+  ?>
+
+  <!-- ===== STORE INTRODUCTION (ACF outlet_about_* — see mu-plugin
+       overworld-outlet-about.php; falls back to a per-outlet default) ===== -->
+  <?php if ( '' !== trim( wp_strip_all_tags( $about_html ) ) ) : ?>
+  <div class="ow-pri__about">
+    <div class="ow-pri__about-inner">
+
+      <div class="ow-pri__section-head">
+        <div>
+          <div class="ow-pri__section-eyebrow">About This Outlet</div>
+          <h2 class="ow-pri__section-title"><?php echo esc_html( $about_heading ); ?></h2>
+        </div>
+        <div class="ow-pri__section-count"><?php echo esc_html( $outlet['brand'] ); ?></div>
+      </div>
+
+      <div class="ow-pri__about-body"><?php echo $about_html; // Already run through wp_kses_post(). ?></div>
+
+    </div>
+  </div>
+  <?php endif; ?>
 
   <!-- ===== ACTIVITIES & GAMES ===== -->
   <?php if ( ! empty( $outlet_activities ) ) : ?>
