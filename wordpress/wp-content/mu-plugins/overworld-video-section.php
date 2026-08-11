@@ -295,6 +295,21 @@ function ow_video_assets() {
 		border:1px solid rgba(255,255,255,.08);
 		background:#000;
 	}
+	/* On the game pages this section is a shortcode widget inside an Elementor
+	   flex-column container, and that container works out its own height from
+	   the widget's *min-content* width rather than its real one. The frame's
+	   height comes from its width (16/9), so it is measured against ~167px
+	   instead of ~347px and the container lands about 100px short — the next
+	   section then rides up over the video. Only bites below 1200px, where
+	   .ow-vid__inner's max-width no longer pins the width to a fixed number,
+	   which is why it read as a phone-only bug.
+
+	   A definite width on the widget is the whole fix: the frame's height then
+	   resolves against the width it actually gets. Scoped with :has() so it
+	   touches this one widget and no other. The outlet pages render the
+	   section from page-pricing.php, outside any Elementor widget, so this
+	   selector never matches there and their layout is unchanged. */
+	.elementor-widget:has(> .elementor-shortcode > .ow-vid){width:100%;}
 	/* The cover is a button, not a player: no YouTube chrome, no third-party
 	   request, nothing loaded until it is pressed. */
 	.ow-vid__cover{

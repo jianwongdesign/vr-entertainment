@@ -1,5 +1,77 @@
 # Live Change Log
 
+## 2026-08-11 - The Next Section Rode Up Over The Video On Phones
+
+Reported with a phone screenshot of `/vr-machine-ride/`: the "WHAT IS VR
+MACHINE RIDE / STRAP IN. TAKE OFF." heading was painted across the bottom of
+the video, while that section's body text sat correctly below it.
+
+Reproduced by loading the live page into a 390px same-origin iframe, since the
+window itself would not resize small enough. The two sections genuinely
+overlapped by **101px** — `.ow-vid` ran to y=1199 and `.ow-vrm-what` started at
+y=1098.
+
+**Nothing was pulling the next section up.** `.ow-vrm-what` has no negative
+margin at any breakpoint and is not positioned; measured `margin-top: 0px`.
+The video section was the one lying about its size:
+
+```text
+section.ow-vid            h=364   ← correct
+div.elementor-shortcode   h=364   ← correct
+div.elementor-element-8a84b42 (widget)   h=263  scrollHeight=364   ✗
+div.elementor-element-e2f8767 (container, display:flex column) h=263 ✗
+```
+
+A block widget cannot be shorter than its block child, so something was sizing
+it from outside. Narrowed by experiment, restoring each style in between:
+
+```text
+container display:block       → 364, overlap 0   ✓
+widget    width:100%          → 364, overlap 0   ✓
+widget    min-width:100%      → 364, overlap 0   ✓
+widget    align-self:stretch  → 263, overlap 101 ✗
+container align-items:stretch → 263, overlap 101 ✗
+.ow-vid   width:100%          → 263, overlap 101 ✗
+frame     height:195px fixed  → 364, overlap 0   ✓
+frame     padding-top:56.25%  → 265, overlap 101 ✗
+```
+
+**Elementor's flex-column container resolves the widget's height against its
+min-content width, not its real one.** The frame is 16/9, so its height is
+derived from its width: measured against roughly 167px instead of 347px it
+comes out 94px tall instead of 195px, and the container lands 101px short. The
+next section then starts inside the video. Swapping `aspect-ratio` for the old
+`padding-top:56.25%` trick does not help — a percentage padding is width-derived
+too, and fails in exactly the same place. Only a *definite* width fixes it.
+
+This never showed on desktop because `.ow-vid__inner{max-width:1200px}` pins the
+frame to a fixed number above 1200px, so the width is definite before the height
+is asked for. It read as a phone bug; it was a below-1200px bug.
+
+One rule, scoped with `:has()` so it reaches this widget and nothing else:
+
+```css
+.elementor-widget:has(> .elementor-shortcode > .ow-vid){width:100%;}
+```
+
+The outlet pages render the section from `page-pricing.php`, outside any
+Elementor widget, so the selector never matches there and nothing changes.
+
+```text
+Live, after deploy + purge, measured in-page at 6 widths:
+  360 / 390 / 430 / 768 / 1024 / 1280
+  overlap 0 at every width · container height == section height at every width
+  frame ratio 1.778 at every width (16/9)
+  vidBottom == whatTop == 1201 at 390px — the sections now meet exactly
+php -l clean both ends · sha1 identical · LiteSpeed purged
+backup: ~/overworld-backups/video-flex-fix-20260811/
+```
+
+Only `/vr-machine-ride/` carries a video link today, so it was the only page
+showing this — but every game page would have hit it as links are added. The
+outlet pages could not be checked live for the same reason: no link set, no
+section rendered. Worth one look once a video goes onto an outlet page.
+
 ## 2026-08-11 - Video Section: The Cropped Frame Was YouTube's Own Poster
 
 Reported as the video looking heavily cut off once the embed loads. First look
