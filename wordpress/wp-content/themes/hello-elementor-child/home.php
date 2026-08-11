@@ -196,12 +196,12 @@ get_header();
   }
 
   @media (max-width:1000px){
-    .ow-blog__hero{padding:90px 28px 55px;}
+    .ow-blog__hero{padding:56px 28px 55px;}
     .ow-blog__main{padding:55px 28px 80px;}
     .ow-blog__grid{grid-template-columns:repeat(2,1fr);gap:18px;}
   }
   @media (max-width:640px){
-    .ow-blog__hero{padding:70px 18px 45px;}
+    .ow-blog__hero{padding:40px 18px 45px;}
     .ow-blog__main{padding:45px 18px 70px;}
     .ow-blog__title{font-size:48px;}
     .ow-blog__grid{grid-template-columns:1fr;}

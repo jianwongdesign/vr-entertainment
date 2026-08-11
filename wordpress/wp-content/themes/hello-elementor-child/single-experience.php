@@ -825,7 +825,7 @@ while ( have_posts() ) : the_post();
 
 /* ===== TABLET ===== */
 @media (max-width: 980px) {
-    .ow-single__hero { padding: 80px 32px 48px; min-height: 60vh; }
+    .ow-single__hero { padding: 56px 32px 48px; min-height: 60vh; }
     .ow-single__section { padding-left: 32px; padding-right: 32px; padding-top: 60px; }
     .ow-single__title { font-size: clamp(36px, 7vw, 60px); }
     .ow-single__tagline { font-size: 16px; }
@@ -848,7 +848,7 @@ while ( have_posts() ) : the_post();
 /* ===== MOBILE ===== */
 @media (max-width: 640px) {
     .ow-single__hero {
-        padding: 56px 18px 40px;
+        padding: 40px 18px 40px;
         min-height: auto;        /* let content drive height — no forced 55vh that creates empty space */
     }
     .ow-single__section { padding-left: 18px; padding-right: 18px; padding-top: 44px; }
@@ -938,7 +938,7 @@ while ( have_posts() ) : the_post();
 
 /* ===== SMALL PHONES ===== */
 @media (max-width: 380px) {
-    .ow-single__hero { padding: 48px 14px 32px; }
+    .ow-single__hero { padding: 36px 14px 32px; }
     .ow-single__section { padding-left: 14px; padding-right: 14px; padding-top: 36px; }
     .ow-single__title { font-size: clamp(22px, 9vw, 32px); }
     .ow-single__meta-item { padding: 11px 14px; }

@@ -475,7 +475,7 @@ foreach ( $outlets as $i => $o ) {
 
   /* Responsive */
   @media (max-width:1000px){
-    .ow-hub__hero{padding:90px 28px 60px;}
+    .ow-hub__hero{padding:56px 28px 60px;}
     .ow-hub__main{padding:60px 28px 80px;}
     .ow-hub__grid{grid-template-columns:1fr;gap:18px;max-width:560px;margin:0 auto;}
     .ow-hub__points{padding:55px 28px;}
@@ -483,7 +483,7 @@ foreach ( $outlets as $i => $o ) {
     .ow-hub__faq{padding:55px 28px;}
   }
   @media (max-width:680px){
-    .ow-hub__hero{padding:70px 18px 50px;}
+    .ow-hub__hero{padding:40px 18px 50px;}
     .ow-hub__main{padding:50px 18px 70px;}
     .ow-hub__title{font-size:54px;}
     .ow-hub__section-title{font-size:26px;}

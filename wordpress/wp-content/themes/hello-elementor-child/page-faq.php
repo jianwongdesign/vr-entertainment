@@ -379,7 +379,7 @@ foreach ( $outlets as $oslug => $oconf ) {
 
   /* Responsive */
   @media (max-width:760px){
-    .ow-faq__hero{padding:90px 24px 40px;}
+    .ow-faq__hero{padding:56px 24px 40px;}
     .ow-faq__acc{padding:50px 24px 90px;}
     .ow-faq__contact-wrap{padding:0 24px;}
     /* keep the outlet filter in ONE straight row on mobile */
@@ -391,7 +391,7 @@ foreach ( $outlets as $oslug => $oconf ) {
     .ow-faq__q{font-size:14.5px;padding:20px 4px;gap:16px;}
   }
   @media (max-width:480px){
-    .ow-faq__hero{padding:70px 18px 32px;}
+    .ow-faq__hero{padding:40px 18px 32px;}
     .ow-faq__acc{padding:40px 18px 70px;}
     .ow-faq__title{font-size:34px;}
   }

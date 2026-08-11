@@ -188,8 +188,11 @@ $reading_mins = max( 1, (int) ceil( $word_count / 220 ) );
     transform:translateY(-2px);gap:14px;
   }
 
+  @media (max-width:1000px){
+    .ow-post__hero{padding:56px 28px 60px;}
+  }
   @media (max-width:640px){
-    .ow-post__hero{padding:80px 18px 45px;}
+    .ow-post__hero{padding:40px 18px 45px;}
     .ow-post__main{padding:45px 18px 70px;}
     .ow-post__cta{padding:45px 18px 70px;}
     .ow-post__cta-inner{padding:30px 22px;}

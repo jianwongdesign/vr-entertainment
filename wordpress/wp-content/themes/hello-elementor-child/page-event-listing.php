@@ -632,7 +632,7 @@ $packages = get_posts( array(
 
   /* Responsive */
   @media (max-width:1000px){
-    .ow-evt__hero{padding:90px 28px 60px;}
+    .ow-evt__hero{padding:56px 28px 60px;}
     .ow-evt__intro{padding:50px 28px 0;}
     .ow-evt__gallery{padding:50px 28px 0;}
     .ow-evt__gallery-grid{grid-template-columns:repeat(2,1fr);grid-auto-rows:160px;}
@@ -641,7 +641,7 @@ $packages = get_posts( array(
     .ow-evt__grid{grid-template-columns:repeat(2,1fr);gap:18px;}
   }
   @media (max-width:680px){
-    .ow-evt__hero{padding:70px 18px 50px;}
+    .ow-evt__hero{padding:40px 18px 50px;}
     .ow-evt__intro{padding:40px 18px 0;}
     .ow-evt__gallery{padding:40px 18px 0;}
     .ow-evt__gallery-grid{grid-auto-rows:130px;gap:10px;}

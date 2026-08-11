@@ -414,14 +414,14 @@ $related = get_posts( array(
 
   /* Responsive */
   @media (max-width:1000px){
-    .ow-pkg__hero{padding:90px 28px 55px;}
+    .ow-pkg__hero{padding:56px 28px 55px;}
     .ow-pkg__main{padding:55px 28px 80px;}
     .ow-pkg__main-inner{grid-template-columns:1fr;gap:28px;}
     .ow-pkg__related{padding:55px 28px 80px;}
     .ow-pkg__related-grid{grid-template-columns:repeat(2,1fr);gap:18px;}
   }
   @media (max-width:640px){
-    .ow-pkg__hero{padding:70px 18px 45px;}
+    .ow-pkg__hero{padding:40px 18px 45px;}
     .ow-pkg__main{padding:45px 18px 70px;}
     .ow-pkg__title{font-size:44px;}
     .ow-pkg__card{padding:28px 24px 26px;}
