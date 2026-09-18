@@ -333,24 +333,37 @@ $rental_activity_count = count( $rental_activities );
     color:rgba(255,255,255,.38);max-width:200px;
   }
 
-  /* ===== POINT GRIDS (hub "why book with us" style) ===== */
-  .ow-rental__points-grid{
-    display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:20px;
-    margin-top:32px;
+  /* ===== WHAT'S INCLUDED (icon strip, per the reference design) ===== */
+  .ow-rental__included{
+    display:flex;flex-wrap:wrap;
+    border:1px solid var(--line);border-radius:18px;
+    background:rgba(255,255,255,.02);overflow:hidden;
+    margin:32px 0 0;padding:0;list-style:none;
   }
-  .ow-rental__point{
-    background:rgba(255,255,255,.02);
-    border:1px solid var(--line);
-    border-radius:16px;padding:26px 24px;
+  .ow-rental__included li{
+    flex:1 1 0;min-width:150px;
+    display:flex;flex-direction:column;align-items:center;gap:14px;
+    padding:30px 16px;text-align:center;
+    border-right:1px solid var(--line);
+  }
+  .ow-rental__included li:last-child{border-right:0;}
+  .ow-rental__included .ow-rental__icon{width:38px;height:38px;color:var(--accent);}
+  .ow-rental__included span{font-size:14.5px;font-weight:500;color:var(--fg);line-height:1.3;}
+
+  /* ===== SUITABLE FOR (row of boxes, per the reference design) ===== */
+  .ow-rental__audience{
+    display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:14px;
+    margin:32px 0 0;padding:0;list-style:none;
+  }
+  .ow-rental__audience li{
+    background:rgba(255,255,255,.02);border:1px solid var(--line);border-radius:14px;
+    padding:26px 16px;text-align:center;
+    display:flex;flex-direction:column;align-items:center;gap:14px;
     transition:border-color .25s ease,transform .25s ease;
   }
-  .ow-rental__point:hover{border-color:rgba(195,251,51,.45);transform:translateY(-3px);}
-  .ow-rental__point .ow-rental__icon{width:30px;height:30px;color:var(--accent);margin-bottom:14px;display:block;}
-  .ow-rental__point-title{
-    font-family:'Anton','Bebas Neue',sans-serif;
-    font-size:19px;font-weight:400;line-height:1.15;
-    text-transform:uppercase;margin:0;color:#fff;
-  }
+  .ow-rental__audience li:hover{border-color:rgba(195,251,51,.45);transform:translateY(-3px);}
+  .ow-rental__audience .ow-rental__icon{width:32px;height:32px;color:#fff;}
+  .ow-rental__audience span{font-size:14.5px;font-weight:500;color:var(--fg);line-height:1.3;}
 
   /* ===== BODY COPY ===== */
   .ow-rental__body-inner h2{margin-bottom:18px;}
@@ -418,6 +431,8 @@ $rental_activity_count = count( $rental_activities );
 
   /* Responsive (same breakpoints as the hubs) */
   @media (max-width:1000px){
+    .ow-rental__included li{flex-basis:33.333%;border-bottom:1px solid var(--line);}
+    .ow-rental__included li:nth-child(3n){border-right:0;}
     .ow-rental__hero{padding:56px 28px 60px;}
     .ow-rental__section{padding:60px 28px;}
     .ow-rental__grid{grid-template-columns:1fr;gap:18px;max-width:560px;margin:0 auto;}
@@ -430,9 +445,11 @@ $rental_activity_count = count( $rental_activities );
     .ow-rental__hero-ctas .ow-rental__btn{width:100%;}
     .ow-rental__section{padding:45px 18px;}
     .ow-rental__section-title{font-size:26px;}
-    .ow-rental__points-grid{grid-template-columns:repeat(2,1fr);gap:12px;}
-    .ow-rental__point{padding:20px 16px;}
-    .ow-rental__point-title{font-size:16px;}
+    .ow-rental__included li{flex-basis:50%;padding:22px 12px;}
+    .ow-rental__included li:nth-child(3n){border-right:1px solid var(--line);}
+    .ow-rental__included li:nth-child(2n){border-right:0;}
+    .ow-rental__audience{grid-template-columns:repeat(2,1fr);gap:10px;}
+    .ow-rental__audience li{padding:20px 12px;}
     .ow-rental__body-inner p{font-size:15px;}
     .ow-rental__enquiry{padding:45px 18px 60px;}
     .ow-rental__enquiry-inner{padding:36px 24px;}
@@ -562,14 +579,14 @@ $rental_activity_count = count( $rental_activities );
   <div class="ow-rental__section ow-rental__section--alt">
     <div class="ow-rental__inner">
       <h2 class="ow-rental__section-title"><?php echo esc_html( $rental_included_title ); ?></h2>
-      <div class="ow-rental__points-grid">
+      <ul class="ow-rental__included">
         <?php foreach ( $rental_included as $item ) : ?>
-          <div class="ow-rental__point">
+          <li>
             <?php echo $rental_icon( $item['icon'] ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
-            <h3 class="ow-rental__point-title"><?php echo esc_html( $item['label'] ); ?></h3>
-          </div>
+            <span><?php echo esc_html( $item['label'] ); ?></span>
+          </li>
         <?php endforeach; ?>
-      </div>
+      </ul>
     </div>
   </div>
   <?php endif; ?>
@@ -579,14 +596,14 @@ $rental_activity_count = count( $rental_activities );
   <div class="ow-rental__section">
     <div class="ow-rental__inner">
       <h2 class="ow-rental__section-title"><?php echo esc_html( $rental_audience_title ); ?></h2>
-      <div class="ow-rental__points-grid">
+      <ul class="ow-rental__audience">
         <?php foreach ( $rental_audience as $item ) : ?>
-          <div class="ow-rental__point">
+          <li>
             <?php echo $rental_icon( $item['icon'] ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
-            <h3 class="ow-rental__point-title"><?php echo esc_html( $item['label'] ); ?></h3>
-          </div>
+            <span><?php echo esc_html( $item['label'] ); ?></span>
+          </li>
         <?php endforeach; ?>
-      </div>
+      </ul>
     </div>
   </div>
   <?php endif; ?>
