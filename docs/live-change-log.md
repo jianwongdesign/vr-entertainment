@@ -2,13 +2,17 @@
 
 ## 2026-09-18 - Event Rental Page: Interactive Game Rental For Events (NOT LIVE)
 
-A new service page for taking the games to the client's venue, built from a
-reference design the client shared (dark page, hero with photo, three
-activity cards over three "coming soon" cards, a "what's included" strip, a
-"suitable for" row, four FAQs, a bright call-to-action band). The layout and
-copy follow that reference; the palette, type and buttons follow the site's
-event pages (Anton / Space Grotesk / JetBrains Mono, lava orange on
-`#0a0a14`) rather than the reference's lime green.
+A new service page for taking the games to the client's venue. The content
+and section order come from a reference design the client shared (hero,
+three activity cards over three "coming soon" cards, "what's included",
+"suitable for", four FAQs, a call to action). The layout is the
+`/team-building/` and `/birthday-party/` hub template's, as asked — centred
+hero with the eyebrow pill and gradient H1, section heads with the mono
+counter, accent-lined cards with the full-width pill button, the "why" grid,
+a body-copy block, FAQ accordion and the boxed enquiry panel — and the
+accent is the reference's green (`#c3fb33`) rather than the hubs' lava
+orange. A first cut that copied the reference's own layout in orange was
+replaced the same day after review.
 
 **Everything on it is client-editable from WP Admin**, the same way the
 `/team-building/` and `/birthday-party/` hubs are: an ACF field group

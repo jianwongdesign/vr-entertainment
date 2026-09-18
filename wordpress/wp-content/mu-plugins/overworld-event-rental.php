@@ -49,6 +49,8 @@ function ow_rental_defaults() {
 		'h1'            => 'Interactive Game Rental',
 		'h1_accent'     => 'For Events',
 		'tagline'       => 'Bring crowd-pulling VR and interactive games directly to your venue.',
+		'eyebrow'       => 'Event Rental By Overworld',
+		'hero_line'     => 'Delivered · Set Up · Run By Our Crew · Packed Down',
 		'primary_label' => 'View Activities',
 		'primary_url'   => '#activities',
 		'ghost_label'   => 'Get A Quote',
@@ -56,7 +58,7 @@ function ow_rental_defaults() {
 
 		// Intro
 		'intro_title' => 'Make Your Event More Interactive',
-		'intro_text'  => 'We provide engaging VR and interactive game rentals that turn any space into a fun, social and memorable experience for your guests.',
+		'intro_text'  => "We provide engaging VR and interactive game rentals that turn any space into a fun, social and memorable experience for your guests.\n\nEverything comes as one package: we deliver the equipment to your venue, set it up and test it, brief every player, run the sessions with our own operators, handle any technical issues on the day and pack down when it ends. Pick the activities that fit your crowd and floor space, and we take care of the rest.",
 
 		// Activities
 		'activities_title'    => 'Our Event Rental Activities',
@@ -130,10 +132,13 @@ function ow_rental_defaults() {
 		),
 
 		// Bottom CTA
-		'cta_title'  => 'Plan Your Event With Us',
-		'cta_text'   => "Tell us about your event and we'll recommend the best activities for your venue.",
-		'cta_label'  => 'Request A Quotation',
-		'cta_url'    => '/contact/',
+		'cta_eyebrow'     => 'Plan Your Event',
+		'cta_title'       => 'Plan Your Event With Us',
+		'cta_text'        => "Tell us about your event and we'll recommend the best activities for your venue.",
+		'cta_label'       => 'Request A Quotation',
+		'cta_url'         => '/contact/',
+		'cta_ghost_label' => 'Prefer to come to us instead?',
+		'cta_ghost_url'   => '/team-building/',
 	);
 }
 
@@ -472,11 +477,29 @@ add_action( 'acf/init', function () {
 		'multi_expand' => 1,
 	);
 	$fields[] = array(
+		'key'          => 'field_rental_eyebrow',
+		'label'        => 'Small Line Above The Heading',
+		'name'         => 'rental_eyebrow',
+		'type'         => 'text',
+		'instructions' => 'The pill above the heading. Default: "' . $d['eyebrow'] . '"',
+		'required'     => 0,
+		'wrapper'      => array( 'width' => '50' ),
+	);
+	$fields[] = array(
+		'key'          => 'field_rental_hero_line',
+		'label'        => 'Small Line Under The Buttons',
+		'name'         => 'rental_hero_line',
+		'type'         => 'text',
+		'instructions' => 'Short items separated by " · ". Default: "' . $d['hero_line'] . '"',
+		'required'     => 0,
+		'wrapper'      => array( 'width' => '50' ),
+	);
+	$fields[] = array(
 		'key'          => 'field_rental_h1',
 		'label'        => 'Main Heading (H1) — first line',
 		'name'         => 'rental_h1',
 		'type'         => 'text',
-		'instructions' => 'Shown in white. Default: "' . $d['h1'] . '"',
+		'instructions' => 'Default: "' . $d['h1'] . '"',
 		'required'     => 0,
 		'wrapper'      => array( 'width' => '50' ),
 	);
@@ -485,7 +508,7 @@ add_action( 'acf/init', function () {
 		'label'        => 'Main Heading — second line',
 		'name'         => 'rental_h1_accent',
 		'type'         => 'text',
-		'instructions' => 'Shown in the accent colour. Default: "' . $d['h1_accent'] . '"',
+		'instructions' => 'Fades into the green. Default: "' . $d['h1_accent'] . '"',
 		'required'     => 0,
 		'wrapper'      => array( 'width' => '50' ),
 	);
@@ -503,7 +526,7 @@ add_action( 'acf/init', function () {
 		'label'         => 'Hero Photo',
 		'name'          => 'rental_hero_image',
 		'type'          => 'image',
-		'instructions'  => 'The large photo beside the heading. Landscape, at least 1200px wide. Also used as the sharing image when the page is sent on WhatsApp, unless the SEO box below sets its own.',
+		'instructions'  => 'Sits faded behind the heading. Landscape, at least 1600px wide. Also used as the sharing image when the page is sent on WhatsApp, unless the SEO box below sets its own.',
 		'return_format' => 'id',
 		'preview_size'  => 'medium',
 		'required'      => 0,
@@ -548,7 +571,7 @@ add_action( 'acf/init', function () {
 	// --- Intro ---
 	$fields[] = array(
 		'key'          => 'field_rental_intro_tab',
-		'label'        => 'Intro Section',
+		'label'        => 'About This Page (search copy)',
 		'type'         => 'accordion',
 		'open'         => 0,
 		'multi_expand' => 1,
@@ -566,8 +589,8 @@ add_action( 'acf/init', function () {
 		'label'        => 'Text',
 		'name'         => 'rental_intro_text',
 		'type'         => 'textarea',
-		'rows'         => 3,
-		'instructions' => 'One or two sentences. Default: "' . $d['intro_text'] . '"',
+		'rows'         => 6,
+		'instructions' => 'A few sentences describing the service. This is the text Google has to work with, so write it for a person deciding whether to book. Blank lines start a new paragraph. Leave empty for the built-in text.',
 		'required'     => 0,
 	);
 
@@ -812,6 +835,14 @@ add_action( 'acf/init', function () {
 		'multi_expand' => 1,
 	);
 	$fields[] = array(
+		'key'          => 'field_rental_cta_eyebrow',
+		'label'        => 'Small Line',
+		'name'         => 'rental_cta_eyebrow',
+		'type'         => 'text',
+		'instructions' => 'Default: "' . $d['cta_eyebrow'] . '"',
+		'required'     => 0,
+	);
+	$fields[] = array(
 		'key'          => 'field_rental_cta_title',
 		'label'        => 'Heading',
 		'name'         => 'rental_cta_title',
@@ -847,6 +878,24 @@ add_action( 'acf/init', function () {
 		'wrapper'      => array( 'width' => '50' ),
 	);
 
+	$fields[] = array(
+		'key'          => 'field_rental_cta_ghost_label',
+		'label'        => 'Second Button — Text',
+		'name'         => 'rental_cta_ghost_label',
+		'type'         => 'text',
+		'instructions' => 'Default: "' . $d['cta_ghost_label'] . '"',
+		'required'     => 0,
+		'wrapper'      => array( 'width' => '50' ),
+	);
+	$fields[] = array(
+		'key'          => 'field_rental_cta_ghost_url',
+		'label'        => 'Second Button — Link',
+		'name'         => 'rental_cta_ghost_url',
+		'type'         => 'text',
+		'instructions' => 'Default: "' . $d['cta_ghost_url'] . '"',
+		'required'     => 0,
+		'wrapper'      => array( 'width' => '50' ),
+	);
 	$fields[] = array(
 		'key'      => 'field_rental_end',
 		'label'    => '',
