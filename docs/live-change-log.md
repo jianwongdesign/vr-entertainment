@@ -1,5 +1,229 @@
 # Live Change Log
 
+## 2026-09-18 - Event Rental Page: Interactive Game Rental For Events (NOT LIVE)
+
+A new service page for taking the games to the client's venue, built from a
+reference design the client shared (dark page, hero with photo, three
+activity cards over three "coming soon" cards, a "what's included" strip, a
+"suitable for" row, four FAQs, a bright call-to-action band). The layout and
+copy follow that reference; the palette, type and buttons follow the site's
+event pages (Anton / Space Grotesk / JetBrains Mono, lava orange on
+`#0a0a14`) rather than the reference's lime green.
+
+**Everything on it is client-editable from WP Admin**, the same way the
+`/team-building/` and `/birthday-party/` hubs are: an ACF field group
+("Event Rental Page Content") on the page, every field optional, built-in
+copy filling any field left empty. Lists are numbered slots (6 activities, 6
+included items, 6 audiences, 6 FAQs) because the site runs ACF free, which
+has no repeater; filling any slot of a list replaces that list's built-in
+rows entirely. Icons for the strip and the row are picked from a select of
+17 built-in SVGs, so the client never pastes markup. A hero photo the client
+uploads also becomes the featured image, so `overworld-seo.php` picks it up
+as the sharing image without a second upload. Until the client uploads
+activity photos, the three default cards borrow the pictures the outlet
+pages already use for VR Free Roam, Floor Is Lava and XR Party Game.
+
+Four new files, nothing deployed:
+
+```text
+wordpress/wp-content/mu-plugins/overworld-event-rental.php            fields, defaults, SEO
+wordpress/wp-content/themes/hello-elementor-child/page-event-rental.php  the template
+scripts/event-rental-page.php                                          creates /event-rental/ as a DRAFT
+scripts/deploy-event-rental.sh                                         sends the two files, runs the script
+```
+
+SEO goes through the existing plugin's filters: `ow_seo_page_map` for the
+title and description (the page's own SEO box still wins), `ow_seo_page_keywords`,
+and `ow_seo_schema_graph` for a FAQPage built from the rendered questions plus
+a Service node listing the activities as an offer catalog. The page is
+indexable and in the sitemap — it is a real service page, unlike the ads
+landing page. It also registers itself with the template guard so opening
+it in Elementor cannot reset the template.
+
+The "View All Activities" link defaults to hidden: the site has no page that
+lists every activity, and a link to a 404 is worse than no link.
+
+Verified by rendering the template against a stubbed WordPress, once with
+no fields filled and once with client overrides (a hero photo, four
+activities with one photo, placeholders switched off, a single FAQ with
+HTML in the question, an unknown icon key): no PHP notices, 93 fields with
+no duplicate keys, every meta key the code reads is a registered field,
+FAQPage + Service emitted, the featured image synced on save, HTML escaped,
+the unknown icon falling back to the controller. Checked in Chrome at
+desktop and 390px.
+
+Not live. Deploy with `CONFIRM_PUSH=overworld.com.sg ./scripts/deploy-event-rental.sh --apply`
+once the Hostinger deploy key is re-added (see 2026-08-28), then publish
+from the go-live block in `scripts/event-rental-page.php`.
+
+## 2026-08-29 - Ads Landing Page: The Offer, Read From John's Packages (NOT LIVE)
+
+Feedback on the draft landing page: it never said what you actually get or
+what it costs. Asked to work from what John wrote on the packages.
+
+**The packages are read live from the `event_package` CPT**, with the same
+query the `/team-building/[outlet]/` and `/birthday-party/[outlet]/` pages
+use. Not copied into the template. John writes and prices the packages in WP
+Admin, so a price edited there has to reach the page an ad points at on the
+next request, without a deploy. His tagline, duration, group size, price and
+PDF render as written; only the `"<Outlet> - "` title prefix is trimmed for
+display, because a chip beside it already names the outlet.
+
+25 packages across the two types and three outlets:
+
+```text
+team-building    Kallang 3   Orchard 7   Funan 4
+birthday-party   Kallang 3   Orchard 3   Funan 5
+```
+
+**Price anchors in the hero.** `event_price_from` is free text — "$33 -
+$39/pax", "$384 - $887.30" — because team building is priced per head and
+birthdays are priced per package. Normalising the two into one number would
+mean labelling it, and the label would be wrong for one of them. Instead
+`ow_ads_from_price()` reads the leading amount off each package, takes the
+smallest, and carries the unit across from that same package's own string:
+
+```text
+Team Building From $33/pax
+Birthday Party From $269
+```
+
+It returns '' when nothing parses, and the chip is then omitted. A landing
+page stating a price the packages do not back up is worse than one stating
+none. The per-block notes carry the distinction in words as well — "Priced per
+person" against "Priced per package, not per head".
+
+**Bookeo stays the main call to action**, as asked. The hero button and the
+sticky bar still go to the calendar. The packages sit between the event-type
+cards and the games, with "What's Included →" to the package's own page and
+its PDF beside it. Worth keeping in view: Bookeo sells standard sessions, not
+these packages, so a visitor who wants Package C cannot self-serve — they go
+through the package page or WhatsApp.
+
+`?e=tb` and `?e=bp` now reorder the offer as well as the hero, so a birthday
+ad leads with the birthday price anchor and the birthday packages.
+
+Section banding was reshuffled — games became `--alt` and outlets plain — so
+the light/dark alternation survives the inserted section. Package names moved
+onto the display font by adding `h4` to the heading rule; they were the only
+card titles rendering in the body font.
+
+Verified by rendering the template against a stubbed WordPress carrying the 25
+real packages: no PHP notices, 25 cards, both anchors correct, `?e=bp`
+reordering both the chips and the blocks, and the grid checked at 390 / 1024px
+and desktop.
+
+Still not live, and still blocked on SSH — see the entry below.
+
+## 2026-08-28 - Deploy Blocked: The Hostinger Deploy Key Is Rejected
+
+`./scripts/ssh-hostinger.sh` fails against the live host:
+
+```text
+debug1: Offering public key: ~/.ssh/hostinger_deploy ED25519 SHA256:5hEDCS3Wzj2iRP65+nnWKHC6c9gk0jRtBN7RrBLsWq0
+debug1: Authentications that can continue: publickey,password
+u146877548@145.79.25.17: Permission denied (publickey,password).
+```
+
+Host, port and user are right — the connection reaches sshd, which then
+refuses the key. `hostinger_deploy.pub` is no longer in `authorized_keys` on
+the server. Not the old leading-space-in-`.env` problem: that value is clean
+now, and the key is being offered rather than skipped.
+
+To restore: re-add the public key in hPanel → SSH Access, or
+`ssh-copy-id -p 65002 -i ~/.ssh/hostinger_deploy.pub u146877548@145.79.25.17`.
+
+Added `scripts/deploy-ads-landing.sh` so the deploy is one command once access
+returns. It sends **only the two files** the feature needs rather than the
+~900 `push-wp-content.sh` would sync, uploads `ads-landing-page.php` to `/tmp`
+(not under the docroot, where it would be web-reachable), runs it through
+wp-cli to create the draft, deletes it, and purges the caches. Dry run by
+default; `--apply` needs `CONFIRM_PUSH=overworld.com.sg`.
+
+
+## 2026-08-27 - Google Ads Landing Page For Team Building + Birthday (NOT LIVE)
+
+Asked for a single paid-traffic landing page covering team building and
+birthday parties, showing every keyword and every outlet's games, explicitly
+**not** built as a client-editable page, and converting into **Bookeo**.
+
+Built as three files, nothing published:
+
+```text
+wp-content/themes/hello-elementor-child/page-ads-events.php   the page itself
+wp-content/mu-plugins/overworld-ads-landing.php               title/desc/keywords/noindex
+scripts/ads-landing-page.php                                  creates it as a draft
+```
+
+**Why a theme template and not an Elementor document.** An ad points at a
+fixed URL for the length of a campaign. Anything editable in WP Admin can be
+changed underneath it without the person running the ads knowing. Everything a
+visitor sees is in the template file, so the page can only change through a
+deploy.
+
+**The conversion is the Bookeo widget, embedded on the page.** Not a link to
+`/book-now-*/`, not a form — an ad click reaches live availability with no
+second click.
+
+The constraint that shaped the section: `bookeo.com/widget.js` refuses to run
+twice on one document. `bookeo_start()` checks `axiomct_project` and, finding
+it already set, fires
+
+```text
+alert("Multiple copies of the Bookeo booking widget are present on the page.")
+```
+
+and bails. So three tabbed calendars on one page is not available. Exactly one
+widget renders, and the outlet switcher is three plain links that reload the
+page with `?outlet=<slug>`. Confirmed working against all three live widget
+keys — Kallang and Orchard render their white document, Funan its dark one,
+the same as the Book Now pages.
+
+**Query parameters are carried across the switch.** `ow_ads_url()` rebuilds
+the current URL with `outlet` replaced and every other parameter kept, so
+`gclid` and `utm_*` survive. Dropping them would break attribution for exactly
+the visitors furthest down the funnel.
+
+**Two ad groups, one URL.** `?e=tb` and `?e=bp` swap the eyebrow, H1 and
+tagline so a "team building singapore" ad and a "birthday party venue" ad each
+land on a page that reads as a match for the search term:
+
+```text
+(none)  Team Building & Birthday Parties in Singapore
+?e=tb   Team Building Activities in Singapore
+?e=bp   Birthday Party Venues in Singapore
+```
+
+**Keyword coverage** is carried by real sections rather than a keyword block:
+all eight games with the outlets that have them, all three outlets with MRT
+and address, an eight-question FAQ written for paid traffic, and four
+paragraphs of prose. Meta keywords, title and description come from the
+mu-plugin through the `ow_seo_page_map` and `ow_seo_page_keywords` filters,
+matched on **page template** rather than page ID, so the page can be renamed,
+re-slugged or duplicated for a second campaign without touching that file.
+
+**noindex, follow, and dropped from wp-sitemap.xml.** The page restates what
+`/team-building/` (521) and `/birthday-party/` (522) already say. Left
+indexable it would be a third page competing with those two for the same
+queries, and they are the ones with the internal links and the package data.
+Google Ads does not read the robots directive. To reverse it, set the SEO
+box's noindex field to 0 on the page — the per-post field wins.
+
+**Conversion signals.** Every CTA carries `data-ow-cta`, and one delegated
+listener pushes `ow_cta_click` with the cta name, outlet and focus to
+`dataLayer`, falling back to `gtag`, silent when neither exists. Nothing has
+to change on the page when Ads conversion tracking is set up.
+
+Verified by rendering the template against a stubbed WordPress and loading it
+in Chrome: no PHP notices, one widget per document, live calendars loading,
+`gclid` preserved through a switch, and the layout checked at 390 / 600 / 768
+/ 1024px and full desktop width.
+
+Nothing is live. `scripts/ads-landing-page.php` creates
+`/group-events-singapore/` as a **draft** and refuses to run if the template
+is not deployed. The go-live steps are at the bottom of that script.
+
+
 ## 2026-08-11 - The Next Section Rode Up Over The Video On Phones
 
 Reported with a phone screenshot of `/vr-machine-ride/`: the "WHAT IS VR
