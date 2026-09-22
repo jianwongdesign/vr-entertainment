@@ -1,5 +1,14 @@
 # Live Change Log
 
+## 2026-09-22 - Event Rental: Body Copy And FAQ Span The Full Content Width
+
+The "Make Your Event More Interactive" block and the FAQ list sat in an
+860px column while every section above ran to 1300px; the client asked for
+one width. Dropped the narrow container so both match. The boxed enquiry
+panel keeps its 900px width, as on the hub pages. Template re-deployed
+(backup at `/tmp/page-event-rental.php.bak-<stamp>` on the server), caches
+purged, checked live.
+
 ## 2026-09-22 - Event Rental Page LIVE at /event-rental/, Events › Equipment Rental
 
 **Root cause of the "rejected deploy key" (28 Aug → today):** the site had

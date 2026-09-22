@@ -233,7 +233,6 @@ $rental_activity_count = count( $rental_activities );
   .ow-rental__section{padding:80px 40px;border-top:1px solid var(--line);}
   .ow-rental__section--alt{background:var(--bg-2);}
   .ow-rental__inner{max-width:1300px;margin:0 auto;}
-  .ow-rental__inner--narrow{max-width:860px;}
   .ow-rental__section-head{
     display:flex;align-items:baseline;justify-content:space-between;
     margin-bottom:48px;padding-bottom:24px;
@@ -611,7 +610,7 @@ $rental_activity_count = count( $rental_activities );
   <!-- BODY COPY (what search engines read) -->
   <?php if ( '' !== $rental_intro_title || '' !== $rental_intro_text ) : ?>
   <div class="ow-rental__section ow-rental__section--alt">
-    <div class="ow-rental__inner ow-rental__inner--narrow ow-rental__body-inner">
+    <div class="ow-rental__inner ow-rental__body-inner">
       <?php if ( '' !== $rental_intro_title ) : ?>
         <h2 class="ow-rental__section-title"><?php echo esc_html( $rental_intro_title ); ?></h2>
       <?php endif; ?>
@@ -627,7 +626,7 @@ $rental_activity_count = count( $rental_activities );
   <!-- FAQ -->
   <?php if ( ! empty( $rental_faqs ) ) : ?>
   <div class="ow-rental__section">
-    <div class="ow-rental__inner ow-rental__inner--narrow">
+    <div class="ow-rental__inner">
       <div class="ow-rental__section-head">
         <h2 class="ow-rental__section-title"><?php echo esc_html( $rental_faq_title ); ?></h2>
         <?php if ( '' !== $rental_faq_all_url && '' !== $rental_faq_all_label ) : ?>
