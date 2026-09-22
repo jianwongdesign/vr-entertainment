@@ -43,22 +43,22 @@ const OW_RENTAL_FAQ_SLOTS      = 6;
 function ow_rental_defaults() {
 	return array(
 		'seo_title' => 'Interactive Game Rental for Events in Singapore | Overworld',
-		'meta_desc' => 'Rent VR free roam, Floor Is Lava and XR party games for your event in Singapore. Overworld delivers, sets up and runs the games at your venue — corporate events, family days, schools, roadshows and community events.',
+		'meta_desc' => 'Rent VR free roam, Floor Is Lava and XR party games for corporate events, family days, schools and roadshows in Singapore. Delivered, set up and run by our crew.',
 
 		// Hero
 		'h1'            => 'Interactive Game Rental',
-		'h1_accent'     => 'For Events',
-		'tagline'       => 'Bring crowd-pulling VR and interactive games directly to your venue.',
-		'eyebrow'       => 'Event Rental By Overworld',
+		'h1_accent'     => 'For Events In Singapore',
+		'tagline'       => 'Bring crowd-pulling VR and interactive games straight to your venue — office, hotel ballroom, mall atrium, school hall or outdoor tentage, anywhere in Singapore.',
+		'eyebrow'       => 'Event Equipment Rental · Singapore',
 		'hero_line'     => 'Delivered · Set Up · Run By Our Crew · Packed Down',
 		'primary_label' => 'View Activities',
 		'primary_url'   => '#activities',
 		'ghost_label'   => 'Get A Quote',
 		'ghost_url'     => '/contact/',
 
-		// Intro
+		// Body copy (what search engines read)
 		'intro_title' => 'Make Your Event More Interactive',
-		'intro_text'  => "We provide engaging VR and interactive game rentals that turn any space into a fun, social and memorable experience for your guests.\n\nEverything comes as one package: we deliver the equipment to your venue, set it up and test it, brief every player, run the sessions with our own operators, handle any technical issues on the day and pack down when it ends. Pick the activities that fit your crowd and floor space, and we take care of the rest.",
+		'intro_text'  => "Overworld rents out the same VR and interactive games that fill our three Singapore outlets at Kallang Wave Mall, Orchard Central and Funan — and brings them to your event. Instead of a queue at a photo booth, your guests step into a free-roam VR arena, race across a glowing Floor Is Lava grid, or compete in an XR party game on the big screen. It is entertainment people talk about on the way home.\n\nOur event equipment rental works for corporate events and D&D nights, company family days, school carnivals and orientation camps, mall roadshows and product launches, and community club events. The games run in short rounds, so a crowd of fifty or five hundred keeps moving and nobody waits long for a turn. Every activity is pick-up-and-play — no gaming experience needed, and our crew briefs each player before they start.\n\nEverything comes as one package: we deliver the equipment to your venue anywhere in Singapore, set it up and test it, run every session with our own trained operators, handle any technical issue on the day and pack down when the event ends. Tell us your date, headcount and floor space, and we will recommend the mix of games that fits your event and your budget.",
 
 		// Activities
 		'activities_title'    => 'Our Event Rental Activities',
@@ -67,19 +67,19 @@ function ow_rental_defaults() {
 		'activities'          => array(
 			array(
 				'title'   => 'VR Free Roam',
-				'text'    => 'Explore virtual worlds together in a free-roam multiplayer experience.',
+				'text'    => 'Untethered virtual reality for events: guests walk, duck and play together inside a shared VR arena — a multiplayer VR rental that works for teams and crowds.',
 				'url'     => '/vr-free-roam/',
 				'seo_key' => 'VR Free Roam',
 			),
 			array(
 				'title'   => 'Floor Is Lava',
-				'text'    => 'Move, jump and survive in a real-life lava game show.',
+				'text'    => 'A real-life Floor Is Lava game show on an interactive LED floor. Jump, balance and survive — the crowd-puller for family days, carnivals and roadshows.',
 				'url'     => '/floor-is-lava/',
 				'seo_key' => 'Floor Is Lava',
 			),
 			array(
 				'title'   => 'XR Party Game',
-				'text'    => 'A next-gen party game experience for all ages.',
+				'text'    => 'Mixed-reality party games on the big screen, controlled by your real-world moves. No headset, no experience needed — a next-gen party game for all ages.',
 				'url'     => '/xr-party-game/',
 				'seo_key' => 'XR Party Game',
 			),
@@ -88,53 +88,61 @@ function ow_rental_defaults() {
 		'coming_soon_label'   => 'More Activities Coming Soon',
 
 		// What's included
-		'included_title' => "What's Included",
+		'included_title' => "What's Included In Every Rental",
 		'included'       => array(
-			array( 'icon' => 'truck',     'label' => 'Delivery' ),
+			array( 'icon' => 'truck',     'label' => 'Delivery Island-wide' ),
 			array( 'icon' => 'cog',       'label' => 'Setup & Testing' ),
 			array( 'icon' => 'operators', 'label' => 'On-site Operators' ),
 			array( 'icon' => 'headset',   'label' => 'Technical Support' ),
 			array( 'icon' => 'clipboard', 'label' => 'Player Briefing' ),
-			array( 'icon' => 'wrench',    'label' => 'Dismantling' ),
+			array( 'icon' => 'wrench',    'label' => 'Dismantling & Pack-down' ),
 		),
 
 		// Suitable for
 		'audience_title' => 'Suitable For',
 		'audience'       => array(
-			array( 'icon' => 'briefcase', 'label' => 'Corporate Events' ),
+			array( 'icon' => 'briefcase', 'label' => 'Corporate Events & D&D' ),
 			array( 'icon' => 'family',    'label' => 'Family Days' ),
-			array( 'icon' => 'school',    'label' => 'Schools' ),
-			array( 'icon' => 'flag',      'label' => 'Roadshows' ),
+			array( 'icon' => 'school',    'label' => 'Schools & Camps' ),
+			array( 'icon' => 'flag',      'label' => 'Roadshows & Launches' ),
 			array( 'icon' => 'community', 'label' => 'Community Events' ),
 		),
 
 		// FAQ
-		'faq_title'     => 'Frequently Asked Questions',
+		'faq_title'     => 'Event Rental FAQs',
 		'faq_all_label' => 'View All FAQs',
 		'faq_all_url'   => '/faq/',
 		'faqs'          => array(
 			array(
-				'q' => 'What space do we need?',
-				'a' => 'Each activity has its own footprint, and most fit comfortably into a function room, atrium or open-air tentage. Send us your venue dimensions or a floor plan and we will confirm which activities fit and how best to lay them out.',
+				'q' => 'What space do we need for an interactive game rental?',
+				'a' => 'Each activity has its own footprint. VR Free Roam needs a clear, level play area with no obstacles; Floor Is Lava is a modular LED floor that scales to the space you have; XR Party Game only needs room for a screen and a play zone in front of it. Most fit comfortably into a function room, hotel ballroom, mall atrium, school hall or outdoor tentage. Send us your venue dimensions or a floor plan and we will confirm which activities fit and how to lay them out.',
 			),
 			array(
 				'q' => 'How many people can play at once?',
-				'a' => 'It depends on the activity and how many stations you rent. Our games run in short rounds so a queue keeps moving, and we can advise on the right setup for your expected crowd and event duration.',
+				'a' => 'It depends on the activity and how many stations you rent. Our games run in short rounds of a few minutes each, so a queue keeps moving and hundreds of guests can play over the course of an event. Tell us your expected crowd and event duration and we will recommend the number of stations so nobody waits long for a turn.',
 			),
 			array(
-				'q' => 'Do you provide staff?',
-				'a' => 'Yes. Every rental comes with our own operators on site for the full event. They set up, brief every player, run the sessions, handle any technical issues and pack down when it ends.',
+				'q' => 'Do you provide staff to run the games?',
+				'a' => 'Yes. Every rental includes our own trained operators on site for the full event. They set up and test the equipment, brief every player, run the sessions, keep the queue moving, handle any technical issue and pack everything down when the event ends. You do not need to assign your own staff to the games.',
 			),
 			array(
 				'q' => 'Can you customise the experience for our event?',
-				'a' => 'Yes. Tell us the theme, the audience and what you want your guests to walk away with, and we will recommend the game mix, session length and setup that fit. Branding and scoreboard options can be discussed for larger events.',
+				'a' => 'Yes. Tell us the theme, the audience and what you want your guests to take away, and we will recommend the game mix, session length and setup that fit — a competitive tournament format for a corporate D&D, short family-friendly rounds for a carnival, or a scoreboard challenge for a roadshow. Branding and leaderboard options can be discussed for larger events.',
+			),
+			array(
+				'q' => 'Where in Singapore do you deliver?',
+				'a' => 'Island-wide. We deliver, set up and run our games at offices, hotels, malls, community clubs, schools, event halls and outdoor tentage anywhere in Singapore. Delivery, setup and dismantling are included in every quote.',
+			),
+			array(
+				'q' => 'How far in advance should we book, and how is it priced?',
+				'a' => 'The earlier the better — popular dates such as year-end D&D season and school holidays fill up quickly, so two to four weeks ahead is ideal, though we will always try to accommodate shorter notice. Pricing depends on the activities, number of stations, event duration and venue. Send us your date, headcount and venue and we will reply with a quotation.',
 			),
 		),
 
 		// Bottom CTA
 		'cta_eyebrow'     => 'Plan Your Event',
 		'cta_title'       => 'Plan Your Event With Us',
-		'cta_text'        => "Tell us about your event and we'll recommend the best activities for your venue.",
+		'cta_text'        => "Tell us your date, headcount and venue, and we'll recommend the best interactive games for your event and send you a quotation.",
 		'cta_label'       => 'Request A Quotation',
 		'cta_url'         => '/contact/',
 		'cta_ghost_label' => 'Prefer to come to us instead?',
@@ -950,17 +958,21 @@ add_filter( 'ow_seo_page_keywords', function ( $map ) {
 	foreach ( ow_rental_page_ids() as $id ) {
 		$map[ $id ] = array(
 			'interactive game rental Singapore',
-			'VR rental for events Singapore',
 			'event game rental Singapore',
+			'VR rental for events Singapore',
+			'VR rental Singapore',
+			'event equipment rental Singapore',
 			'VR free roam rental',
-			'Floor Is Lava rental',
+			'Floor Is Lava rental Singapore',
 			'XR party game rental',
-			'corporate event games Singapore',
+			'interactive games for events',
+			'corporate event entertainment Singapore',
+			'company D&D games Singapore',
 			'family day activities Singapore',
-			'school event activities Singapore',
+			'school carnival games rental Singapore',
 			'roadshow activities Singapore',
 			'community event games Singapore',
-			'event entertainment rental Singapore',
+			'carnival game rental Singapore',
 		);
 	}
 

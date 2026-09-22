@@ -1,5 +1,45 @@
 # Live Change Log
 
+## 2026-09-22 - Event Rental: SEO Copy, Nav Placement, Go-Live Runbook (STILL NOT LIVE)
+
+Asked to take the page live under Events › Equipment Rental with richer SEO
+wording, then check plugins and updates. SSH is still refused
+(`Permission denied (publickey,password)`, key fingerprint
+`SHA256:5hEDCS3Wzj2iRP65+nnWKHC6c9gk0jRtBN7RrBLsWq0` offered and rejected),
+so nothing reached the server. Everything that does not need the server is
+done and committed:
+
+**SEO copy.** The built-in defaults now carry the search phrases the page
+should own — interactive game rental, VR rental for events, event equipment
+rental, Floor Is Lava rental, XR party game rental, corporate D&D, family
+day, school carnival, roadshow, community event, Singapore island-wide.
+Title tag 59 chars, meta description 161 (the SEO plugin trims at 158 on a
+word boundary). The body block grew from one paragraph to three (what we
+rent, who it is for, what is included), the activity blurbs name the format
+and the audience, and the FAQ grew from four to six with fuller answers
+(space, capacity, staff, customisation, delivery area, lead time and
+pricing). No prices or capacities are stated anywhere — the answers say
+"send us your headcount and venue" rather than invent a number.
+
+**Navigation.** `scripts/nav-event-rental-link.php` adds "Equipment Rental"
+→ `/event-rental/` under Events ▾ in the header (new "At Your Venue"
+sub-head after Birthday Party) and to the footer's Events list. It walks
+every `elementor-hf` template and patches the HTML widget containing the
+anchor markup, so it does not hard-code post 29 / widget 36ab9a3. Tested
+against the nav markup pulled from the live homepage on 22 Sep: both
+patches land, a second run is a no-op.
+
+**Go-live runbook.** `scripts/go-live-event-rental.sh --apply` does the
+whole thing in one go: deploy + draft, nav links, publish, purge, then
+verifies the live page (200, title, description, not noindex, FAQPage +
+Service schema, nav link present, cards have photos, in the sitemap,
+mu-plugin loaded, ACF group registered, template guarded) and lists active
+plugins and any pending core / plugin / theme updates. Updates are reported,
+not applied — the 6 Aug incident is why.
+
+Blocked on the deploy key. Re-add the public key in hPanel (Advanced → SSH
+Access), then run the runbook.
+
 ## 2026-09-18 - Event Rental Page: Interactive Game Rental For Events (NOT LIVE)
 
 A new service page for taking the games to the client's venue. The content
