@@ -62,7 +62,7 @@ printf -v QUOTED_PATH "%q" "${REMOTE_WP_PATH}"
 remote() { ssh "${SSH_OPTS[@]}" "${SSH_TARGET}" "cd ${QUOTED_PATH} && $*"; }
 remote_wp_file() {
   local local_file="$1" remote_tmp="/tmp/$(basename "$1" .php)-$$.php"
-  scp "${SSH_OPTS[@]}" "${local_file}" "${SSH_TARGET}:${remote_tmp}"
+  scp "${SCP_OPTS[@]}" "${local_file}" "${SSH_TARGET}:${remote_tmp}"
   remote "wp eval-file ${remote_tmp}; rm -f ${remote_tmp}"
 }
 
@@ -70,7 +70,8 @@ remote_wp_file() {
 echo "==> 1. Deploying files and creating the draft"
 CONFIRM_PUSH=overworld.com.sg "${SCRIPT_DIR}/deploy-event-rental.sh" --apply
 
-PAGE_ID="$(remote "wp post list --post_type=page --name=${PAGE_SLUG} --field=ID --post_status=any" | tr -d '[:space:]')"
+# wp post list ignores --name; filter on post_name from the listing instead.
+PAGE_ID="$(remote "wp post list --post_type=page --post_status=any --fields=ID,post_name --format=csv" | awk -F, -v slug="${PAGE_SLUG}" '$2==slug {print $1}' | head -1 | tr -d '[:space:]')"
 if [[ -z "${PAGE_ID}" ]]; then
   echo "Could not find the page after deploy — stopping before nav/publish." >&2
   exit 1

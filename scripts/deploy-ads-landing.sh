@@ -70,10 +70,13 @@ fi
 
 # --- 1. the two files ------------------------------------------------------
 echo "==> Sending ${#FILES[@]} files"
+# One plain rsync per file to its explicit destination directory. Not
+# --relative with a /./ anchor: macOS ships openrsync, which ignores the
+# anchor and recreates the full local path on the server.
 for REL in "${FILES[@]}"; do
-  rsync -vz --relative -e "${RSYNC_SSH}" \
-    "${LOCAL_SOURCE}/./${REL}" \
-    "${SSH_TARGET}:${REMOTE_WP_PATH}/wp-content/"
+  rsync -vz -e "${RSYNC_SSH}" \
+    "${LOCAL_SOURCE}/${REL}" \
+    "${SSH_TARGET}:${REMOTE_WP_PATH}/wp-content/$(dirname "${REL}")/"
 done
 
 # --- 2. create the draft ---------------------------------------------------
@@ -84,7 +87,7 @@ echo
 echo "==> Creating the draft page"
 REMOTE_TMP="/tmp/ads-landing-page-$$.php"
 
-scp "${SSH_OPTS[@]}" \
+scp "${SCP_OPTS[@]}" \
   "${PROJECT_ROOT}/scripts/ads-landing-page.php" \
   "${SSH_TARGET}:${REMOTE_TMP}"
 

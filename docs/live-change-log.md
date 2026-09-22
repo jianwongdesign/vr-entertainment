@@ -1,5 +1,58 @@
 # Live Change Log
 
+## 2026-09-22 - Event Rental Page LIVE at /event-rental/, Events › Equipment Rental
+
+**Root cause of the "rejected deploy key" (28 Aug → today):** the site had
+moved to a new Hostinger server. sshd at the old IP `145.79.25.17` still
+answered and refused every login — key and password alike — because the
+account was no longer there. The client supplied the new IP
+`72.60.238.181`; `.env` updated, key accepted first try. The key was never
+removed from hPanel.
+
+**Live now:** https://overworld.com.sg/event-rental/ — page 1863, published,
+template `page-event-rental.php`, mu-plugin `overworld-event-rental.php`
+loaded, ACF group `group_ow_event_rental` registered, template guarded.
+Header: Events ▾ gained an "At Your Venue" sub-head with "Equipment Rental"
+(post 29, widget 36ab9a3). Footer: Plan & Visit list gained "Equipment
+Rental" (post 566, widget e37a512). Elementor data of both templates backed
+up locally before the patch. All caches purged, incl. Elementor CSS.
+
+Verified on the live URL: HTTP 200, title from the SEO map, meta
+description, indexable, FAQPage + Service schema, nav link present, three
+activity cards with real photos (borrowed from the outlet pages), in the
+sitemap. Checked in Chrome at desktop with the site header/footer around it.
+
+**Two script bugs found on the first real run, both fixed:**
+- macOS ships openrsync, which ignores `--relative` with a `/./` anchor and
+  recreated the full local path on the server (`wp-content/Users/jianwong/…`).
+  The stray tree held only our two files and was removed. Both deploy
+  scripts now rsync each file plainly to its explicit destination directory.
+- `scp` takes `-P` for the port; the scripts passed `-p` (preserve times).
+  `env.sh` now exports `SCP_OPTS` alongside `SSH_OPTS`. Also added an
+  optional shared-session helper (`ssh-session-open.sh`, control socket) for
+  password login when a key is unavailable — not needed in the end.
+- `wp post list --name=` is ignored; the runbook now filters on `post_name`.
+
+**Plugin / update audit (reported, not applied):**
+
+```text
+WordPress core        7.0.5   → 7.1.1 (major)
+advanced-custom-fields 6.8.7  → 6.8.10
+elementor             4.1.4   → 4.2.4
+elementor-pro         4.0.4   → 4.2.3
+header-footer-elementor 2.9.2 → 2.9.4
+google-site-kit       1.187.0 → 1.188.0
+insert-headers-and-footers 2.3.8 → 2.3.9
+duracelltomi-google-tag-manager 1.22.5 → 2.0.2 (major)
+hello-elementor (parent theme) 3.4.9 → update available
+twentytwentyfour / twentytwentythree (inactive) → updates available
+litespeed-cache, all-in-one-wp-migration, soro-seo: current
+```
+
+Nothing was updated. Elementor + Elementor Pro + HFE should be updated
+together, by hand, after `./scripts/backup-remote.sh`, given the 6 Aug
+incident. Core 7.1.1 and GTM 2.0.2 are majors — read the changelogs first.
+
 ## 2026-09-22 - Event Rental: SEO Copy, Nav Placement, Go-Live Runbook (STILL NOT LIVE)
 
 Asked to take the page live under Events › Equipment Rental with richer SEO
