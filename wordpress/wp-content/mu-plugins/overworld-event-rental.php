@@ -3,7 +3,7 @@
  * Plugin Name: Overworld — Event Rental Page (Interactive Game Rental for Events)
  * Description: Makes the /event-rental/ page (template page-event-rental.php) fully client-editable — hero, intro, activity cards, "what's included", "suitable for", FAQ and the bottom call to action — and wires its title, description, keywords and FAQ structured data through overworld-seo.php.
  * Author: Overworld
- * Version: 1.0.0
+ * Version: 1.1.0
  *
  * Must-use plugin: auto-loads, no activation needed.
  *
@@ -56,8 +56,14 @@ function ow_rental_defaults() {
 		'ghost_label'   => 'Get A Quote',
 		'ghost_url'     => '/contact/',
 
-		// Body copy (what search engines read)
-		'intro_title' => 'Make Your Event More Interactive',
+		// Intro block (what search engines read)
+		'intro_eyebrow' => 'Why Rent From Overworld',
+		'intro_title'   => 'Make Your Event More Interactive',
+		'intro_stats'   => array(
+			array( 'value' => '3',  'label' => 'Rental-ready games: VR Free Roam, Floor Is Lava, XR Party Game' ),
+			array( 'value' => '3',  'label' => 'Outlets across Singapore behind every rental' ),
+			array( 'value' => '1',  'label' => 'Crew from delivery to pack-down — you host, we run it' ),
+		),
 		'intro_text'  => "Overworld rents out the same VR and interactive games that fill our three Singapore outlets at Kallang Wave Mall, Orchard Central and Funan — and brings them to your event. Instead of a queue at a photo booth, your guests step into a free-roam VR arena, race across a glowing Floor Is Lava grid, or compete in an XR party game on the big screen. It is entertainment people talk about on the way home.\n\nOur event equipment rental works for corporate events and D&D nights, company family days, school carnivals and orientation camps, mall roadshows and product launches, and community club events. The games run in short rounds, so a crowd of fifty or five hundred keeps moving and nobody waits long for a turn. Every activity is pick-up-and-play — no gaming experience needed, and our crew briefs each player before they start.\n\nEverything comes as one package: we deliver the equipment to your venue anywhere in Singapore, set it up and test it, run every session with our own trained operators, handle any technical issue on the day and pack down when the event ends. Tell us your date, headcount and floor space, and we will recommend the mix of games that fits your event and your budget.",
 
 		// Activities
@@ -306,6 +312,30 @@ function ow_rental_faqs( $post_id ) {
 	$defaults = ow_rental_defaults();
 
 	return $defaults['faqs'];
+}
+
+/**
+ * Intro stats (value + label): client slots first, built-in when none filled.
+ *
+ * @param int $post_id Page ID.
+ * @return array<int, array{value: string, label: string}>
+ */
+function ow_rental_stats( $post_id ) {
+	$rows = array();
+	for ( $i = 1; $i <= 3; $i++ ) {
+		$value = trim( (string) get_post_meta( $post_id, "rental_stat_{$i}_value", true ) );
+		$label = trim( (string) get_post_meta( $post_id, "rental_stat_{$i}_label", true ) );
+		if ( '' === $value && '' === $label ) {
+			continue;
+		}
+		$rows[] = array( 'value' => $value, 'label' => $label );
+	}
+	if ( $rows ) {
+		return $rows;
+	}
+	$d = ow_rental_defaults();
+
+	return $d['intro_stats'];
 }
 
 /**
@@ -579,10 +609,18 @@ add_action( 'acf/init', function () {
 	// --- Intro ---
 	$fields[] = array(
 		'key'          => 'field_rental_intro_tab',
-		'label'        => 'About This Page (search copy)',
+		'label'        => 'Intro Block (search copy + 3 highlights)',
 		'type'         => 'accordion',
 		'open'         => 0,
 		'multi_expand' => 1,
+	);
+	$fields[] = array(
+		'key'          => 'field_rental_intro_eyebrow',
+		'label'        => 'Small Line Above The Heading',
+		'name'         => 'rental_intro_eyebrow',
+		'type'         => 'text',
+		'instructions' => 'Default: "' . $d['intro_eyebrow'] . '"',
+		'required'     => 0,
 	);
 	$fields[] = array(
 		'key'          => 'field_rental_intro_title',
@@ -601,6 +639,27 @@ add_action( 'acf/init', function () {
 		'instructions' => 'A few sentences describing the service. This is the text Google has to work with, so write it for a person deciding whether to book. Blank lines start a new paragraph. Leave empty for the built-in text.',
 		'required'     => 0,
 	);
+
+	for ( $i = 1; $i <= 3; $i++ ) {
+		$fields[] = array(
+			'key'          => "field_rental_stat_{$i}_value",
+			'label'        => "Highlight {$i} — Big Number",
+			'name'         => "rental_stat_{$i}_value",
+			'type'         => 'text',
+			'instructions' => 1 === $i ? 'The three highlights in the panel beside the text. Filling any one replaces all three built-in ones. Default: "' . $d['intro_stats'][0]['value'] . '"' : 'Default: "' . $d['intro_stats'][ $i - 1 ]['value'] . '"',
+			'required'     => 0,
+			'wrapper'      => array( 'width' => '20' ),
+		);
+		$fields[] = array(
+			'key'          => "field_rental_stat_{$i}_label",
+			'label'        => "Highlight {$i} — Text",
+			'name'         => "rental_stat_{$i}_label",
+			'type'         => 'text',
+			'instructions' => 'Default: "' . $d['intro_stats'][ $i - 1 ]['label'] . '"',
+			'required'     => 0,
+			'wrapper'      => array( 'width' => '80' ),
+		);
+	}
 
 	// --- Activities ---
 	$fields[] = array(

@@ -1,5 +1,18 @@
 # Live Change Log
 
+## 2026-09-22 - Event Rental: Intro Block Redesigned And Moved Up To Second Section
+
+"Make Your Event More Interactive" was three plain paragraphs near the
+bottom. Now it sits directly under the hero, as in the client's reference,
+as a two-column block: eyebrow ("Why Rent From Overworld"), the heading, a
+larger white lead paragraph and the two supporting paragraphs on the left;
+on the right a green-edged highlights panel with three big-number rows
+(3 rental-ready games / 3 outlets / 1 crew start to finish). All of it is
+editable — the eyebrow and the three value+label pairs are new ACF fields in
+the "Intro Block" accordion (mu-plugin 1.1.0; 105 fields, none duplicated).
+Section banding re-alternated so the FAQ is now on the lighter panel.
+Both files backed up on the server, deployed, caches purged, checked live.
+
 ## 2026-09-22 - Event Rental: Body Copy And FAQ Span The Full Content Width
 
 The "Make Your Event More Interactive" block and the FAQ list sat in an

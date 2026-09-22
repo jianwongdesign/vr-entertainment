@@ -17,7 +17,7 @@
  * the client's reference design rather than the hubs' lava orange.
  *
  * Sections, top to bottom:
- *   hero → activity cards → what's included → suitable for → intro copy → FAQ → CTA
+ *   hero → intro block → activity cards → what's included → suitable for → FAQ → CTA
  *
  * USAGE:
  *   Page Attributes → Template → "Event Rental (Interactive Game Rental for
@@ -60,8 +60,10 @@ $rental_ghost_url     = $rental_url( $rental_get( 'ghost_url' ) );
 
 $rental_hero_image_id = function_exists( 'ow_rental_hero_image_id' ) ? ow_rental_hero_image_id( $page_id ) : 0;
 
-$rental_intro_title = $rental_get( 'intro_title' );
-$rental_intro_text  = $rental_get( 'intro_text' );
+$rental_intro_eyebrow = $rental_get( 'intro_eyebrow' );
+$rental_intro_title   = $rental_get( 'intro_title' );
+$rental_intro_text    = $rental_get( 'intro_text' );
+$rental_intro_stats   = function_exists( 'ow_rental_stats' ) ? ow_rental_stats( $page_id ) : array();
 
 $rental_activities_title     = $rental_get( 'activities_title' );
 $rental_activities_all_label = $rental_get( 'activities_all_label' );
@@ -364,12 +366,68 @@ $rental_activity_count = count( $rental_activities );
   .ow-rental__audience .ow-rental__icon{width:32px;height:32px;color:#fff;}
   .ow-rental__audience span{font-size:14.5px;font-weight:500;color:var(--fg);line-height:1.3;}
 
-  /* ===== BODY COPY ===== */
-  .ow-rental__body-inner h2{margin-bottom:18px;}
-  .ow-rental__body-inner p{
-    font-size:16px;line-height:1.75;color:var(--dim);margin:0 0 18px;
+  /* ===== INTRO BLOCK (copy + highlights panel) ===== */
+  .ow-rental__intro{position:relative;overflow:hidden;}
+  .ow-rental__intro::before{
+    content:"";position:absolute;right:-10%;top:-30%;width:60%;height:160%;
+    background:radial-gradient(ellipse at center,rgba(195,251,51,.10) 0%,transparent 60%);
+    filter:blur(40px);pointer-events:none;
   }
-  .ow-rental__body-inner p:last-child{margin-bottom:0;}
+  .ow-rental__intro-grid{
+    position:relative;
+    display:grid;grid-template-columns:minmax(0,1.25fr) minmax(300px,.85fr);
+    gap:56px;align-items:center;
+  }
+  .ow-rental__intro-eyebrow{
+    display:inline-flex;align-items:center;gap:10px;
+    font-family:'JetBrains Mono',monospace;
+    font-size:11px;letter-spacing:.22em;text-transform:uppercase;
+    color:var(--accent);margin-bottom:18px;
+  }
+  .ow-rental__intro-eyebrow::before{
+    content:"";width:7px;height:7px;border-radius:50%;
+    background:var(--accent);box-shadow:0 0 10px var(--accent-glow);
+  }
+  .ow-rental__intro-title{
+    font-family:'Anton','Bebas Neue',sans-serif;
+    font-size:clamp(34px,4.2vw,54px);line-height:1;letter-spacing:-.01em;
+    font-weight:400;text-transform:uppercase;color:#fff;
+    margin:0 0 22px;
+  }
+  .ow-rental__intro-copy p{
+    font-size:15.5px;line-height:1.75;color:var(--dim);margin:0 0 16px;
+  }
+  .ow-rental__intro-copy p:first-of-type{
+    font-size:clamp(17px,1.5vw,20px);line-height:1.5;color:var(--fg);
+    margin-bottom:20px;
+  }
+  .ow-rental__intro-copy p:last-child{margin-bottom:0;}
+  .ow-rental__intro-panel{
+    position:relative;
+    background:var(--bg-2);
+    border:1px solid rgba(195,251,51,.28);
+    border-radius:20px;overflow:hidden;
+    box-shadow:0 30px 80px -40px rgba(195,251,51,.35);
+  }
+  .ow-rental__intro-panel::before{
+    content:"";position:absolute;top:0;left:0;right:0;height:3px;
+    background:linear-gradient(to right,transparent,var(--accent),transparent);
+  }
+  .ow-rental__intro-stat{
+    display:flex;align-items:center;gap:22px;
+    padding:26px 28px;
+    border-bottom:1px solid var(--line);
+  }
+  .ow-rental__intro-stat:last-child{border-bottom:0;}
+  .ow-rental__intro-stat strong{
+    font-family:'Anton','Bebas Neue',sans-serif;
+    font-size:52px;line-height:1;font-weight:400;
+    color:var(--accent);min-width:64px;text-align:center;
+    text-shadow:0 0 30px rgba(195,251,51,.35);
+  }
+  .ow-rental__intro-stat span{
+    font-size:14.5px;line-height:1.5;color:var(--fg);
+  }
 
   /* ===== FAQ ===== */
   .ow-rental__faq-item{
@@ -435,6 +493,7 @@ $rental_activity_count = count( $rental_activities );
     .ow-rental__hero{padding:56px 28px 60px;}
     .ow-rental__section{padding:60px 28px;}
     .ow-rental__grid{grid-template-columns:1fr;gap:18px;max-width:560px;margin:0 auto;}
+    .ow-rental__intro-grid{grid-template-columns:1fr;gap:36px;}
     .ow-rental__enquiry{padding:60px 28px 80px;}
   }
   @media (max-width:680px){
@@ -449,7 +508,9 @@ $rental_activity_count = count( $rental_activities );
     .ow-rental__included li:nth-child(2n){border-right:0;}
     .ow-rental__audience{grid-template-columns:repeat(2,1fr);gap:10px;}
     .ow-rental__audience li{padding:20px 12px;}
-    .ow-rental__body-inner p{font-size:15px;}
+    .ow-rental__intro-copy p{font-size:15px;}
+    .ow-rental__intro-stat{padding:20px 20px;gap:16px;}
+    .ow-rental__intro-stat strong{font-size:40px;min-width:48px;}
     .ow-rental__enquiry{padding:45px 18px 60px;}
     .ow-rental__enquiry-inner{padding:36px 24px;}
     .ow-rental__enquiry-buttons{flex-direction:column;}
@@ -506,6 +567,37 @@ $rental_activity_count = count( $rental_activities );
       <?php endif; ?>
     </div>
   </div>
+
+  <!-- INTRO BLOCK (what search engines read) -->
+  <?php if ( '' !== $rental_intro_title || '' !== $rental_intro_text ) : ?>
+  <div class="ow-rental__section ow-rental__section--alt ow-rental__intro">
+    <div class="ow-rental__inner ow-rental__intro-grid">
+      <div class="ow-rental__intro-copy">
+        <?php if ( '' !== $rental_intro_eyebrow ) : ?>
+          <div class="ow-rental__intro-eyebrow"><?php echo esc_html( $rental_intro_eyebrow ); ?></div>
+        <?php endif; ?>
+        <?php if ( '' !== $rental_intro_title ) : ?>
+          <h2 class="ow-rental__intro-title"><?php echo esc_html( $rental_intro_title ); ?></h2>
+        <?php endif; ?>
+        <?php foreach ( preg_split( '/\n\s*\n/', $rental_intro_text ) as $paragraph ) :
+          $paragraph = trim( $paragraph );
+          if ( '' === $paragraph ) continue; ?>
+          <p><?php echo nl2br( esc_html( $paragraph ) ); ?></p>
+        <?php endforeach; ?>
+      </div>
+      <?php if ( ! empty( $rental_intro_stats ) ) : ?>
+        <aside class="ow-rental__intro-panel" aria-label="<?php echo esc_attr( $rental_intro_title ); ?> highlights">
+          <?php foreach ( $rental_intro_stats as $stat ) : ?>
+            <div class="ow-rental__intro-stat">
+              <?php if ( '' !== $stat['value'] ) : ?><strong><?php echo esc_html( $stat['value'] ); ?></strong><?php endif; ?>
+              <span><?php echo esc_html( $stat['label'] ); ?></span>
+            </div>
+          <?php endforeach; ?>
+        </aside>
+      <?php endif; ?>
+    </div>
+  </div>
+  <?php endif; ?>
 
   <!-- ACTIVITY CARDS -->
   <div class="ow-rental__section" id="activities">
@@ -607,25 +699,9 @@ $rental_activity_count = count( $rental_activities );
   </div>
   <?php endif; ?>
 
-  <!-- BODY COPY (what search engines read) -->
-  <?php if ( '' !== $rental_intro_title || '' !== $rental_intro_text ) : ?>
-  <div class="ow-rental__section ow-rental__section--alt">
-    <div class="ow-rental__inner ow-rental__body-inner">
-      <?php if ( '' !== $rental_intro_title ) : ?>
-        <h2 class="ow-rental__section-title"><?php echo esc_html( $rental_intro_title ); ?></h2>
-      <?php endif; ?>
-      <?php foreach ( preg_split( '/\n\s*\n/', $rental_intro_text ) as $paragraph ) :
-        $paragraph = trim( $paragraph );
-        if ( '' === $paragraph ) continue; ?>
-        <p><?php echo nl2br( esc_html( $paragraph ) ); ?></p>
-      <?php endforeach; ?>
-    </div>
-  </div>
-  <?php endif; ?>
-
   <!-- FAQ -->
   <?php if ( ! empty( $rental_faqs ) ) : ?>
-  <div class="ow-rental__section">
+  <div class="ow-rental__section ow-rental__section--alt">
     <div class="ow-rental__inner">
       <div class="ow-rental__section-head">
         <h2 class="ow-rental__section-title"><?php echo esc_html( $rental_faq_title ); ?></h2>
