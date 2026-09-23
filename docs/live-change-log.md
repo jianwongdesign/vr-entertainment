@@ -1,5 +1,23 @@
 # Live Change Log
 
+## 2026-09-23 - Past Events: A Client Edit Now Reaches The Rental Page Immediately
+
+Verified the whole client-editing path against the live site — the ACF box
+appears on a Past Event and nowhere else, all 53 boxes read back their
+values, administrators/editors/authors can all edit, saving syncs the cover
+to the featured image, unticking the toggle drops the tile from the rental
+page but keeps it on the listing, and a brand new entry with nothing filled
+in still renders a complete page.
+
+That turned up one real gap, now fixed (mu-plugin 1.1.0): LiteSpeed purges
+an event's own URL when it is saved but knows nothing about the two pages
+that *show* the event — the gallery on `/event-rental/` and `/past-events/`.
+The client would have edited an event, looked at the rental page and seen
+the old tile. Saving, binning, restoring or deleting a past event now purges
+both, and clears Elementor's render cache for the rental page. Tested by
+editing an event server-side with the page already cached: the new wording
+was live within three seconds, with no manual purge.
+
 ## 2026-09-23 - Past Event Gallery: Three Sample Events Published, Hero Photo Fixed
 
 Published three **sample** past events so the gallery section can be seen

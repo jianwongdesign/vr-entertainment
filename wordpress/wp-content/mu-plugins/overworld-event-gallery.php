@@ -3,7 +3,7 @@
  * Plugin Name: Overworld — Past Event Gallery
  * Description: Adds the "Past Events" content type behind the gallery on /event-rental/. Each entry the client adds gets its own page (/past-events/<name>/) with a write-up, the games brought along, a photo gallery and a call to action, and the six newest entries appear on the Equipment Rental page above the FAQ.
  * Author: Overworld
- * Version: 1.0.2
+ * Version: 1.1.0
  *
  * Must-use plugin: auto-loads, no activation needed.
  *
@@ -804,6 +804,53 @@ add_action( 'acf/save_post', function ( $post_id ) {
 
 	delete_post_meta( $post_id, '_elementor_element_cache' );
 }, 20 );
+
+/**
+ * A past event appears on two pages it does not own: the gallery on the
+ * Equipment Rental page and the /past-events/ listing. LiteSpeed purges the
+ * event's own URL when it is saved and knows nothing about those two, so
+ * without this the client edits an event, looks at the rental page and sees
+ * the old tile — the commonest way a CMS feels broken to the person using it.
+ *
+ * @return void
+ */
+function ow_pe_purge_related_pages() {
+	if ( function_exists( 'ow_rental_page_ids' ) ) {
+		foreach ( ow_rental_page_ids() as $page_id ) {
+			do_action( 'litespeed_purge_post', $page_id );
+			// Elementor caches the page's rendered output separately.
+			delete_post_meta( $page_id, '_elementor_element_cache' );
+		}
+	}
+
+	do_action( 'litespeed_purge_url', ow_pe_archive_url() );
+	do_action( 'litespeed_purge_posttype', OW_PE_POST_TYPE );
+}
+
+add_action(
+	'save_post_' . OW_PE_POST_TYPE,
+	function ( $post_id ) {
+		// Autosaves and revisions change nothing anyone can see.
+		if ( wp_is_post_autosave( $post_id ) || wp_is_post_revision( $post_id ) ) {
+			return;
+		}
+		ow_pe_purge_related_pages();
+	},
+	20
+);
+
+// Deleting or binning an event takes its tile off those pages too.
+foreach ( array( 'trashed_post', 'untrashed_post', 'deleted_post' ) as $ow_pe_event ) {
+	add_action(
+		$ow_pe_event,
+		function ( $post_id ) {
+			if ( OW_PE_POST_TYPE === get_post_type( $post_id ) ) {
+				ow_pe_purge_related_pages();
+			}
+		},
+		20
+	);
+}
 
 // ===== Search-engine plumbing (through overworld-seo.php) =====
 
