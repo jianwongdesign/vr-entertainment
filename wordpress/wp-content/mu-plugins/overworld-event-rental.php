@@ -3,7 +3,7 @@
  * Plugin Name: Overworld — Event Rental Page (Interactive Game Rental for Events)
  * Description: Makes the /event-rental/ page (template page-event-rental.php) fully client-editable — hero, intro, activity cards, "what's included", "suitable for", FAQ and the bottom call to action — and wires its title, description, keywords and FAQ structured data through overworld-seo.php.
  * Author: Overworld
- * Version: 1.1.0
+ * Version: 1.2.0
  *
  * Must-use plugin: auto-loads, no activation needed.
  *
@@ -14,6 +14,10 @@
  *
  * Defaults live here rather than in page-event-rental.php because the SEO
  * output (title, meta description, FAQ schema) needs them too.
+ *
+ * v1.2.0 adds the past event gallery section (above the FAQ). Its tiles are
+ * Past Event posts from overworld-event-gallery.php, so only the section's
+ * own wording is edited here.
  *
  * Lists (activities, what's included, suitable for, FAQ) are numbered slots
  * rather than an ACF repeater: the site runs ACF free, which has no repeater
@@ -113,6 +117,12 @@ function ow_rental_defaults() {
 			array( 'icon' => 'flag',      'label' => 'Roadshows & Launches' ),
 			array( 'icon' => 'community', 'label' => 'Community Events' ),
 		),
+
+		// Past event gallery (entries live in overworld-event-gallery.php)
+		'gallery_title'     => 'Events We Have Already Powered',
+		'gallery_text'      => 'Corporate D&Ds, family days, school carnivals and mall roadshows across Singapore — set up, run and packed down by our own crew. Open any one to see the games we brought, how the space was laid out and photos from the day.',
+		'gallery_all_label' => 'View All Past Events',
+		'gallery_all_url'   => '/past-events/',
 
 		// FAQ
 		'faq_title'     => 'Event Rental FAQs',
@@ -838,6 +848,98 @@ add_action( 'acf/init', function () {
 			'wrapper'      => array( 'width' => '60' ),
 		);
 	}
+
+	// --- Past event gallery ---
+	// The tiles themselves are Past Events (their own menu item, their own
+	// pages — overworld-event-gallery.php). Only the wrapper around them is
+	// edited here, plus the copy for the /past-events/ listing, because ACF
+	// free has no options page to keep that on.
+	$pe_tiles = defined( 'OW_PE_RENTAL_TILES' ) ? OW_PE_RENTAL_TILES : 6;
+	$pe       = function_exists( 'ow_pe_defaults' ) ? ow_pe_defaults() : array(
+		'archive_eyebrow' => '',
+		'archive_title'   => '',
+		'archive_text'    => '',
+	);
+
+	$fields[] = array(
+		'key'          => 'field_rental_gallery_tab',
+		'label'        => 'Past Event Gallery',
+		'type'         => 'accordion',
+		'open'         => 0,
+		'multi_expand' => 1,
+	);
+	$fields[] = array(
+		'key'       => 'field_rental_gallery_msg',
+		'label'     => '',
+		'name'      => '',
+		'type'      => 'message',
+		'message'   => 'The events in this gallery are added under <strong>Past Events</strong> in the sidebar — one entry per event, each with its own page, photo gallery and write-up. The ' . $pe_tiles . ' newest ones appear here automatically; untick "Show On The Equipment Rental Page" on an entry to keep it off this page. Nothing added yet? The section stays hidden from visitors until the first event is published.',
+		'new_lines' => '',
+		'esc_html'  => 0,
+	);
+	$fields[] = array(
+		'key'          => 'field_rental_gallery_title',
+		'label'        => 'Section Heading',
+		'name'         => 'rental_gallery_title',
+		'type'         => 'text',
+		'instructions' => 'Default: "' . $d['gallery_title'] . '"',
+		'required'     => 0,
+		'wrapper'      => array( 'width' => '40' ),
+	);
+	$fields[] = array(
+		'key'          => 'field_rental_gallery_all_label',
+		'label'        => 'Top-Right Link — Text',
+		'name'         => 'rental_gallery_all_label',
+		'type'         => 'text',
+		'instructions' => 'Default: "' . $d['gallery_all_label'] . '"',
+		'required'     => 0,
+		'wrapper'      => array( 'width' => '30' ),
+	);
+	$fields[] = array(
+		'key'          => 'field_rental_gallery_all_url',
+		'label'        => 'Top-Right Link — Goes To',
+		'name'         => 'rental_gallery_all_url',
+		'type'         => 'text',
+		'instructions' => 'The listing of every past event. Default: "' . $d['gallery_all_url'] . '"',
+		'required'     => 0,
+		'wrapper'      => array( 'width' => '30' ),
+	);
+	$fields[] = array(
+		'key'          => 'field_rental_gallery_text',
+		'label'        => 'Text Under The Heading',
+		'name'         => 'rental_gallery_text',
+		'type'         => 'textarea',
+		'rows'         => 2,
+		'instructions' => 'Default: "' . $d['gallery_text'] . '"',
+		'required'     => 0,
+	);
+	$fields[] = array(
+		'key'          => 'field_rental_archive_title',
+		'label'        => 'Past Events Page — Heading',
+		'name'         => 'rental_archive_title',
+		'type'         => 'text',
+		'instructions' => 'The heading on the listing at ' . $d['gallery_all_url'] . '. Default: "' . $pe['archive_title'] . '"',
+		'required'     => 0,
+		'wrapper'      => array( 'width' => '40' ),
+	);
+	$fields[] = array(
+		'key'          => 'field_rental_archive_eyebrow',
+		'label'        => 'Past Events Page — Small Line Above It',
+		'name'         => 'rental_archive_eyebrow',
+		'type'         => 'text',
+		'instructions' => 'Default: "' . $pe['archive_eyebrow'] . '"',
+		'required'     => 0,
+		'wrapper'      => array( 'width' => '60' ),
+	);
+	$fields[] = array(
+		'key'          => 'field_rental_archive_text',
+		'label'        => 'Past Events Page — Text',
+		'name'         => 'rental_archive_text',
+		'type'         => 'textarea',
+		'rows'         => 3,
+		'instructions' => 'Also the description Google shows for that page. Default: "' . $pe['archive_text'] . '"',
+		'required'     => 0,
+	);
 
 	// --- FAQ ---
 	$fields[] = array(

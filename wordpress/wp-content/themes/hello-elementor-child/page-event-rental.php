@@ -17,7 +17,8 @@
  * the client's reference design rather than the hubs' lava orange.
  *
  * Sections, top to bottom:
- *   hero → intro block → activity cards → what's included → suitable for → FAQ → CTA
+ *   hero → intro block → activity cards → what's included → suitable for →
+ *   past event gallery → FAQ → CTA
  *
  * USAGE:
  *   Page Attributes → Template → "Event Rental (Interactive Game Rental for
@@ -92,6 +93,20 @@ $rental_audience_title = $rental_get( 'audience_title' );
 $rental_audience       = function_exists( 'ow_rental_icon_list' )
 	? ow_rental_icon_list( $page_id, 'aud', defined( 'OW_RENTAL_AUDIENCE_SLOTS' ) ? OW_RENTAL_AUDIENCE_SLOTS : 6, isset( $rental_defaults['audience'] ) ? $rental_defaults['audience'] : array() )
 	: array();
+
+// Past event gallery. The tiles are Past Event posts (mu-plugin
+// overworld-event-gallery.php); the wording around them lives on this page.
+$rental_gallery_title     = $rental_get( 'gallery_title' );
+$rental_gallery_text      = $rental_get( 'gallery_text' );
+$rental_gallery_all_label = $rental_get( 'gallery_all_label' );
+$rental_gallery_all_url   = $rental_url( $rental_get( 'gallery_all_url' ) );
+$rental_gallery_cards     = function_exists( 'ow_pe_cards' ) ? ow_pe_cards() : array();
+// With nothing published yet the section is hidden from visitors; anyone who
+// can add an event sees the empty state and a link to the Add New screen.
+$rental_gallery_can_edit  = current_user_can( 'edit_posts' );
+$rental_gallery_add_url   = defined( 'OW_PE_POST_TYPE' )
+	? admin_url( 'post-new.php?post_type=' . OW_PE_POST_TYPE )
+	: '';
 
 $rental_faq_title     = $rental_get( 'faq_title' );
 $rental_faq_all_label = $rental_get( 'faq_all_label' );
@@ -429,6 +444,69 @@ $rental_activity_count = count( $rental_activities );
     font-size:14.5px;line-height:1.5;color:var(--fg);
   }
 
+  /* ===== Past event gallery ===== */
+  .ow-rental__gal-intro{
+    font-size:15.5px;line-height:1.6;color:var(--dim);
+    max-width:78ch;margin:-10px 0 30px;
+  }
+  .ow-rental__gal{display:grid;grid-template-columns:repeat(3,1fr);gap:24px;}
+  .ow-rental__gal-card{
+    position:relative;display:flex;flex-direction:column;
+    background:var(--bg-2);border:1px solid var(--line);border-radius:18px;
+    overflow:hidden;transition:transform .25s ease,border-color .25s ease,box-shadow .25s ease;
+  }
+  .ow-rental__gal-card::before{
+    content:"";position:absolute;top:0;left:0;right:0;height:3px;z-index:2;
+    background:linear-gradient(90deg,var(--accent),transparent);
+    opacity:0;transition:opacity .25s ease;
+  }
+  .ow-rental__gal-card:hover{
+    transform:translateY(-6px);border-color:rgba(195,251,51,.45);
+    box-shadow:0 30px 60px -40px rgba(195,251,51,.5);
+  }
+  .ow-rental__gal-card:hover::before{opacity:1;}
+  .ow-rental__gal-media{position:relative;aspect-ratio:16/10;overflow:hidden;background:rgba(255,255,255,.04);}
+  .ow-rental__gal-media img{width:100%;height:100%;object-fit:cover;transition:transform .5s ease;}
+  .ow-rental__gal-card:hover .ow-rental__gal-media img{transform:scale(1.05);}
+  .ow-rental__gal-media--empty{display:flex;align-items:center;justify-content:center;}
+  .ow-rental__gal-media--empty .ow-rental__icon{width:46px;height:46px;color:rgba(195,251,51,.45);}
+  .ow-rental__gal-tag{
+    position:absolute;left:14px;top:14px;z-index:2;
+    background:rgba(10,10,20,.82);border:1px solid rgba(195,251,51,.4);
+    color:var(--accent);border-radius:999px;padding:6px 12px;
+    font-family:'JetBrains Mono',ui-monospace,monospace;
+    font-size:10px;letter-spacing:1.6px;text-transform:uppercase;
+  }
+  .ow-rental__gal-count{
+    position:absolute;right:14px;bottom:14px;z-index:2;
+    background:rgba(10,10,20,.78);border:1px solid var(--line);color:#fff;
+    border-radius:999px;padding:5px 11px;
+    font-family:'JetBrains Mono',ui-monospace,monospace;font-size:10px;letter-spacing:1.2px;
+  }
+  .ow-rental__gal-body{padding:20px 22px 22px;display:flex;flex-direction:column;gap:8px;flex:1;}
+  .ow-rental__gal-name{
+    font-family:'Anton','Bebas Neue',sans-serif;font-size:21px;line-height:1.12;
+    text-transform:uppercase;letter-spacing:.3px;margin:0;color:var(--fg);
+  }
+  .ow-rental__gal-meta{
+    font-family:'JetBrains Mono',ui-monospace,monospace;
+    font-size:10.5px;letter-spacing:1.4px;text-transform:uppercase;color:var(--dim);
+  }
+  .ow-rental__gal-blurb{font-size:14.5px;line-height:1.5;color:var(--dim);margin:0;}
+  .ow-rental__gal-more{
+    margin-top:auto;padding-top:12px;display:inline-flex;align-items:center;gap:8px;
+    font-family:'JetBrains Mono',ui-monospace,monospace;
+    font-size:11px;letter-spacing:1.4px;text-transform:uppercase;color:var(--accent);
+    transition:gap .2s ease;
+  }
+  .ow-rental__gal-card:hover .ow-rental__gal-more{gap:12px;}
+  .ow-rental__gal-empty{
+    border:1px dashed rgba(195,251,51,.35);border-radius:18px;
+    padding:40px 28px;text-align:center;color:var(--dim);font-size:15px;line-height:1.6;
+  }
+  .ow-rental__gal-empty strong{display:block;color:var(--fg);font-size:17px;margin-bottom:8px;}
+  .ow-rental__gal-empty .ow-rental__btn{margin-top:18px;}
+
   /* ===== FAQ ===== */
   .ow-rental__faq-item{
     border:1px solid var(--line);border-radius:14px;
@@ -494,6 +572,7 @@ $rental_activity_count = count( $rental_activities );
     .ow-rental__section{padding:60px 28px;}
     .ow-rental__grid{grid-template-columns:1fr;gap:18px;max-width:560px;margin:0 auto;}
     .ow-rental__intro-grid{grid-template-columns:1fr;gap:36px;}
+    .ow-rental__gal{grid-template-columns:repeat(2,1fr);gap:18px;}
     .ow-rental__enquiry{padding:60px 28px 80px;}
   }
   @media (max-width:680px){
@@ -511,6 +590,7 @@ $rental_activity_count = count( $rental_activities );
     .ow-rental__intro-copy p{font-size:15px;}
     .ow-rental__intro-stat{padding:20px 20px;gap:16px;}
     .ow-rental__intro-stat strong{font-size:40px;min-width:48px;}
+    .ow-rental__gal{grid-template-columns:1fr;max-width:520px;margin:0 auto;}
     .ow-rental__enquiry{padding:45px 18px 60px;}
     .ow-rental__enquiry-inner{padding:36px 24px;}
     .ow-rental__enquiry-buttons{flex-direction:column;}
@@ -699,9 +779,79 @@ $rental_activity_count = count( $rental_activities );
   </div>
   <?php endif; ?>
 
+  <!-- PAST EVENT GALLERY -->
+  <?php if ( ! empty( $rental_gallery_cards ) || $rental_gallery_can_edit ) : ?>
+  <div class="ow-rental__section ow-rental__section--alt" id="past-events">
+    <div class="ow-rental__inner">
+      <div class="ow-rental__section-head">
+        <h2 class="ow-rental__section-title"><?php echo esc_html( $rental_gallery_title ); ?></h2>
+        <?php if ( ! empty( $rental_gallery_cards ) && '' !== $rental_gallery_all_url && '' !== $rental_gallery_all_label ) : ?>
+          <a class="ow-rental__section-count" href="<?php echo esc_url( $rental_gallery_all_url ); ?>">
+            <?php echo esc_html( $rental_gallery_all_label ); ?> <?php echo $rental_arrow; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
+          </a>
+        <?php endif; ?>
+      </div>
+      <?php if ( '' !== $rental_gallery_text ) : ?>
+        <p class="ow-rental__gal-intro"><?php echo esc_html( $rental_gallery_text ); ?></p>
+      <?php endif; ?>
+
+      <?php if ( ! empty( $rental_gallery_cards ) ) : ?>
+        <div class="ow-rental__gal">
+          <?php foreach ( $rental_gallery_cards as $event ) : ?>
+            <a class="ow-rental__gal-card" href="<?php echo esc_url( $event['url'] ); ?>">
+              <?php if ( $event['image_id'] ) : ?>
+                <div class="ow-rental__gal-media">
+                  <?php echo wp_get_attachment_image( $event['image_id'], 'large', false, array( 'loading' => 'lazy' ) ); ?>
+                  <?php if ( '' !== $event['tag'] ) : ?>
+                    <span class="ow-rental__gal-tag"><?php echo esc_html( $event['tag'] ); ?></span>
+                  <?php endif; ?>
+                  <?php if ( $event['photos'] > 1 ) : ?>
+                    <span class="ow-rental__gal-count"><?php echo (int) $event['photos']; ?> Photos</span>
+                  <?php endif; ?>
+                </div>
+              <?php else : ?>
+                <div class="ow-rental__gal-media ow-rental__gal-media--empty">
+                  <?php echo $rental_icon( 'gamepad' ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
+                  <?php if ( '' !== $event['tag'] ) : ?>
+                    <span class="ow-rental__gal-tag"><?php echo esc_html( $event['tag'] ); ?></span>
+                  <?php endif; ?>
+                </div>
+              <?php endif; ?>
+              <div class="ow-rental__gal-body">
+                <h3 class="ow-rental__gal-name"><?php echo esc_html( $event['title'] ); ?></h3>
+                <?php if ( ! empty( $event['meta'] ) ) : ?>
+                  <div class="ow-rental__gal-meta"><?php echo esc_html( implode( ' · ', $event['meta'] ) ); ?></div>
+                <?php endif; ?>
+                <?php if ( '' !== $event['summary'] ) : ?>
+                  <p class="ow-rental__gal-blurb"><?php echo esc_html( wp_trim_words( $event['summary'], 26 ) ); ?></p>
+                <?php endif; ?>
+                <span class="ow-rental__gal-more">
+                  See The Event <?php echo $rental_arrow; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
+                </span>
+              </div>
+            </a>
+          <?php endforeach; ?>
+        </div>
+      <?php else : ?>
+        <div class="ow-rental__gal-empty">
+          <strong>No past events added yet — visitors do not see this section.</strong>
+          Add one under <em>Past Events</em> in the sidebar: give it a name, a cover photo, a line or two and some pictures.
+          Each event gets its own page, and the <?php echo (int) ( defined( 'OW_PE_RENTAL_TILES' ) ? OW_PE_RENTAL_TILES : 6 ); ?> newest appear here automatically.
+          <?php if ( '' !== $rental_gallery_add_url ) : ?>
+            <br />
+            <a class="ow-rental__btn ow-rental__btn--primary" href="<?php echo esc_url( $rental_gallery_add_url ); ?>">
+              Add A Past Event <?php echo $rental_arrow; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
+            </a>
+          <?php endif; ?>
+        </div>
+      <?php endif; ?>
+    </div>
+  </div>
+  <?php endif; ?>
+
   <!-- FAQ -->
   <?php if ( ! empty( $rental_faqs ) ) : ?>
-  <div class="ow-rental__section ow-rental__section--alt">
+  <div class="ow-rental__section">
     <div class="ow-rental__inner">
       <div class="ow-rental__section-head">
         <h2 class="ow-rental__section-title"><?php echo esc_html( $rental_faq_title ); ?></h2>

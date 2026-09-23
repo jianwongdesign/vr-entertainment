@@ -3,7 +3,7 @@
  * Plugin Name: Overworld — SEO Metadata
  * Description: Site-wide search-engine metadata: title tag, meta description, robots, Open Graph, Twitter cards and schema.org structured data for every page, post, experience, event package and promo. Hand-written defaults per page, all client-editable through an "SEO" box on the edit screen.
  * Author: Overworld
- * Version: 1.2.0
+ * Version: 1.3.0
  *
  * WHY THIS EXISTS
  * There is no SEO plugin on this site. Before this plugin, almost every URL
@@ -27,6 +27,11 @@
  * Every default can be overridden per post in the SEO box, and a page that has
  * no entry in the map still gets a sensible generated title and description
  * rather than nothing.
+ *
+ * v1.3.0 adds two extension points so a plugin that registers its own content
+ * type writes its own copy without editing the switch here: ow_seo_generated
+ * (a single post) and ow_seo_archive_seo (that type's listing). Used by
+ * overworld-event-gallery.php for past events.
  *
  * NOTE ON META KEYWORDS: emitted on request, and kept honest and short. Google
  * dropped it as a ranking signal in 2009 and Bing treats a stuffed tag as a
@@ -890,9 +895,26 @@ function ow_seo_generated( $post ) {
 			break;
 	}
 
+	/**
+	 * A content type registered elsewhere (past events, for one) knows better
+	 * than the default case above what its own title and description should
+	 * say. The per-post SEO box still overrides whatever comes back.
+	 *
+	 * @param array{title: string, desc: string} $seo  Generated title and description.
+	 * @param WP_Post                            $post Post being described.
+	 */
+	$seo = apply_filters(
+		'ow_seo_generated',
+		array(
+			'title' => $title,
+			'desc'  => $desc,
+		),
+		$post
+	);
+
 	return array(
-		'title' => $title,
-		'desc'  => ow_seo_trim( $desc ),
+		'title' => $seo['title'],
+		'desc'  => ow_seo_trim( $seo['desc'] ),
 	);
 }
 
@@ -1383,6 +1405,24 @@ function ow_seo_current() {
 		$label = ( $obj && isset( $obj->labels->name ) ) ? $obj->labels->name : 'Archive';
 		$title = sprintf( '%s | Overworld Singapore', $label );
 		$desc  = sprintf( '%s at Overworld Singapore - VR arcades, escape rooms and physical game arenas across three outlets.', $label );
+
+		/**
+		 * Same idea as ow_seo_generated, for a post type archive: the plugin
+		 * that registered the type writes its own listing copy.
+		 *
+		 * @param array{title: string, desc: string} $seo Archive title and description.
+		 * @param WP_Post_Type|null                  $obj Queried post type object.
+		 */
+		$archive = apply_filters(
+			'ow_seo_archive_seo',
+			array(
+				'title' => $title,
+				'desc'  => $desc,
+			),
+			$obj
+		);
+		$title = $archive['title'];
+		$desc  = $archive['desc'];
 	} elseif ( is_author() || is_date() || is_attachment() ) {
 		// Thin duplicates of content that already has a canonical home. Keep
 		// them out of the index. The title is built here rather than via

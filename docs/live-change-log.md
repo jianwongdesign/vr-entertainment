@@ -1,5 +1,47 @@
 # Live Change Log
 
+## 2026-09-23 - Past Event Gallery: Six Tiles Above The FAQ, A Page Per Event
+
+The client wanted the rental page to show events they have already run, and
+each tile to open its own page — like the game pages — with photos and more
+detail. Six numbered ACF slots on the page could show tiles but could never
+give them pages, so past events are now posts of their own: **Past Events**
+in the WP Admin sidebar, Add New, fill in, publish. The newest six with
+"Show On The Equipment Rental Page" ticked appear in the gallery section
+above the FAQ; every one of them also lists at `/past-events/`.
+
+New mu-plugin `overworld-event-gallery.php` (1.0.0) registers the
+`past_event` type, its "Past Event Details" box (63 fields — tile, top of
+the page, three highlights, up to 4 games with links to the game pages, up
+to 12 photos, its own CTA), the CSS both templates share, and the SEO
+wiring. The write-up itself uses the normal WordPress editor. On save the
+cover photo becomes the featured image and the tile text becomes the excerpt,
+so sharing a past event on WhatsApp shows the picture and a real
+description.
+
+New templates: `single-past_event.php` (hero over the cover photo, fact
+chips, highlight figures, write-up, games strip, photo grid with
+click-to-enlarge, more events, CTA), `archive-past_event.php` (the listing),
+and the shared card partial `parts/past-event-card.php`.
+
+`overworld-event-rental.php` 1.2.0 adds the section's own wording and the
+listing page's heading and intro (there is no ACF options page on free ACF,
+so that copy lives on the rental page's box). `overworld-seo.php` 1.3.0 adds
+two extension points — `ow_seo_generated` and `ow_seo_archive_seo` — so a
+plugin that registers a content type writes its own titles without editing
+the switch in the SEO plugin. Titles across the site spot-checked
+afterwards: unchanged.
+
+With nothing published the section is hidden from visitors; anyone logged in
+sees an empty state with a link to Add New. One example event was created as
+a **draft** (id 1865) so the client opens a filled-in form rather than a
+blank one. Rewrite rules flushed — `/past-events/` 404s without that.
+Remote copies of all seven files backed up to `/tmp/*.bak-<stamp>` first.
+Verified live: `/past-events/` returns 200 with its own title and
+description, the rental page and its FAQ still render, and the draft event
+was rendered through the real template on the server (WordPress resolves
+`single-past_event.php`, no warnings from our code).
+
 ## 2026-09-22 - Event Rental: Intro Block Redesigned And Moved Up To Second Section
 
 "Make Your Event More Interactive" was three plain paragraphs near the
