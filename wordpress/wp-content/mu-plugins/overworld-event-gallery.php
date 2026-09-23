@@ -3,7 +3,7 @@
  * Plugin Name: Overworld — Past Event Gallery
  * Description: Adds the "Past Events" content type behind the gallery on /event-rental/. Each entry the client adds gets its own page (/past-events/<name>/) with a write-up, the games brought along, a photo gallery and a call to action, and the six newest entries appear on the Equipment Rental page above the FAQ.
  * Author: Overworld
- * Version: 1.0.0
+ * Version: 1.0.2
  *
  * Must-use plugin: auto-loads, no activation needed.
  *
@@ -986,14 +986,23 @@ function ow_pe_styles() {
   .ow-pe__back svg{width:14px;height:14px;transform:rotate(180deg);}
 
   /* ---- hero ---- */
-  .ow-pe__hero{position:relative;padding:64px 40px 56px;overflow:hidden;isolation:isolate;}
-  .ow-pe__hero-photo{position:absolute;inset:0;z-index:-2;}
-  .ow-pe__hero-photo img{width:100%;height:100%;object-fit:cover;opacity:.42;}
+  .ow-pe__hero{position:relative;padding:64px 40px 56px;overflow:hidden;}
+  /* z-index 0, not a negative one: a negative z-index paints the photo behind
+     the theme's own opaque background and it never shows at all. The copy is
+     lifted above it instead. */
+  .ow-pe__hero-photo{position:absolute;inset:0;z-index:0;pointer-events:none;}
+  /* Brighter than the rental page's hero, where the photo is only texture
+     behind centred text. Here the cover photo is the point of the page, so
+     it is dimmed only as far as the copy needs: heavily on the left where
+     the text sits, barely at all on the right. */
+  .ow-pe__hero-photo img{width:100%;height:100%;object-fit:cover;object-position:center;opacity:.62;}
   .ow-pe__hero-photo::after{
     content:"";position:absolute;inset:0;
-    background:linear-gradient(180deg,rgba(10,10,20,.55) 0%,rgba(10,10,20,.82) 55%,#0a0a14 100%);
+    background:
+      linear-gradient(90deg,rgba(10,10,20,.94) 0%,rgba(10,10,20,.8) 38%,rgba(10,10,20,.3) 78%,rgba(10,10,20,.15) 100%),
+      linear-gradient(180deg,rgba(10,10,20,.3) 0%,rgba(10,10,20,.1) 40%,rgba(10,10,20,.88) 88%,#0a0a14 100%);
   }
-  .ow-pe__hero-inner{max-width:1300px;margin:0 auto;}
+  .ow-pe__hero-inner{position:relative;z-index:2;max-width:1300px;margin:0 auto;}
   .ow-pe__title{
     font-family:'Anton','Bebas Neue',sans-serif;
     font-size:clamp(38px,6vw,76px);line-height:.98;text-transform:uppercase;
@@ -1167,6 +1176,10 @@ function ow_pe_styles() {
   }
   @media(max-width:640px){
     .ow-pe__hero{padding:38px 18px 36px;}
+    .ow-pe__hero-photo img{opacity:.5;}
+    .ow-pe__hero-photo::after{
+      background:linear-gradient(180deg,rgba(10,10,20,.5) 0%,rgba(10,10,20,.75) 45%,#0a0a14 100%);
+    }
     .ow-pe__section{padding:44px 18px;}
     .ow-pe__cta{padding:44px 18px 60px;}
     .ow-pe__cta-inner{padding:34px 22px;}

@@ -1,5 +1,26 @@
 # Live Change Log
 
+## 2026-09-23 - Past Event Gallery: Three Sample Events Published, Hero Photo Fixed
+
+Published three **sample** past events so the gallery section can be seen
+with something in it: `sample-corporate-family-day` (1868),
+`sample-school-carnival` (1870), `sample-mall-roadshow` (1872). Every title
+starts with "Sample —" and every write-up says so in its first line; photos
+are attachments already in the media library (the outlet gallery pictures),
+nothing uploaded, no real client named. Created by
+`scripts/past-event-samples.php`, which is idempotent and prints the delete
+command: `wp post delete 1868 1870 1872 --force`.
+
+Fixed while checking them: the cover photo behind an event's title never
+appeared. `.ow-pe__hero-photo` had `z-index:-2`, which paints it behind the
+theme's own opaque background — the image was loaded and correctly sized,
+just never painted. Now `z-index:0` with the copy lifted to `z-index:2`, and
+the overlay changed from a flat vertical wash to a mostly horizontal one
+(dark under the text on the left, nearly clear on the right) with the photo
+at .62 opacity instead of .42, because on these pages the photo is the point
+rather than texture. Phones keep a plain vertical wash, where the copy runs
+the full width. mu-plugin 1.0.2.
+
 ## 2026-09-23 - Past Event Gallery: Six Tiles Above The FAQ, A Page Per Event
 
 The client wanted the rental page to show events they have already run, and
