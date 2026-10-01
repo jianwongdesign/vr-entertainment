@@ -3,7 +3,7 @@
  * Plugin Name: Overworld — Event Rental Page (Interactive Game Rental for Events)
  * Description: Makes the /event-rental/ page (template page-event-rental.php) fully client-editable — hero, intro, activity cards, "what's included", "suitable for", FAQ and the bottom call to action — and wires its title, description, keywords and FAQ structured data through overworld-seo.php.
  * Author: Overworld
- * Version: 1.2.0
+ * Version: 1.3.0
  *
  * Must-use plugin: auto-loads, no activation needed.
  *
@@ -515,6 +515,23 @@ add_action( 'acf/init', function () {
 	}
 
 	$fields = array();
+
+	// --- How to use this box (shown above the first section) ---
+	$fields[] = array(
+		'key'       => 'field_rental_howto',
+		'label'     => 'How to edit this page',
+		'name'      => '',
+		'type'      => 'message',
+		'message'   => '<ol style="margin:0 0 0 1.2em">'
+			. '<li>Click a section name below to open it. The sections run in the same order as the page, top to bottom.</li>'
+			. '<li>Only fill in what you want to change. An empty field shows the built-in text — the "Default" line under each field tells you what that is.</li>'
+			. '<li>Click <strong>Update</strong> (top right), then <strong>View Page</strong> to check it. Changes are live straight away.</li>'
+			. '</ol>'
+			. '<p style="margin:.6em 0 0">Photos: landscape, at least 1600px wide for the hero and 800px for activity cards, ideally under 400KB each. '
+			. 'The events in the gallery are added under <strong>Past Events</strong> in the sidebar, not here.</p>',
+		'new_lines' => '',
+		'esc_html'  => 0,
+	);
 
 	// --- Hero ---
 	$fields[] = array(

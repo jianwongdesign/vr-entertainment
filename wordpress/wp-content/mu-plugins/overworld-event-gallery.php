@@ -3,7 +3,7 @@
  * Plugin Name: Overworld — Past Event Gallery
  * Description: Adds the "Past Events" content type behind the gallery on /event-rental/. Each entry the client adds gets its own page (/past-events/<name>/) with a write-up, the games brought along, a photo gallery and a call to action, and the six newest entries appear on the Equipment Rental page above the FAQ.
  * Author: Overworld
- * Version: 1.1.0
+ * Version: 1.2.0
  *
  * Must-use plugin: auto-loads, no activation needed.
  *
@@ -413,6 +413,41 @@ add_filter( 'enter_title_here', function ( $text, $post ) {
 	return $text;
 }, 10, 2 );
 
+/**
+ * A pointer at the top of the Past Events list, so the client knows what the
+ * screen is for — and, while the "Sample —" placeholders are still published,
+ * that they should go once real events are in.
+ */
+add_action( 'admin_notices', function () {
+	$screen = function_exists( 'get_current_screen' ) ? get_current_screen() : null;
+	if ( ! $screen || 'edit-' . OW_PE_POST_TYPE !== $screen->id ) {
+		return;
+	}
+
+	$samples = array_filter(
+		get_posts( array(
+			'post_type'      => OW_PE_POST_TYPE,
+			'post_status'    => 'publish',
+			'posts_per_page' => 50,
+			'fields'         => 'all',
+		) ),
+		function ( $p ) {
+			return 0 === strpos( $p->post_title, 'Sample' );
+		}
+	);
+
+	echo '<div class="notice notice-info"><p>';
+	echo 'Each entry here is one event you have run. Click <strong>Add Past Event</strong> to add one. It gets its own page, and the '
+		. (int) OW_PE_RENTAL_TILES . ' newest appear as tiles on the <a href="' . esc_url( home_url( '/event-rental/' ) ) . '">Equipment Rental page</a>. ';
+	echo 'The "Example" draft shows a filled-in entry you can copy from.';
+	echo '</p>';
+	if ( $samples ) {
+		echo '<p><strong>' . count( $samples ) . ' placeholder events</strong> (titles starting "Sample —") are showing on the live site so the gallery is not empty. '
+			. 'Once your own events are published, hover over each one and click <strong>Bin</strong>.</p>';
+	}
+	echo '</div>';
+} );
+
 // ===== The edit screen (ACF) =====
 
 add_action( 'acf/init', function () {
@@ -423,6 +458,24 @@ add_action( 'acf/init', function () {
 
 	$d      = ow_pe_defaults();
 	$fields = array();
+
+	// --- How to use this box (shown above the first section) ---
+	$fields[] = array(
+		'key'       => 'field_pe_howto',
+		'label'     => 'Adding an event, in 4 steps',
+		'name'      => '',
+		'type'      => 'message',
+		'message'   => '<ol style="margin:0 0 0 1.2em">'
+			. '<li>Type the event name in the title at the top of the page.</li>'
+			. '<li>Write what happened in the writing area under the title.</li>'
+			. '<li>Below, under <strong>The Tile</strong>, add a Cover Photo and one or two lines. Then add pictures under <strong>Photos</strong>.</li>'
+			. '<li>Click <strong>Publish</strong> (top right). The event gets its own page and appears on the Equipment Rental page within a few seconds.</li>'
+			. '</ol>'
+			. '<p style="margin:.6em 0 0">Everything else in this box is optional. Only name the client if they are happy to be named. '
+			. 'Photos: landscape, at least 1600px wide, ideally under 400KB each.</p>',
+		'new_lines' => '',
+		'esc_html'  => 0,
+	);
 
 	// --- The tile ---
 	$fields[] = array(
