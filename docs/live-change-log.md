@@ -1,5 +1,19 @@
 # Live Change Log
 
+## 2026-10-06 - Birthday Packages: Price Reads "Per Package", Not "Per Pax"
+
+Every birthday package page labelled its price "per pax · SGD" — the template
+added "per pax" to any price that didn't already say "pax", and birthday
+prices are package totals ("$269 - $289"). `single-event_package.php` now
+labels birthday prices "per package · SGD"; team building is unchanged
+("$33 - $39/pax · SGD"). No stored prices changed.
+
+Deployed the one file by rsync after confirming live matched the committed
+version; backup on the server at
+`themes/hello-elementor-child/single-event_package.php.bak-20261006`.
+LiteSpeed purged. Verified live: `/events/overworld-lava-birthday-party-package/`
+shows "$269 - $289 per package · SGD".
+
 ## 2026-09-23 - Past Events: A Client Edit Now Reaches The Rental Page Immediately
 
 Verified the whole client-editing path against the live site — the ACF box

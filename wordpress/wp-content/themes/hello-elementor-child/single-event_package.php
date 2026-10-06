@@ -467,7 +467,18 @@ $related = get_posts( array(
           <div class="ow-pkg__price">
             <span class="ow-pkg__price-from">From</span>
             <span class="ow-pkg__price-num"><?php echo esc_html( $price_from ); ?></span>
-            <span class="ow-pkg__price-unit"><?php echo ( stripos( $price_from, 'pax' ) === false ) ? 'per pax · SGD' : 'SGD'; ?></span>
+            <?php
+            // Birthdays are priced per package, team building per head; a
+            // price that already names its unit ("$43 - $49/pax") gets none.
+            if ( stripos( $price_from, 'pax' ) !== false ) {
+                $price_unit = 'SGD';
+            } elseif ( 'birthday-party' === $event_type_slug ) {
+                $price_unit = 'per package · SGD';
+            } else {
+                $price_unit = 'per pax · SGD';
+            }
+            ?>
+            <span class="ow-pkg__price-unit"><?php echo esc_html( $price_unit ); ?></span>
           </div>
         <?php endif; ?>
 
