@@ -1,5 +1,19 @@
 # Live Change Log
 
+## 2026-10-07 - Team Building / Birthday Party: Every Section On One 1300px Column
+
+On `/birthday-party/` and `/team-building/` the sections below the outlet
+cards were narrower than the cards and centred on their own, so each one
+started further in: outlets 1300px, "Why ... " points 1200px, intro copy and
+FAQ 860px. `page-event-hub.php` now gives the points, intro and FAQ wrappers
+the same 1300px max-width as the outlet grid. The intro paragraphs keep an
+880px line length so they stay readable, but start on the same left edge.
+
+Live matched the committed file before upload; backup on the server at
+`themes/hello-elementor-child/page-event-hub.php.bak-20261007`. LiteSpeed and
+object cache purged. Both pages 200; desktop screenshot of `/birthday-party/`
+shows outlets, points, intro and FAQ sharing one left and right edge.
+
 ## 2026-10-07 - Google Ads Landing Page Live At /group-events-singapore/
 
 Deployed with `CONFIRM_PUSH=overworld.com.sg ./scripts/deploy-ads-landing.sh --apply`

@@ -420,7 +420,7 @@ foreach ( $outlets as $i => $o ) {
 
   /* ===== WHY BOOK WITH US ===== */
   .ow-hub__points{background:var(--bg-2);border-top:1px solid var(--line);padding:70px 40px;}
-  .ow-hub__points-inner{max-width:1200px;margin:0 auto;}
+  .ow-hub__points-inner{max-width:1300px;margin:0 auto;}
   .ow-hub__points-grid{
     display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:20px;
     margin-top:32px;
@@ -440,15 +440,16 @@ foreach ( $outlets as $i => $o ) {
 
   /* ===== BODY COPY ===== */
   .ow-hub__body{background:var(--bg);border-top:1px solid var(--line);padding:64px 40px;}
-  .ow-hub__body-inner{max-width:860px;margin:0 auto;}
+  .ow-hub__body-inner{max-width:1300px;margin:0 auto;}
   .ow-hub__body-inner p{
+    max-width:880px;
     font-size:16px;line-height:1.75;color:var(--dim);margin:0 0 18px;
   }
   .ow-hub__body-inner p:last-child{margin-bottom:0;}
 
   /* ===== FAQ ===== */
   .ow-hub__faq{background:var(--bg-2);border-top:1px solid var(--line);padding:70px 40px;}
-  .ow-hub__faq-inner{max-width:860px;margin:0 auto;}
+  .ow-hub__faq-inner{max-width:1300px;margin:0 auto;}
   .ow-hub__faq-item{
     border:1px solid var(--line);border-radius:14px;
     background:rgba(255,255,255,.02);
