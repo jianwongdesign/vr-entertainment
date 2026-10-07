@@ -1,5 +1,55 @@
 # Live Change Log
 
+## 2026-10-07 - Google Ads Landing Page Live At /group-events-singapore/
+
+Deployed with `CONFIRM_PUSH=overworld.com.sg ./scripts/deploy-ads-landing.sh --apply`
+(sends `page-ads-events.php` and `mu-plugins/overworld-ads-landing.php`, neither
+of which existed on the server before). It created page **1889** as a draft on
+the `page-ads-events.php` template; published it with
+`wp post update 1889 --post_status=publish`, then purged LiteSpeed and the
+object cache. Not added to any menu.
+
+The harmless `Constant OW_ADS_TEMPLATE already defined` warning from
+`wp eval-file` is the mu-plugin and the script defining the same constant with
+the same value.
+
+Verification:
+
+```text
+/group-events-singapore/                     200
+  ?e=tb  ?e=bp  ?e=tb&outlet=funan           200
+<title>   Team Building & Birthday Parties in Singapore | Overworld
+robots    noindex, follow
+Bookeo widget.js on the page                 1
+Packages read live from event_package        yes ($269 - $289, $33 - $39/pax ...)
+PHP errors in output                         0
+In wp-sitemap-posts-page-1.xml               0
+Linked from the home page / nav              0
+```
+
+Google Ads final URLs:
+
+```text
+https://overworld.com.sg/group-events-singapore/
+https://overworld.com.sg/group-events-singapore/?e=tb
+https://overworld.com.sg/group-events-singapore/?e=bp
+```
+
+## 2026-10-07 - WP Admin Help Notes On The Rental Page And Past Events
+
+Deployed the two mu-plugins committed in 4fc7dd1, one rsync each, after
+confirming the live copies were byte-identical to the previous commit:
+
+- `overworld-event-rental.php` 1.3.0: "How to edit this page" at the top of
+  the rental page's ACF box (`field_rental_howto`).
+- `overworld-event-gallery.php` 1.2.0: "Adding an event, in 4 steps" at the
+  top of the past event box (`field_pe_howto`), plus a notice on the Past
+  Events list that tells the editor to bin the "Sample —" events while any are
+  published.
+
+Backups on the server: `mu-plugins/*.php.bak-20261007`. Live checksums match
+local; `acf_get_field()` returns both new labels; home page 200.
+
 ## 2026-10-06 - Birthday Packages: Price Reads "Per Package", Not "Per Pax"
 
 Every birthday package page labelled its price "per pax · SGD" — the template
