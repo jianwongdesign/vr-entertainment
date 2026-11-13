@@ -19,6 +19,11 @@ Measured in iframes at 1440/1100/900/390px on Kallang (1), Orchard (2), Funan (4
 and Funan with a simulated 5th card: 3 + 2 centred at desktop, 2 + 2 + 1 centred
 at tablet, single column on mobile, no horizontal overflow anywhere.
 
+Demo Combo 5 placed on Funan (506) at the user's request so the 3 + 2 layout is
+visible: "25min VR Free Roam + 20min XR Party Game", label "Demo", image 1252
+(VR Free Roam activity photo), no price and no button so nobody can book it.
+Replace or clear it under Pages > Funan > Combo Deals > Combo 5.
+
 Still needed: the 5th combo's name, description, includes, image and price from
 the client - the slot stays hidden until Combo Name is filled in.
 
