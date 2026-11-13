@@ -747,9 +747,9 @@ if ( '' === $combos_intro ) {
   @media (max-width:600px){
     .ow-pri__combos-grid[class]{--cols:1;}
   }
-  /* Wide banner combo: full row under the grid, image left / details right,
+  /* Wide banner combo: full row above the grid, image left / details right,
      stacking back into a normal card on phones. */
-  .ow-pri__combos-banners{display:flex;flex-direction:column;gap:22px;margin-top:22px;}
+  .ow-pri__combos-banners{display:flex;flex-direction:column;gap:22px;margin-bottom:22px;}
   .ow-pri__combo-card.is-wide{max-width:none;flex-direction:row;}
   .ow-pri__combo-card.is-wide .ow-pri__combo-img{
     flex:0 0 58%;aspect-ratio:auto;min-height:340px;
@@ -1450,9 +1450,9 @@ if ( '' === $combos_intro ) {
       <p class="ow-pri__acts-intro"><?php echo esc_html( $combos_intro ); ?></p>
 
       <?php
-      // Two passes: normal cards in the grid first, then any combo switched to
-      // "Show as wide banner" as a full-width landscape card underneath.
-      foreach ( array( false, true ) as $combo_pass_wide ) :
+      // Two passes: any combo switched to "Show as wide banner" first, as a
+      // full-width landscape card under the intro, then the normal card grid.
+      foreach ( array( true, false ) as $combo_pass_wide ) :
           $combo_pass = array();
           foreach ( $outlet_combos as $combo ) {
               if ( $combo['wide'] === $combo_pass_wide ) $combo_pass[] = $combo;

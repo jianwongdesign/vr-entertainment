@@ -4,10 +4,11 @@
 
 Client wants the 5th combo (or any combo they pick) shown as a landscape banner
 instead of a normal card. Each Combo 1-5 box now has a **Show As Wide Banner**
-toggle. Combos with it on are taken out of the grid and rendered underneath as a
-full-width card: image left (58%), details right; 50/50 under 1000px; stacks
+toggle. Combos with it on are taken out of the grid and rendered ABOVE it, right
+under the section intro, as a full-width card (moved from below the grid at the
+user's request; backups `*.bak-20261113-113153`): image left (58%), details right; 50/50 under 1000px; stacks
 like a normal card under 700px. The grid's column count only counts the
-regular cards, so Funan is now 4 in a row + the banner.
+regular cards, so Funan is now the banner, then 4 in a row.
 
 Turned on for Funan's demo Combo 5. Live matched the previous commit before
 upload; backups `page-pricing.php.bak-20261113-111652` and

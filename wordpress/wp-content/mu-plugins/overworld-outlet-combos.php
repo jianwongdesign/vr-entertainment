@@ -67,7 +67,7 @@ add_action( 'acf/init', function () {
 			'type'          => 'true_false',
 			'ui'            => 1,
 			'default_value' => 0,
-			'instructions'  => 'On: this combo becomes a full-width landscape banner under the other combo cards (image left, details right). Use a wide landscape image.',
+			'instructions'  => 'On: this combo becomes a full-width landscape banner above the other combo cards (image left, details right). Use a wide landscape image.',
 			'required'      => 0,
 		);
 		$fields[] = array(
