@@ -1,5 +1,14 @@
 # Live Change Log
 
+## 2026-11-13 - Combo Deals Intro On One Line
+
+The intro under "Combo Deals" was capped at 720px (shared `.ow-pri__acts-intro`
+rule), so it broke onto two lines. The combo intro now carries
+`.ow-pri__combos-intro` with `max-width:none` and runs the full 1200px column.
+Activities intro unchanged. Measured on Funan, Orchard and Kallang: 1 line at
+1920/1440/1280px, wraps naturally on phones (390px), no overflow. Backup
+`page-pricing.php.bak-20261113-133748`.
+
 ## 2026-11-13 - Combo Banner: Price + Button, 16:9 Image
 
 Demo Combo 5 on Funan (506) now has a **placeholder** price ($36 weekday / $41

@@ -605,6 +605,9 @@ if ( '' === $combos_intro ) {
     font-size:15.5px;line-height:1.7;color:var(--dim);
     margin:-14px 0 36px;
   }
+  /* Combo intro is one sentence: let it run the full 1200px column so it sits
+     on one line on desktop instead of breaking at 720px. */
+  .ow-pri__acts-intro.ow-pri__combos-intro{max-width:none;}
   .ow-pri__acts-grid{
     display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:22px;
   }
@@ -1449,7 +1452,7 @@ if ( '' === $combos_intro ) {
         </div>
       </div>
 
-      <p class="ow-pri__acts-intro"><?php echo esc_html( $combos_intro ); ?></p>
+      <p class="ow-pri__acts-intro ow-pri__combos-intro"><?php echo esc_html( $combos_intro ); ?></p>
 
       <?php
       // Two passes: any combo switched to "Show as wide banner" first, as a
