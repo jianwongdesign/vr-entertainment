@@ -1,5 +1,23 @@
 # Live Change Log
 
+## 2026-11-13 - Combo Banner: Price + Button, 16:9 Image
+
+Demo Combo 5 on Funan (506) now has a **placeholder** price ($36 weekday / $41
+weekend & PH, made up for the demo, not from the client) and a Book This Combo
+button to `/book-now-funan/`, so the banner shows the full layout. Replace the
+prices with the client's real ones.
+
+Banner image is now 16:9, like the normal cards, so one image size covers both:
+**1920 x 1080 px**, JPG/WebP, under ~400 KB, text/logos away from the edges
+(all existing combo artwork is already 1920x1080). The Image field's help text
+in WP Admin says this. Desktop: image left 58%, fills the card height (trims
+~4% off the sides). Under 1180px it stacks: full 16:9 image on top, details
+and button below.
+
+Backups `page-pricing.php.bak-20261113-115306` / `-115357`,
+`~/overworld-outlet-combos.php.bak-20261113-115306`. Measured at 1440/1100/820/390,
+no overflow; phone screenshot shows price + full-width button.
+
 ## 2026-11-13 - Combo Deals: "Show As Wide Banner" Switch
 
 Client wants the 5th combo (or any combo they pick) shown as a landscape banner

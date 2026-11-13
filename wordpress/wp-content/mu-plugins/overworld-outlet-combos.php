@@ -140,7 +140,7 @@ add_action( 'acf/init', function () {
 			'label'         => 'Image (optional)',
 			'name'          => 'outlet_combo_' . $i . '_image',
 			'type'          => 'image',
-			'instructions'  => 'Landscape works best — the card crops it to 16:9 safely on every screen size.',
+			'instructions'  => 'Upload 1920 × 1080 px (16:9), JPG or WebP, under ~400 KB. The same size works for normal cards and the wide banner. Keep text and logos away from the edges.',
 			'return_format' => 'id',
 			'preview_size'  => 'medium',
 			'library'       => 'all',

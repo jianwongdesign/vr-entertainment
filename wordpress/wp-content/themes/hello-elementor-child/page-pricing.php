@@ -751,26 +751,28 @@ if ( '' === $combos_intro ) {
      stacking back into a normal card on phones. */
   .ow-pri__combos-banners{display:flex;flex-direction:column;gap:22px;margin-bottom:22px;}
   .ow-pri__combo-card.is-wide{max-width:none;flex-direction:row;}
+  /* 16:9 like the normal cards, so one 1920x1080 image works for both.
+     Side by side on desktop (fills the card height, trims only a few % off
+     the sides); stacked under 1180px, where the text column would otherwise
+     be much taller than the image. */
   .ow-pri__combo-card.is-wide .ow-pri__combo-img{
-    flex:0 0 58%;aspect-ratio:auto;min-height:340px;
+    flex:0 0 58%;aspect-ratio:16/9;
     border-bottom:0;border-right:1px solid var(--line);
   }
-  .ow-pri__combo-card.is-wide .ow-pri__combo-body{padding:38px 40px;justify-content:center;}
+  .ow-pri__combo-card.is-wide .ow-pri__combo-body{padding:34px 40px;justify-content:center;}
   .ow-pri__combo-card.is-wide .ow-pri__combo-name{font-size:30px;}
   .ow-pri__combo-card.is-wide .ow-pri__combo-desc{font-size:15px;}
   .ow-pri__combo-card.is-wide .ow-pri__combo-tags{flex:0 0 auto;}
   .ow-pri__combo-card.is-wide .ow-pri__combo-btn{align-self:flex-start;padding:14px 28px;}
-  @media (max-width:1000px){
-    .ow-pri__combo-card.is-wide .ow-pri__combo-img{flex-basis:50%;min-height:280px;}
-    .ow-pri__combo-card.is-wide .ow-pri__combo-body{padding:28px;}
-    .ow-pri__combo-card.is-wide .ow-pri__combo-name{font-size:24px;}
-  }
-  @media (max-width:700px){
+  @media (max-width:1180px){
     .ow-pri__combo-card.is-wide{flex-direction:column;}
     .ow-pri__combo-card.is-wide .ow-pri__combo-img{
-      flex:none;aspect-ratio:16/9;min-height:0;
-      border-right:0;border-bottom:1px solid var(--line);
+      flex:none;border-right:0;border-bottom:1px solid var(--line);
     }
+    .ow-pri__combo-card.is-wide .ow-pri__combo-body{padding:30px 32px;}
+    .ow-pri__combo-card.is-wide .ow-pri__combo-name{font-size:26px;}
+  }
+  @media (max-width:700px){
     .ow-pri__combo-card.is-wide .ow-pri__combo-body{padding:26px;}
     .ow-pri__combo-card.is-wide .ow-pri__combo-name{font-size:22px;}
     .ow-pri__combo-card.is-wide .ow-pri__combo-btn{align-self:stretch;}
