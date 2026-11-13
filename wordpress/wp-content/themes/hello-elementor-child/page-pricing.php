@@ -371,11 +371,11 @@ if ( ! function_exists( 'ow_pri_from_price' ) ) {
     }
 }
 
-// ===== Combo deals (ACF slots outlet_combo_1..4, see mu-plugin
+// ===== Combo deals (ACF slots outlet_combo_1..5, see mu-plugin
 // overworld-outlet-combos.php). Empty prices fall back to the matching combo
 // rows in the Pricing CPT. Whole section hides when no combo has a name. =====
 $outlet_combos = array();
-for ( $ci = 1; $ci <= 4; $ci++ ) {
+for ( $ci = 1; $ci <= 5; $ci++ ) {
     $combo_title = trim( (string) get_post_meta( get_the_ID(), 'outlet_combo_' . $ci . '_title', true ) );
     if ( '' === $combo_title ) continue;
 
@@ -717,11 +717,37 @@ if ( '' === $combos_intro ) {
     max-width:1200px;margin:0 auto;
     padding-top:70px;border-top:1px solid var(--line);
   }
+  /* Column count follows the number of combos (is-nN on the grid) so an
+     uneven count never leaves one card stranded on its own row:
+     1-2 -> left-aligned pair, 3 -> 3, 4 -> 4, 5 -> 3 + 2 centred,
+     6 -> 3 + 3. Narrower screens drop to 2 columns, then 1. */
   .ow-pri__combos-grid{
-    display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:22px;
+    --cols:4;
+    display:flex;flex-wrap:wrap;gap:22px;
   }
-  /* max-width keeps a single combo (Funan) from stretching the card — and
-     its 16:9 image — across the full 1200px row. */
+  .ow-pri__combos-grid.is-n1,
+  .ow-pri__combos-grid.is-n2{--cols:2;}
+  .ow-pri__combos-grid.is-n3,
+  .ow-pri__combos-grid.is-n5,
+  .ow-pri__combos-grid.is-n6{--cols:3;justify-content:center;}
+  .ow-pri__combos-grid > .ow-pri__combo-card{
+    flex:0 0 calc((100% - (var(--cols) - 1) * 22px) / var(--cols));
+    min-width:0;
+  }
+  @media (max-width:1180px){
+    .ow-pri__combos-grid.is-n4{--cols:2;}
+  }
+  /* [class] lifts these to the same weight as the .is-nN rules above. */
+  @media (max-width:1000px){
+    .ow-pri__combos-grid[class]{--cols:2;justify-content:center;}
+    .ow-pri__combos-grid.is-n1,
+    .ow-pri__combos-grid.is-n2{justify-content:flex-start;}
+  }
+  @media (max-width:600px){
+    .ow-pri__combos-grid[class]{--cols:1;}
+  }
+  /* max-width keeps a single combo from stretching the card — and its 16:9
+     image — across the full 1200px row. */
   .ow-pri__combo-card{
     max-width:520px;
     display:flex;flex-direction:column;
@@ -1394,7 +1420,7 @@ if ( '' === $combos_intro ) {
 
       <p class="ow-pri__acts-intro"><?php echo esc_html( $combos_intro ); ?></p>
 
-      <div class="ow-pri__combos-grid">
+      <div class="ow-pri__combos-grid is-n<?php echo (int) count( $outlet_combos ); ?>">
         <?php foreach ( $outlet_combos as $combo ) : ?>
           <article class="ow-pri__combo-card">
             <?php if ( ! empty( $combo['img'] ) ) : ?>

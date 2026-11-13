@@ -1,9 +1,9 @@
 <?php
 /**
  * Plugin Name: Overworld — Outlet Combo Deals
- * Description: Client-editable combo deals for the outlet pages: intro text plus up to 4 combos (title, badge, description, what's included, image, weekday/weekend price, link). Consumed by page-pricing.php, rendered directly under "Activities & Games". Leave a combo's title empty to hide that slot; leave all empty to hide the whole section.
+ * Description: Client-editable combo deals for the outlet pages: intro text plus up to 5 combos (title, badge, description, what's included, image, weekday/weekend price, link). Consumed by page-pricing.php, rendered directly under "Activities & Games". Leave a combo's title empty to hide that slot; leave all empty to hide the whole section.
  * Author: Overworld
- * Version: 1.0.0
+ * Version: 1.1.0
  *
  * Must-use plugin: auto-loads, no activation needed. Free ACF has no
  * repeater, so this mirrors the outlet_act_* / outlet_gallery_* convention:
@@ -39,7 +39,7 @@ add_action( 'acf/init', function () {
 		),
 	);
 
-	for ( $i = 1; $i <= 4; $i++ ) {
+	for ( $i = 1; $i <= 5; $i++ ) {
 		// Collapsible header per combo
 		$fields[] = array(
 			'key'          => 'field_outlet_combo_' . $i . '_accordion',

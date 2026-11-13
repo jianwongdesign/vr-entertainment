@@ -1,5 +1,27 @@
 # Live Change Log
 
+## 2026-11-13 - Outlet Combo Deals: 5 Slots, No Stranded Cards
+
+Client wants 5 combo deals at Funan (it had 4). `mu-plugins/overworld-outlet-combos.php`
+now gives every outlet page a **Combo 5** box under Pages > <outlet> > Combo Deals,
+and `page-pricing.php` reads slots 1-5.
+
+The grid used `auto-fit minmax(280px)`, so a 5th card would have dropped onto
+its own row (and Funan's 4 already went 3 + 1 on tablets). The grid now picks its
+columns from the combo count (`is-nN` class): 1-2 left-aligned, 4 in a row,
+3/5/6 in rows of three with the last row centred (5 = 3 + 2); 2 columns under
+1180px for 4 combos, 2 columns centred under 1000px, 1 column under 600px.
+
+Live matched local before upload. Backups: `themes/hello-elementor-child/page-pricing.php.bak-20261113-104257`
+and `~/overworld-outlet-combos.php.bak-20261113-104257` (outside mu-plugins so it
+doesn't load). LiteSpeed purged, `_elementor_element_cache` cleared on 504/505/506.
+Measured in iframes at 1440/1100/900/390px on Kallang (1), Orchard (2), Funan (4)
+and Funan with a simulated 5th card: 3 + 2 centred at desktop, 2 + 2 + 1 centred
+at tablet, single column on mobile, no horizontal overflow anywhere.
+
+Still needed: the 5th combo's name, description, includes, image and price from
+the client - the slot stays hidden until Combo Name is filled in.
+
 ## 2026-10-07 - Team Building / Birthday Party: Every Section On One 1300px Column
 
 On `/birthday-party/` and `/team-building/` the sections below the outlet
