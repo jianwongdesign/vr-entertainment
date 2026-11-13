@@ -425,6 +425,7 @@ for ( $ci = 1; $ci <= 5; $ci++ ) {
         'weekend'  => ( '' === (string) $combo_weekend ) ? null : (float) $combo_weekend,
         'link'     => trim( (string) get_post_meta( get_the_ID(), 'outlet_combo_' . $ci . '_link', true ) ),
         'img'      => $combo_img_src,
+        'wide'     => (bool) get_post_meta( get_the_ID(), 'outlet_combo_' . $ci . '_wide', true ),
     );
 }
 
@@ -745,6 +746,34 @@ if ( '' === $combos_intro ) {
   }
   @media (max-width:600px){
     .ow-pri__combos-grid[class]{--cols:1;}
+  }
+  /* Wide banner combo: full row under the grid, image left / details right,
+     stacking back into a normal card on phones. */
+  .ow-pri__combos-banners{display:flex;flex-direction:column;gap:22px;margin-top:22px;}
+  .ow-pri__combo-card.is-wide{max-width:none;flex-direction:row;}
+  .ow-pri__combo-card.is-wide .ow-pri__combo-img{
+    flex:0 0 58%;aspect-ratio:auto;min-height:340px;
+    border-bottom:0;border-right:1px solid var(--line);
+  }
+  .ow-pri__combo-card.is-wide .ow-pri__combo-body{padding:38px 40px;justify-content:center;}
+  .ow-pri__combo-card.is-wide .ow-pri__combo-name{font-size:30px;}
+  .ow-pri__combo-card.is-wide .ow-pri__combo-desc{font-size:15px;}
+  .ow-pri__combo-card.is-wide .ow-pri__combo-tags{flex:0 0 auto;}
+  .ow-pri__combo-card.is-wide .ow-pri__combo-btn{align-self:flex-start;padding:14px 28px;}
+  @media (max-width:1000px){
+    .ow-pri__combo-card.is-wide .ow-pri__combo-img{flex-basis:50%;min-height:280px;}
+    .ow-pri__combo-card.is-wide .ow-pri__combo-body{padding:28px;}
+    .ow-pri__combo-card.is-wide .ow-pri__combo-name{font-size:24px;}
+  }
+  @media (max-width:700px){
+    .ow-pri__combo-card.is-wide{flex-direction:column;}
+    .ow-pri__combo-card.is-wide .ow-pri__combo-img{
+      flex:none;aspect-ratio:16/9;min-height:0;
+      border-right:0;border-bottom:1px solid var(--line);
+    }
+    .ow-pri__combo-card.is-wide .ow-pri__combo-body{padding:26px;}
+    .ow-pri__combo-card.is-wide .ow-pri__combo-name{font-size:22px;}
+    .ow-pri__combo-card.is-wide .ow-pri__combo-btn{align-self:stretch;}
   }
   /* max-width keeps a single combo from stretching the card — and its 16:9
      image — across the full 1200px row. */
@@ -1420,9 +1449,19 @@ if ( '' === $combos_intro ) {
 
       <p class="ow-pri__acts-intro"><?php echo esc_html( $combos_intro ); ?></p>
 
-      <div class="ow-pri__combos-grid is-n<?php echo (int) count( $outlet_combos ); ?>">
-        <?php foreach ( $outlet_combos as $combo ) : ?>
-          <article class="ow-pri__combo-card">
+      <?php
+      // Two passes: normal cards in the grid first, then any combo switched to
+      // "Show as wide banner" as a full-width landscape card underneath.
+      foreach ( array( false, true ) as $combo_pass_wide ) :
+          $combo_pass = array();
+          foreach ( $outlet_combos as $combo ) {
+              if ( $combo['wide'] === $combo_pass_wide ) $combo_pass[] = $combo;
+          }
+          if ( empty( $combo_pass ) ) continue;
+      ?>
+      <div class="<?php echo $combo_pass_wide ? 'ow-pri__combos-banners' : 'ow-pri__combos-grid is-n' . (int) count( $combo_pass ); ?>">
+        <?php foreach ( $combo_pass as $combo ) : ?>
+          <article class="ow-pri__combo-card<?php echo $combo['wide'] ? ' is-wide' : ''; ?>">
             <?php if ( ! empty( $combo['img'] ) ) : ?>
               <div class="ow-pri__combo-img">
                 <img src="<?php echo esc_url( $combo['img'] ); ?>" alt="<?php echo esc_attr( $combo['title'] . ' combo at ' . $outlet['name'] ); ?>" loading="lazy" />
@@ -1462,6 +1501,7 @@ if ( '' === $combos_intro ) {
           </article>
         <?php endforeach; ?>
       </div>
+      <?php endforeach; ?>
 
     </div>
   </div>

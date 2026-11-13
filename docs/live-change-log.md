@@ -1,5 +1,20 @@
 # Live Change Log
 
+## 2026-11-13 - Combo Deals: "Show As Wide Banner" Switch
+
+Client wants the 5th combo (or any combo they pick) shown as a landscape banner
+instead of a normal card. Each Combo 1-5 box now has a **Show As Wide Banner**
+toggle. Combos with it on are taken out of the grid and rendered underneath as a
+full-width card: image left (58%), details right; 50/50 under 1000px; stacks
+like a normal card under 700px. The grid's column count only counts the
+regular cards, so Funan is now 4 in a row + the banner.
+
+Turned on for Funan's demo Combo 5. Live matched the previous commit before
+upload; backups `page-pricing.php.bak-20261113-111652` and
+`~/overworld-outlet-combos.php.bak-20261113-111652`. Caches purged. All three
+outlet pages 200; Orchard and Kallang unchanged (no banner). Checked at
+1440 (screenshot), 1100, 820 and 390px: no horizontal overflow.
+
 ## 2026-11-13 - Outlet Combo Deals: 5 Slots, No Stranded Cards
 
 Client wants 5 combo deals at Funan (it had 4). `mu-plugins/overworld-outlet-combos.php`

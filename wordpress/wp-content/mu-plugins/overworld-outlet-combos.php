@@ -3,7 +3,7 @@
  * Plugin Name: Overworld — Outlet Combo Deals
  * Description: Client-editable combo deals for the outlet pages: intro text plus up to 5 combos (title, badge, description, what's included, image, weekday/weekend price, link). Consumed by page-pricing.php, rendered directly under "Activities & Games". Leave a combo's title empty to hide that slot; leave all empty to hide the whole section.
  * Author: Overworld
- * Version: 1.1.0
+ * Version: 1.2.0
  *
  * Must-use plugin: auto-loads, no activation needed. Free ACF has no
  * repeater, so this mirrors the outlet_act_* / outlet_gallery_* convention:
@@ -59,6 +59,16 @@ add_action( 'acf/init', function () {
 			'instructions' => 'e.g. Floor Is Lava + XR Party Game. Leave empty to hide this combo.',
 			'required'     => 0,
 			'wrapper'      => array( 'width' => '60' ),
+		);
+		$fields[] = array(
+			'key'           => 'field_outlet_combo_' . $i . '_wide',
+			'label'         => 'Show As Wide Banner',
+			'name'          => 'outlet_combo_' . $i . '_wide',
+			'type'          => 'true_false',
+			'ui'            => 1,
+			'default_value' => 0,
+			'instructions'  => 'On: this combo becomes a full-width landscape banner under the other combo cards (image left, details right). Use a wide landscape image.',
+			'required'      => 0,
 		);
 		$fields[] = array(
 			'key'          => 'field_outlet_combo_' . $i . '_badge',
