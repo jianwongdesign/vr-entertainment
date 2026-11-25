@@ -3,7 +3,7 @@
  * Plugin Name: Overworld — Event Rental Page (Interactive Game Rental for Events)
  * Description: Makes the /event-rental/ page (template page-event-rental.php) fully client-editable — hero, intro, activity cards, "what's included", "suitable for", FAQ and the bottom call to action — and wires its title, description, keywords and FAQ structured data through overworld-seo.php.
  * Author: Overworld
- * Version: 1.3.0
+ * Version: 1.4.0
  *
  * Must-use plugin: auto-loads, no activation needed.
  *
@@ -94,7 +94,7 @@ function ow_rental_defaults() {
 				'seo_key' => 'XR Party Game',
 			),
 		),
-		'activity_link_label' => 'Learn More',
+		'activity_link_label' => 'View Details',
 		'coming_soon_label'   => 'More Activities Coming Soon',
 
 		// What's included
@@ -219,9 +219,12 @@ function ow_rental_hero_image_id( $post_id ) {
 }
 
 /**
- * Activity cards: client slots first, built-in copy when none are filled in.
+ * Activity cards: published Rental Items first, then the client's numbered
+ * slots, then the built-in copy.
  *
- * Each row: title, text, url, image_id (0 = none), image_url ('' = none).
+ * Each row: title, text, url, image_id (0 = none), image_url ('' = none),
+ * badge, highlights (icon + text rows) and price — the last three only ever
+ * filled in by Rental Items.
  * Built-in rows borrow the photo the outlet pages already use for that
  * activity (via overworld-seo.php), so the page has real pictures before the
  * client uploads any.
@@ -230,6 +233,15 @@ function ow_rental_hero_image_id( $post_id ) {
  * @return array
  */
 function ow_rental_activities( $post_id ) {
+	// Rental Items (overworld-rental-items.php) win: each one has its own
+	// page, a tag and highlight chips. The slots below are the fallback.
+	if ( function_exists( 'ow_ri_cards' ) ) {
+		$items = ow_ri_cards();
+		if ( $items ) {
+			return $items;
+		}
+	}
+
 	$rows = array();
 
 	for ( $i = 1; $i <= OW_RENTAL_ACTIVITY_SLOTS; $i++ ) {
@@ -245,8 +257,11 @@ function ow_rental_activities( $post_id ) {
 			'title'     => $title,
 			'text'      => trim( (string) get_post_meta( $post_id, "rental_act_{$i}_text", true ) ),
 			'url'       => ow_rental_url( get_post_meta( $post_id, "rental_act_{$i}_url", true ) ),
-			'image_id'  => $image_id,
-			'image_url' => $image_id ? (string) wp_get_attachment_image_url( $image_id, 'large' ) : '',
+			'image_id'   => $image_id,
+			'image_url'  => $image_id ? (string) wp_get_attachment_image_url( $image_id, 'large' ) : '',
+			'badge'      => '',
+			'highlights' => array(),
+			'price'      => '',
 		);
 	}
 
@@ -264,8 +279,11 @@ function ow_rental_activities( $post_id ) {
 			'title'     => $row['title'],
 			'text'      => $row['text'],
 			'url'       => ow_rental_url( $row['url'] ),
-			'image_id'  => 0,
-			'image_url' => $image_url,
+			'image_id'   => 0,
+			'image_url'  => $image_url,
+			'badge'      => '',
+			'highlights' => array(),
+			'price'      => '',
 		);
 	}
 
@@ -433,6 +451,18 @@ function ow_rental_icons() {
 		'star'      => array(
 			'label' => 'Star',
 			'svg'   => '<path d="M12 3.5l2.6 5.4 5.9.8-4.3 4.1 1.1 5.9L12 16.9l-5.3 2.8 1.1-5.9-4.3-4.1 5.9-.8z"/>',
+		),
+		'ruler'     => array(
+			'label' => 'Ruler (space / size)',
+			'svg'   => '<path d="M3 15.5L15.5 3 21 8.5 8.5 21z"/><path d="M7 11.5l2 2M10 8.5l2 2M13 5.5l2 2"/>',
+		),
+		'bolt'      => array(
+			'label' => 'Lightning bolt (power / energy)',
+			'svg'   => '<path d="M13 2.5L4.5 13.5H11l-1 8 8.5-11H12z"/>',
+		),
+		'age'       => array(
+			'label' => 'Child (age)',
+			'svg'   => '<circle cx="12" cy="6" r="2.6"/><path d="M8 21v-6l-2-4h12l-2 4v6M10 21v-4h4v4"/>',
 		),
 		'pin'       => array(
 			'label' => 'Map pin (venue)',
@@ -695,6 +725,16 @@ add_action( 'acf/init', function () {
 		'type'         => 'accordion',
 		'open'         => 0,
 		'multi_expand' => 1,
+	);
+	$fields[] = array(
+		'key'       => 'field_rental_activities_items_msg',
+		'label'     => '',
+		'name'      => '',
+		'type'      => 'message',
+		'message'   => '<strong>The activity cards now come from <a href="' . esc_url( admin_url( 'edit.php?post_type=rental_item' ) ) . '">Rental Items</a></strong> in the sidebar — each one has its own page with what is in the package, what is covered, a tag and highlights. '
+			. 'The Activity slots further down are only used while no Rental Item is published. The heading, button text and "Coming Soon" settings here still apply.',
+		'new_lines' => '',
+		'esc_html'  => 0,
 	);
 	$fields[] = array(
 		'key'          => 'field_rental_activities_title',

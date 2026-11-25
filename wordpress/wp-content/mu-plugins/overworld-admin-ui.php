@@ -67,6 +67,16 @@ function ow_admin_color_map() {
 			'desc'    => 'Team Building & Birthday Party packages — per outlet, with PDF brochures.',
 		),
 
+		'rental_item' => array(
+			'menu_id' => 'menu-posts-rental_item',
+			'slug'    => 'edit.php?post_type=rental_item',
+			'color'   => '#c3fb33',
+			'tint'    => 'rgba(195,251,51,.10)',
+			'hover'   => 'rgba(195,251,51,.18)',
+			'icon'    => '🎟️',
+			'desc'    => 'Activities rented out for events — each gets its own page and a card on the Equipment Rental page.',
+		),
+
 		'pricing_item' => array(
 			'menu_id' => 'menu-posts-pricing_item',
 			'slug'    => 'edit.php?post_type=pricing_item',

@@ -1,5 +1,26 @@
 # Live Change Log
 
+## 2026-11-25 - Rental Items: A Page Per Rental Activity, Tags + Highlights
+
+New "Rental Items" content type (WP Admin > Rental Items, mu-plugin
+`overworld-rental-items.php`, template `single-rental_item.php`). Each item has
+its own page at `/event-rental/<name>/`: hero with tag + highlight row
+(players / ages / games), About (normal editor), What's In The Package, What's
+Covered (falls back to the rental page's "What's Included" list), Space &
+Setup, Photos, Questions (FAQPage schema), Pair It With, CTA.
+
+The cards on `/event-rental/` now come from published Rental Items (fallback:
+the old Activity slots, then the built-ins). Each card shows the item's tag on
+the photo (combo-badge style) and its highlight chips; "View Details" (was
+"Learn More") opens the item page.
+
+Seeded three published items (#1977 VR Free Roam, #1978 Floor Is Lava, #1979
+XR Party Game), with facts copied from the live game pages and the rental FAQ.
+**The client should confirm the player counts for rented setups and add real
+equipment counts, floor sizes, photos and prices**. None of those were made
+up. Deployed with `scripts/deploy-rental-items.sh` (rewrite flush done);
+backups `/tmp/*.bak-20261125-*`. All three pages return 200.
+
 ## 2026-11-13 - Combo Deals Intro On One Line
 
 The intro under "Combo Deals" was capped at 720px (shared `.ow-pri__acts-intro`

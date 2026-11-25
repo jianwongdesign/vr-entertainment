@@ -128,6 +128,7 @@ $rental_activity_count = count( $rental_activities );
 ?>
 
 <style>
+<?php echo function_exists( 'ow_ri_card_styles' ) ? ow_ri_card_styles() : ''; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
   .ow-rental{
     --accent:#c3fb33;
     --accent-glow:#dcff6e;
@@ -332,6 +333,12 @@ $rental_activity_count = count( $rental_activities );
     margin:0 0 20px;
   }
   .ow-rental__card-ctas{display:flex;gap:8px;margin-top:auto;}
+  /* Rental Item cards: the photo and name open the item's own page. The
+     tag and chip styles are shared with that page (ow_ri_card_styles). */
+  .ow-rental__card-link{display:block;color:inherit;}
+  .ow-rental__card-name a{color:inherit;text-decoration:none;}
+  .ow-rental__card-name a:hover{color:var(--accent);}
+  .ow-rental__card-media .ow-ri-tag{left:16px;top:16px;}
   .ow-rental__card-ctas .ow-rental__btn{flex:1;padding:12px 18px;font-size:11px;}
 
   .ow-rental__card--soon{
@@ -698,29 +705,55 @@ $rental_activity_count = count( $rental_activities );
       </div>
 
       <div class="ow-rental__grid">
-        <?php foreach ( $rental_activities as $act ) : ?>
+        <?php
+        foreach ( $rental_activities as $act ) :
+	        $act_badge      = isset( $act['badge'] ) ? (string) $act['badge'] : '';
+	        $act_highlights = isset( $act['highlights'] ) ? (array) $act['highlights'] : array();
+	        $act_price      = isset( $act['price'] ) ? (string) $act['price'] : '';
+	        $act_has_url    = '' !== $act['url'];
+	        ?>
           <article class="ow-rental__card">
+            <?php if ( $act_has_url ) : ?><a class="ow-rental__card-link" href="<?php echo esc_url( $act['url'] ); ?>" tabindex="-1" aria-hidden="true"><?php endif; ?>
             <?php if ( '' !== $act['image_url'] ) : ?>
               <div class="ow-rental__card-media">
                 <?php if ( $act['image_id'] ) : ?>
-                  <?php echo wp_get_attachment_image( $act['image_id'], 'large', false, array( 'loading' => 'lazy' ) ); ?>
+                  <?php echo wp_get_attachment_image( $act['image_id'], 'large', false, array( 'loading' => 'lazy', 'alt' => $act['title'] ) ); ?>
                 <?php else : ?>
                   <img src="<?php echo esc_url( $act['image_url'] ); ?>" alt="<?php echo esc_attr( $act['title'] ); ?>" loading="lazy" />
                 <?php endif; ?>
+                <?php if ( '' !== $act_badge ) : ?><span class="ow-ri-tag"><?php echo esc_html( $act_badge ); ?></span><?php endif; ?>
               </div>
             <?php else : ?>
               <div class="ow-rental__card-media ow-rental__card-media--empty">
                 <?php echo $rental_icon( 'gamepad' ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
+                <?php if ( '' !== $act_badge ) : ?><span class="ow-ri-tag"><?php echo esc_html( $act_badge ); ?></span><?php endif; ?>
               </div>
             <?php endif; ?>
+            <?php if ( $act_has_url ) : ?></a><?php endif; ?>
             <div class="ow-rental__card-body">
               <div class="ow-rental__card-brand">Event Rental</div>
-              <h3 class="ow-rental__card-name"><?php echo esc_html( $act['title'] ); ?></h3>
+              <h3 class="ow-rental__card-name">
+                <?php if ( $act_has_url ) : ?>
+                  <a href="<?php echo esc_url( $act['url'] ); ?>"><?php echo esc_html( $act['title'] ); ?></a>
+                <?php else : ?>
+                  <?php echo esc_html( $act['title'] ); ?>
+                <?php endif; ?>
+              </h3>
+              <?php if ( ! empty( $act_highlights ) ) : ?>
+                <div class="ow-ri-chips">
+                  <?php foreach ( $act_highlights as $hl ) : ?>
+                    <span class="ow-ri-chip"><?php echo $rental_icon( $hl['icon'] ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?><?php echo esc_html( $hl['text'] ); ?></span>
+                  <?php endforeach; ?>
+                </div>
+              <?php endif; ?>
               <?php if ( '' !== $act['text'] ) : ?>
                 <p class="ow-rental__card-blurb"><?php echo esc_html( $act['text'] ); ?></p>
               <?php endif; ?>
+              <?php if ( '' !== $act_price ) : ?>
+                <p class="ow-ri-price"><?php echo esc_html( $act_price ); ?></p>
+              <?php endif; ?>
               <div class="ow-rental__card-ctas">
-                <?php if ( '' !== $act['url'] && '' !== $rental_activity_link_label ) : ?>
+                <?php if ( $act_has_url && '' !== $rental_activity_link_label ) : ?>
                   <a class="ow-rental__btn ow-rental__btn--primary" href="<?php echo esc_url( $act['url'] ); ?>">
                     <?php echo esc_html( $rental_activity_link_label ); ?> <?php echo $rental_arrow; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
                   </a>
