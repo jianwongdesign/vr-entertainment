@@ -1,5 +1,23 @@
 # Live Change Log
 
+## 2026-11-25 - Plugin Updates (8 Of 10)
+
+Backup first: `~/overworld-backups/db-20261125-060129.sql` (40M) and
+`wp-content-20261125-060129.tar.gz` (887M).
+
+Updated: ACF 6.8.11 -> 6.8.12, All-in-One WP Migration 7.111 -> 7.113,
+Elementor 4.4.1 -> 4.4.2 (its database update was run), LiteSpeed Cache
+7.9.2 -> 7.9.4, Site Kit 1.187.0 -> 1.192.0, Soro SEO 1.4.2 -> 1.5.0, Header
+Footer Elementor 2.9.6 -> 2.9.8, WPCode 2.4.0 -> 2.4.2.
+
+Checked: all 250 published URLs return 200 and are unchanged against the
+pre-update snapshot (widgets, words, size, no error text). The `wpcode_snippets`
+option and all 7 custom content types are intact. GTM-TKWRSC2P and
+G-YWN6R1DRHW still load on the home page.
+
+Not updated: **GTM4WP 1.22.5 -> 2.1.1** (major version; waiting on the user's
+OK) and Elementor Pro (switched off, unlicensed).
+
 ## 2026-11-25 - Elementor Pro Switched Off
 
 Elementor Pro (4.0.4, unlicensed, no updates) deactivated. Not deleted, so
