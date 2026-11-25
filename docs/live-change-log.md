@@ -1,5 +1,23 @@
 # Live Change Log
 
+## 2026-11-25 - Elementor Pro Switched Off
+
+Elementor Pro (4.0.4, unlicensed, no updates) deactivated. Not deleted, so
+**to undo:** `./scripts/remote-wp-cli.sh plugin activate elementor-pro`.
+
+Why it was safe: every Elementor page uses only the free HTML + Shortcode
+widgets; no `[elementor-template]` shortcode, Pro forms/submissions, custom
+code, fonts, icons or kit CSS; Booking page custom-CSS box was empty; the one
+Theme Builder template (#133) targeted a CPT that no longer exists; no theme or
+mu-plugin code references Pro. Free Elementor 4.4.1 stays (pages need it).
+
+Checked: all 250 published URLs fetched before and after (3 at a time; 8 at a
+time gives false 500s from Hostinger). 250/250 return 200 both times, with no
+change in widget count, word count (within 3%) or page size, and no error
+text. The only markup difference is that Pro's form stylesheet is gone. Home,
+Booking, Floor Is Lava and Funan were checked by eye, and the Elementor editor
+still opens (Booking, not saved). 4 draft Elementor items were not checked.
+
 ## 2026-11-25 - Rental Items: A Page Per Rental Activity, Tags + Highlights
 
 New "Rental Items" content type (WP Admin > Rental Items, mu-plugin
