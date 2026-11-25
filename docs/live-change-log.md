@@ -1,6 +1,6 @@
 # Live Change Log
 
-## 2026-11-25 - Plugin Updates (8 Of 10)
+## 2026-11-25 - Plugin Updates (All Except Elementor Pro)
 
 Backup first: `~/overworld-backups/db-20261125-060129.sql` (40M) and
 `wp-content-20261125-060129.tar.gz` (887M).
@@ -15,8 +15,13 @@ pre-update snapshot (widgets, words, size, no error text). The `wpcode_snippets`
 option and all 7 custom content types are intact. GTM-TKWRSC2P and
 G-YWN6R1DRHW still load on the home page.
 
-Not updated: **GTM4WP 1.22.5 -> 2.1.1** (major version; waiting on the user's
-OK) and Elementor Pro (switched off, unlicensed).
+GTM4WP 1.22.5 -> 2.1.1 (major version) was done separately once the user
+OK'd it. Afterwards, home, booking, a rental item, Funan and Floor Is Lava all
+output GTM-TKWRSC2P, the gtm.js loader, the noscript iframe, the dataLayer and
+G-YWN6R1DRHW, with no fatal. All 250 URLs return 200 and are unchanged. To roll
+back: `wp plugin install duracelltomi-google-tag-manager --version=1.22.5 --force`.
+
+Not updated: Elementor Pro (switched off, unlicensed).
 
 ## 2026-11-25 - Elementor Pro Switched Off
 
