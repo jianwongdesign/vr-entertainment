@@ -1,5 +1,16 @@
 # Live Change Log
 
+## 2026-11-25 - Share Images (Open Graph) For The Rental Pages
+
+These pages now have designed 1200x630 share cards: dark background, the
+Overworld wordmark, a big title, the tag pill and highlight chips, and the photo.
+The main rental page gets a three-photo collage. Each card is set as that
+page's Share Image (`ow_seo_image`): /event-rental/ #1981, VR Free Roam #1982,
+Floor Is Lava #1983, XR Party Game #1984. Each JPG is 177-231 KB, and og:image
+was checked live on all four. Source: `scripts/share-cards/`. WhatsApp and
+Facebook cache previews, so an old link can show the old picture for a while;
+Facebook's Sharing Debugger refreshes it.
+
 ## 2026-11-25 - Plugin Updates (All Except Elementor Pro)
 
 Backup first: `~/overworld-backups/db-20261125-060129.sql` (40M) and
